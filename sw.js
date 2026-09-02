@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pickup-tracker-v1';
+const CACHE_NAME = 'pickup-tracker-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -32,13 +32,17 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(fetch(event.request).catch(() => new Response('', { status: 504 })));
     return;
   }
+
+  // Network-first: всегда пытаемся взять свежую версию из сети,
+  // а кэш используем только как запасной вариант, если сети нет (офлайн).
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((resp) => {
+    fetch(event.request)
+      .then((resp) => {
         const respClone = resp.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, respClone));
         return resp;
-      }).catch(() => cached);
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });
+
