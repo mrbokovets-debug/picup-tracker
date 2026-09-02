@@ -49,6 +49,31 @@
     border:1px solid var(--line); pointer-events:none;
   }
 
+  #placeSearchWrap{
+    position:absolute; left:10px; right:54px; top:52px; z-index:450;
+  }
+  #placeSearchInput{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line);
+    background:rgba(32,36,44,0.95); color:var(--text); font-size:13px; outline:none;
+    box-sizing:border-box; box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  #placeSearchInput:focus{border-color:var(--signal);}
+  #placeSearchInput::placeholder{color:var(--text-dim);}
+  #placeResults{
+    margin-top:6px; background:var(--card); border:1px solid var(--line); border-radius:10px;
+    overflow:hidden; max-height:200px; overflow-y:auto; display:none;
+    box-shadow:0 4px 14px rgba(0,0,0,0.5);
+  }
+  #placeResults.show{display:block;}
+  .placeItem{
+    padding:10px 12px; border-bottom:1px solid var(--line); cursor:pointer; font-size:12.5px;
+  }
+  .placeItem:last-child{border-bottom:none;}
+  .placeItem:active{background:var(--asphalt-2);}
+  .placeItem .pName{font-weight:700; color:var(--text); margin-bottom:2px;}
+  .placeItem .pAddr{color:var(--text-dim); font-size:11px;}
+  .placeItem.empty{color:var(--text-dim); text-align:center; cursor:default;}
+
   .pinDiv{display:flex; align-items:center; justify-content:center; border-radius:50%;
     font-weight:800; color:#14171c; border:2px solid rgba(255,255,255,0.35);}
 
@@ -90,6 +115,32 @@
   #resetLink{text-align:center; padding-bottom:12px; flex-shrink:0;}
   #resetLink a{color:var(--text-dim); font-size:11.5px; text-decoration:underline; cursor:pointer;}
 
+  #placeSearchWrap{position:relative; margin:8px 14px 0; flex-shrink:0;}
+  #placeSearchInput{
+    width:100%; box-sizing:border-box; padding:10px 36px 10px 12px; border-radius:10px;
+    border:1px solid var(--line); background:var(--card); color:var(--text);
+    font-size:14px; outline:none;
+  }
+  #placeSearchInput:focus{border-color:var(--signal);}
+  #placeSearchInput::placeholder{color:var(--text-dim);}
+  #placeSearchClear{
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:var(--text-dim); font-size:16px; cursor:pointer; display:none;
+  }
+  #placeSearchClear.show{display:block;}
+  #placeResults{
+    position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:900;
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    max-height:260px; overflow-y:auto; box-shadow:0 8px 20px rgba(0,0,0,0.4); display:none;
+  }
+  #placeResults.show{display:block;}
+  .placeItem{padding:10px 12px; cursor:pointer; border-bottom:1px solid var(--line);}
+  .placeItem:last-child{border-bottom:none;}
+  .placeItem:active{background:var(--asphalt-2);}
+  .placeItem .pName{font-size:13.5px; font-weight:600; color:var(--text);}
+  .placeItem .pAddr{font-size:11.5px; color:var(--text-dim); margin-top:2px;}
+  .placeLoading, .placeEmpty{padding:12px; font-size:12.5px; color:var(--text-dim); text-align:center;}
+
   .leaflet-control-attribution{font-size:9px; background:rgba(20,23,28,0.7)!important; color:var(--text-dim)!important;}
   .leaflet-control-attribution a{color:var(--text-dim)!important;}
 </style>
@@ -101,14 +152,24 @@
     <p class="sub">Тапни рядом с заведением на карте — если точка уже есть в радиусе ~40м, забор просто засчитается ей, иначе создастся новая.</p>
   </header>
 
+  <div id="placeSearchWrap">
+    <input id="placeSearchInput" type="text" placeholder="Найти заведение или адрес..." oninput="onPlaceSearchInput(event)">
+    <button id="placeSearchClear" onclick="clearPlaceSearch()">✕</button>
+    <div id="placeResults"></div>
+  </div>
+
   <div id="mapOuter">
     <div id="map"></div>
     <div id="modeBadge">Обычная карта</div>
     <button id="locateBtn" title="Найти меня">📍</button>
+    <div id="placeSearchWrap">
+      <input id="placeSearchInput" type="text" placeholder="🔍 Найти заведение на карте..." autocomplete="off">
+      <div id="placeResults"></div>
+    </div>
   </div>
 
   <div id="list">
-    <input id="searchInput" type="text" placeholder="Поиск по названию..." oninput="renderAll()">
+    <input id="searchInput" type="text" placeholder="Поиск среди своих точек..." oninput="renderAll()">
     <div class="listTitle"><span>По частоте</span><span id="totalCount"></span></div>
     <div id="rows"></div>
   </div>
@@ -290,11 +351,114 @@ map.on('click', (e) => {
   openModal(lat, lng);
 });
 
-function openModal(lat, lng){
-  document.getElementById('nameInput').value = '';
+// --- Поиск реальных заведений/адресов через Nominatim (OpenStreetMap), бесплатно, без ключей ---
+let placeSearchTimer = null;
+let placeSearchAbort = null;
+
+function onPlaceSearchInput(e){
+  const q = e.target.value.trim();
+  document.getElementById('placeSearchClear').classList.toggle('show', q.length > 0);
+  clearTimeout(placeSearchTimer);
+  if(q.length < 3){
+    hidePlaceResults();
+    return;
+  }
+  showPlaceLoading();
+  // Nominatim просит не чаще 1 запроса в секунду - ждём паузу в наборе текста
+  placeSearchTimer = setTimeout(() => runPlaceSearch(q), 600);
+}
+
+function clearPlaceSearch(){
+  document.getElementById('placeSearchInput').value = '';
+  document.getElementById('placeSearchClear').classList.remove('show');
+  hidePlaceResults();
+}
+
+function showPlaceLoading(){
+  const box = document.getElementById('placeResults');
+  box.innerHTML = '<div class="placeLoading">Ищу...</div>';
+  box.classList.add('show');
+}
+
+function hidePlaceResults(){
+  const box = document.getElementById('placeResults');
+  box.classList.remove('show');
+  box.innerHTML = '';
+}
+
+async function runPlaceSearch(query){
+  if(placeSearchAbort) placeSearchAbort.abort();
+  placeSearchAbort = new AbortController();
+  try{
+    const center = map.getCenter();
+    // немного смещаем поиск в сторону текущей области карты, но не ограничиваем страной/регионом жёстко
+    const viewbox = [center.lng-0.15, center.lat+0.15, center.lng+0.15, center.lat-0.15].join(',');
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1&accept-language=ru&viewbox=${viewbox}`;
+    const res = await fetch(url, { signal: placeSearchAbort.signal });
+    const data = await res.json();
+    renderPlaceResults(data);
+  }catch(e){
+    if(e.name !== 'AbortError'){
+      const box = document.getElementById('placeResults');
+      box.innerHTML = '<div class="placeEmpty">Не получилось найти. Проверь интернет.</div>';
+      box.classList.add('show');
+    }
+  }
+}
+
+function renderPlaceResults(results){
+  const box = document.getElementById('placeResults');
+  if(!results || results.length === 0){
+    box.innerHTML = '<div class="placeEmpty">Ничего не найдено</div>';
+    box.classList.add('show');
+    return;
+  }
+  box.innerHTML = results.map((r, i) => {
+    const shortName = (r.display_name || '').split(',')[0];
+    const rest = (r.display_name || '').split(',').slice(1, 4).join(',').trim();
+    return `<div class="placeItem" data-idx="${i}">
+      <div class="pName">${escapeHtml(shortName)}</div>
+      <div class="pAddr">${escapeHtml(rest)}</div>
+    </div>`;
+  }).join('');
+  box.classList.add('show');
+
+  box.querySelectorAll('.placeItem').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.idx, 10);
+      const r = results[idx];
+      const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
+      const shortName = (r.display_name || '').split(',')[0];
+      map.setView([lat, lng], 17);
+      hidePlaceResults();
+      document.getElementById('placeSearchInput').value = '';
+      document.getElementById('placeSearchClear').classList.remove('show');
+
+      // как обычно: если рядом уже есть точка - засчитываем ей, иначе открываем создание новой с готовым названием
+      let nearest = null, nearestDist = Infinity;
+      spots.forEach(s => {
+        const d = distMeters(lat, lng, s.lat, s.lng);
+        if(d < nearestDist){ nearestDist = d; nearest = s; }
+      });
+      if(nearest && nearestDist <= CLUSTER_RADIUS_M){
+        bump(nearest.id);
+        return;
+      }
+      pendingLatLng = { lat, lng };
+      openModal(lat, lng, shortName);
+    });
+  });
+}
+
+function openModal(lat, lng, prefillName){
+  document.getElementById('nameInput').value = prefillName || '';
   document.getElementById('coordsText').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
   document.getElementById('modalBg').classList.add('show');
-  setTimeout(() => document.getElementById('nameInput').focus(), 50);
+  setTimeout(() => {
+    const input = document.getElementById('nameInput');
+    input.focus();
+    if(prefillName) input.select();
+  }, 50);
 }
 function closeModal(){
   document.getElementById('modalBg').classList.remove('show');
