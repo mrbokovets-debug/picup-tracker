@@ -31,7 +31,13 @@
   #app{display:flex; flex-direction:column; height:100vh; max-width:520px; margin:0 auto;}
 
   header{padding:14px 16px 8px; flex-shrink:0;}
+  .headerTop{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   h1{font-size:20px; font-weight:800; letter-spacing:-0.02em; margin:0 0 4px;}
+  #statsBtn{
+    background:var(--card); border:1px solid var(--line); color:var(--text);
+    border-radius:9px; padding:7px 11px; font-size:12px; font-weight:600; cursor:pointer;
+    white-space:nowrap; flex-shrink:0;
+  }
   .sub{color:var(--text-dim); font-size:12.5px; margin:0; line-height:1.4;}
 
   #mapOuter{position:relative; margin:10px 14px; flex:1 1 auto; min-height:260px;
@@ -40,6 +46,11 @@
 
   #locateBtn{
     position:absolute; right:10px; top:10px; z-index:400; background:var(--card);
+    border:1px solid var(--line); color:var(--text); border-radius:10px; padding:9px 10px;
+    font-size:16px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  #themeBtn{
+    position:absolute; right:10px; top:56px; z-index:400; background:var(--card);
     border:1px solid var(--line); color:var(--text); border-radius:10px; padding:9px 10px;
     font-size:16px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4);
   }
@@ -52,6 +63,21 @@
 
   .pinDiv{display:flex; align-items:center; justify-content:center; border-radius:50%;
     font-weight:800; color:#14171c; border:2px solid rgba(255,255,255,0.35);}
+
+  .myLocationDot{
+    width:16px; height:16px; border-radius:50%; background:var(--cold);
+    border:3px solid #14171c; box-shadow:0 0 0 3px rgba(79,182,201,0.35);
+    position:relative;
+  }
+  .myLocationDot::after{
+    content:''; position:absolute; inset:-10px; border-radius:50%;
+    border:2px solid var(--cold); opacity:0.6;
+    animation: myLocPulse 1.8s ease-out infinite;
+  }
+  @keyframes myLocPulse{
+    from{transform:scale(0.5); opacity:0.7;}
+    to{transform:scale(1.8); opacity:0;}
+  }
 
   #list{padding:2px 16px 6px; flex-shrink:0; max-height:30vh; overflow-y:auto;}
   #searchInput{
@@ -87,6 +113,51 @@
   #modalBtns button{flex:1; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
   #cancelBtn{background:var(--line); color:var(--text);}
   #saveBtn{background:var(--signal); color:#14171c;}
+
+  #choiceModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #choiceModalBg.show{display:flex;}
+  #choiceModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line); max-height:80vh; overflow-y:auto;}
+  #choiceModal h3{margin:0 0 6px; font-size:15px;}
+  #choiceModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 12px;}
+  #choiceList{display:flex; flex-direction:column; gap:8px;}
+  .choiceRow{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; cursor:pointer;
+  }
+  .choiceRow:active{background:var(--signal-dim);}
+  .choiceName{font-size:14px; font-weight:600; color:var(--text);}
+  .choiceCount{font-size:12px; color:var(--text-dim); flex-shrink:0;}
+  #choiceBtns{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+  #choiceBtns button{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
+  #choiceNewBtn{background:var(--signal); color:#14171c;}
+  #choiceCancelBtn{background:var(--line); color:var(--text);}
+
+  #statsModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #statsModalBg.show{display:flex;}
+  #statsModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line); max-height:85vh; overflow-y:auto;}
+  #statsModal h3{margin:0 0 14px; font-size:16px;}
+  .statsRow{display:flex; gap:8px; margin-bottom:16px;}
+  .statsCard{
+    flex:1; background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px;
+    padding:12px 10px; text-align:center;
+  }
+  .statsCard .num{font-size:20px; font-weight:800; color:var(--signal);}
+  .statsCard .lbl{font-size:10.5px; color:var(--text-dim); margin-top:2px;}
+  .statsChartTitle{font-size:12px; color:var(--text-dim); margin:4px 0 8px;}
+  #statsChart{display:flex; align-items:flex-end; gap:6px; height:120px; margin-bottom:6px;}
+  .statsBarWrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;}
+  .statsBar{width:100%; max-width:28px; background:var(--cold); border-radius:4px 4px 0 0; min-height:2px; transition:height .3s ease;}
+  .statsBar.today{background:var(--signal);}
+  .statsBarNum{font-size:10px; color:var(--text-dim); margin-bottom:3px;}
+  .statsBarDay{font-size:9.5px; color:var(--text-dim); margin-top:5px;}
+  #statsCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
+    font-weight:700; cursor:pointer; background:var(--line); color:var(--text); margin-top:8px;}
+  .statsEmpty{color:var(--text-dim); font-size:13px; text-align:center; padding:20px 10px;}
 
   #resetLink{text-align:center; padding-bottom:12px; flex-shrink:0; font-size:11.5px; color:var(--text-dim);}
   #resetLink a{color:var(--text-dim); text-decoration:underline; cursor:pointer;}
@@ -124,8 +195,11 @@
 <body>
 <div id="app">
   <header>
-    <h1>Точки забора</h1>
-    <p class="sub">Тапни рядом с заведением на карте — если точка уже есть в радиусе ~40м, забор просто засчитается ей, иначе создастся новая.</p>
+    <div class="headerTop">
+      <h1>Точки забора</h1>
+      <button id="statsBtn" onclick="openStatsModal()">📊 Статистика</button>
+    </div>
+    <p class="sub">Тапни рядом с заведением на карте. Если поблизости уже есть точки — предложу выбрать нужную или добавить новую (пригодится для фудкортов и ТЦ, где несколько заведений рядом).</p>
   </header>
 
   <div id="placeSearchWrap">
@@ -137,6 +211,7 @@
   <div id="mapOuter">
     <div id="map"></div>
     <div id="modeBadge">Обычная карта</div>
+    <button id="themeBtn" title="Светлая/тёмная карта" onclick="toggleMapTheme()">☀️</button>
     <button id="locateBtn" title="Найти меня">📍</button>
   </div>
 
@@ -160,7 +235,7 @@
   <div id="modal">
     <h3>Как называется заведение?</h3>
     <p class="coords" id="coordsText"></p>
-    <input id="nameInput" type="text" placeholder="Например: Вкусно и точка" maxlength="40">
+    <input id="nameInput" type="text" placeholder="Например: Сільпо, АТБ" maxlength="40">
     <div id="modalBtns">
       <button id="cancelBtn" onclick="closeModal()">Отмена</button>
       <button id="saveBtn" onclick="saveNewSpot()">Добавить</button>
@@ -168,10 +243,33 @@
   </div>
 </div>
 
+<div id="choiceModalBg">
+  <div id="choiceModal">
+    <h3>Какое заведение?</h3>
+    <p class="coords">Рядом уже есть точки — выбери, куда засчитать забор, или добавь новое</p>
+    <div id="choiceList"></div>
+    <div id="choiceBtns">
+      <button id="choiceNewBtn" onclick="choiceAddNew()">+ Это другое заведение</button>
+      <button id="choiceCancelBtn" onclick="closeChoiceModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<div id="statsModalBg">
+  <div id="statsModal">
+    <h3>Статистика по дням</h3>
+    <div id="statsBody"></div>
+    <button id="statsCloseBtn" onclick="closeStatsModal()">Закрыть</button>
+  </div>
+</div>
+
 <script>
 const STORAGE_KEY = 'pickup-spots-geo';
+const VISITS_KEY = 'pickup-visits-log'; // журнал каждого отдельного забора с датой - для статистики по дням
+const MAP_THEME_KEY = 'pickup-map-theme';
 const CLUSTER_RADIUS_M = 40; // если тап ближе этого расстояния к точке - засчитываем ей же
 let spots = [];
+let visitsLog = []; // [{ spotId, ts }]
 let pendingLatLng = null;
 let markers = {}; // id -> leaflet marker
 
@@ -186,8 +284,22 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap'
 }).addTo(map);
 
-// затемняем тайлы под тёмную тему интерфейса
-document.getElementById('map').style.filter = 'invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9)';
+// затемняем тайлы под тёмную тему интерфейса (по умолчанию), с возможностью переключить на светлую
+const DARK_FILTER = 'invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9)';
+
+function applyMapTheme(isDark){
+  document.getElementById('map').style.filter = isDark ? DARK_FILTER : 'none';
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+}
+
+function toggleMapTheme(){
+  const current = localStorage.getItem(MAP_THEME_KEY) || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(MAP_THEME_KEY, next);
+  applyMapTheme(next === 'dark');
+}
+
+applyMapTheme((localStorage.getItem(MAP_THEME_KEY) || 'dark') === 'dark');
 
 function distMeters(lat1, lng1, lat2, lng2){
   const R = 6371000;
@@ -222,6 +334,10 @@ function loadSpots(){
     const raw = localStorage.getItem(STORAGE_KEY);
     spots = raw ? JSON.parse(raw) : [];
   }catch(e){ spots = []; }
+  try{
+    const rawVisits = localStorage.getItem(VISITS_KEY);
+    visitsLog = rawVisits ? JSON.parse(rawVisits) : [];
+  }catch(e){ visitsLog = []; }
   renderAll();
   if(spots.length){
     const group = L.featureGroup(Object.values(markers));
@@ -231,6 +347,11 @@ function loadSpots(){
 
 function persist(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(spots)); }
+  catch(e){ console.error('storage error', e); }
+}
+
+function persistVisits(){
+  try{ localStorage.setItem(VISITS_KEY, JSON.stringify(visitsLog)); }
   catch(e){ console.error('storage error', e); }
 }
 
@@ -274,6 +395,78 @@ function renderAll(){
   document.getElementById('totalCount').textContent = total ? `всего заборов: ${total}` : '';
 }
 
+function openStatsModal(){
+  renderStats();
+  document.getElementById('statsModalBg').classList.add('show');
+}
+function closeStatsModal(){
+  document.getElementById('statsModalBg').classList.remove('show');
+}
+
+function dayKey(date){
+  // локальная дата в формате YYYY-MM-DD, без сдвига часовым поясом
+  const y = date.getFullYear(), m = String(date.getMonth()+1).padStart(2,'0'), d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function renderStats(){
+  const body = document.getElementById('statsBody');
+  if(visitsLog.length === 0){
+    body.innerHTML = '<div class="statsEmpty">Пока нет данных для статистики. Отмечай заборы — здесь появятся цифры по дням.</div>';
+    return;
+  }
+
+  const now = new Date();
+  const todayKey = dayKey(now);
+  const yesterday = new Date(now); yesterday.setDate(yesterday.getDate()-1);
+  const yesterdayKey = dayKey(yesterday);
+
+  // считаем количество заборов по дням за последние 7 дней (включая сегодня)
+  const days = [];
+  for(let i = 6; i >= 0; i--){
+    const d = new Date(now); d.setDate(d.getDate()-i);
+    days.push({ key: dayKey(d), label: d.toLocaleDateString('ru-RU', { weekday: 'short' }), count: 0 });
+  }
+  const dayMap = {};
+  days.forEach(d => dayMap[d.key] = d);
+
+  let todayCount = 0, yesterdayCount = 0, weekCount = 0;
+  visitsLog.forEach(v => {
+    const k = dayKey(new Date(v.ts));
+    if(k === todayKey) todayCount++;
+    if(k === yesterdayKey) yesterdayCount++;
+    if(dayMap[k]){ dayMap[k].count++; weekCount++; }
+  });
+
+  const maxCount = Math.max(1, ...days.map(d => d.count));
+
+  const cardsHtml = `
+    <div class="statsRow">
+      <div class="statsCard"><div class="num">${todayCount}</div><div class="lbl">сегодня</div></div>
+      <div class="statsCard"><div class="num">${yesterdayCount}</div><div class="lbl">вчера</div></div>
+      <div class="statsCard"><div class="num">${weekCount}</div><div class="lbl">за 7 дней</div></div>
+      <div class="statsCard"><div class="num">${visitsLog.length}</div><div class="lbl">всего</div></div>
+    </div>
+  `;
+
+  const chartHtml = `
+    <div class="statsChartTitle">Заборы по дням</div>
+    <div id="statsChart">
+      ${days.map(d => {
+        const h = Math.max(4, Math.round((d.count / maxCount) * 100));
+        const isToday = d.key === todayKey;
+        return `<div class="statsBarWrap">
+          <div class="statsBarNum">${d.count || ''}</div>
+          <div class="statsBar${isToday ? ' today' : ''}" style="height:${h}px"></div>
+          <div class="statsBarDay">${escapeHtml(d.label)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  body.innerHTML = cardsHtml + chartHtml;
+}
+
 function plural(n){
   const mod10 = n % 10, mod100 = n % 100;
   if(mod10 === 1 && mod100 !== 11) return '';
@@ -289,7 +482,9 @@ function bump(id){
   if(!s) return;
   s.count += 1;
   s.lastVisit = new Date().toISOString();
+  visitsLog.push({ spotId: id, ts: s.lastVisit });
   persist();
+  persistVisits();
   renderAll();
 }
 
@@ -304,31 +499,76 @@ function unbump(id){
     return;
   }
   s.count -= 1;
+  // убираем последнюю запись из журнала для этой точки, чтобы статистика оставалась верной
+  for(let i = visitsLog.length - 1; i >= 0; i--){
+    if(visitsLog[i].spotId === id){ visitsLog.splice(i, 1); break; }
+  }
   persist();
+  persistVisits();
   renderAll();
 }
 
 function removeSpot(id){
   spots = spots.filter(s => s.id !== id);
+  visitsLog = visitsLog.filter(v => v.spotId !== id);
   persist();
+  persistVisits();
   renderAll();
 }
 
 map.on('click', (e) => {
   const { lat, lng } = e.latlng;
-  // ищем ближайшую существующую точку в радиусе кластеризации
-  let nearest = null, nearestDist = Infinity;
-  spots.forEach(s => {
-    const d = distMeters(lat, lng, s.lat, s.lng);
-    if(d < nearestDist){ nearestDist = d; nearest = s; }
-  });
-  if(nearest && nearestDist <= CLUSTER_RADIUS_M){
-    bump(nearest.id);
+  handleMapTap(lat, lng);
+});
+
+function handleMapTap(lat, lng, prefillName){
+  // ищем все точки поблизости (в радиусе кластеризации), а не только одну ближайшую -
+  // в одном месте (фудкорт, ТЦ) может быть несколько разных заведений рядом
+  const nearby = spots
+    .map(s => ({ s, d: distMeters(lat, lng, s.lat, s.lng) }))
+    .filter(x => x.d <= CLUSTER_RADIUS_M)
+    .sort((a, b) => a.d - b.d)
+    .map(x => x.s);
+
+  if(nearby.length === 0){
+    pendingLatLng = { lat, lng };
+    openModal(lat, lng, prefillName);
     return;
   }
+  openChoiceModal(lat, lng, nearby, prefillName);
+}
+
+let pendingPrefillName = null;
+
+function openChoiceModal(lat, lng, nearby, prefillName){
   pendingLatLng = { lat, lng };
-  openModal(lat, lng);
-});
+  pendingPrefillName = prefillName || null;
+  const box = document.getElementById('choiceList');
+  box.innerHTML = nearby.map(s => `
+    <div class="choiceRow" data-id="${s.id}">
+      <span class="choiceName">${escapeHtml(s.name)}</span>
+      <span class="choiceCount">${s.count} раз${plural(s.count)}</span>
+    </div>
+  `).join('');
+  box.querySelectorAll('.choiceRow').forEach(el => {
+    el.addEventListener('click', () => {
+      bump(el.dataset.id);
+      closeChoiceModal();
+    });
+  });
+  document.getElementById('choiceModalBg').classList.add('show');
+}
+
+function closeChoiceModal(){
+  document.getElementById('choiceModalBg').classList.remove('show');
+}
+
+function choiceAddNew(){
+  const { lat, lng } = pendingLatLng;
+  const prefillName = pendingPrefillName;
+  closeChoiceModal();
+  openModal(lat, lng, prefillName);
+}
 
 // --- Поиск реальных заведений/адресов через Nominatim (OpenStreetMap), бесплатно, без ключей ---
 let placeSearchTimer = null;
@@ -412,19 +652,7 @@ function renderPlaceResults(results){
       hidePlaceResults();
       document.getElementById('placeSearchInput').value = '';
       document.getElementById('placeSearchClear').classList.remove('show');
-
-      // как обычно: если рядом уже есть точка - засчитываем ей, иначе открываем создание новой с готовым названием
-      let nearest = null, nearestDist = Infinity;
-      spots.forEach(s => {
-        const d = distMeters(lat, lng, s.lat, s.lng);
-        if(d < nearestDist){ nearestDist = d; nearest = s; }
-      });
-      if(nearest && nearestDist <= CLUSTER_RADIUS_M){
-        bump(nearest.id);
-        return;
-      }
-      pendingLatLng = { lat, lng };
-      openModal(lat, lng, shortName);
+      handleMapTap(lat, lng, shortName);
     });
   });
 }
@@ -461,7 +689,8 @@ function saveNewSpot(){
 
 function exportData(){
   if(spots.length === 0){ alert('Пока нечего сохранять - список точек пуст.'); return; }
-  const blob = new Blob([JSON.stringify(spots, null, 2)], { type: 'application/json' });
+  const payload = { spots, visitsLog };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   const dateStr = new Date().toISOString().slice(0, 10);
@@ -479,9 +708,11 @@ function importData(event){
   const reader = new FileReader();
   reader.onload = (e) => {
     try{
-      const imported = JSON.parse(e.target.result);
-      if(!Array.isArray(imported)) throw new Error('bad format');
-      const validSpots = imported.filter(s => s && typeof s.lat === 'number' && typeof s.lng === 'number' && typeof s.name === 'string');
+      const parsed = JSON.parse(e.target.result);
+      // поддерживаем и старый формат (просто массив точек), и новый ({spots, visitsLog})
+      const importedSpots = Array.isArray(parsed) ? parsed : (parsed.spots || []);
+      const importedVisits = Array.isArray(parsed) ? [] : (parsed.visitsLog || []);
+      const validSpots = importedSpots.filter(s => s && typeof s.lat === 'number' && typeof s.lng === 'number' && typeof s.name === 'string');
       if(validSpots.length === 0){ alert('В файле не найдено ни одной точки.'); return; }
 
       const action = spots.length > 0
@@ -496,10 +727,19 @@ function importData(event){
             spots.push(s);
           }
         });
+        const existingVisitKeys = new Set(visitsLog.map(v => v.spotId + '|' + v.ts));
+        importedVisits.forEach(v => {
+          const key = v.spotId + '|' + v.ts;
+          if(!existingVisitKeys.has(key)){
+            visitsLog.push(v);
+          }
+        });
       } else {
         spots = validSpots;
+        visitsLog = importedVisits;
       }
       persist();
+      persistVisits();
       renderAll();
       if(spots.length){
         const group = L.featureGroup(Object.values(markers));
@@ -532,6 +772,22 @@ document.getElementById('nameInput')?.addEventListener('keydown', (e) => {
   if(e.key === 'Enter') saveNewSpot();
 });
 
+let myLocationMarker = null;
+
+function showMyLocationMarker(lat, lng){
+  const icon = L.divIcon({
+    html: '<div class="myLocationDot"></div>',
+    className: '',
+    iconSize: [16, 16],
+    iconAnchor: [8, 8]
+  });
+  if(myLocationMarker){
+    myLocationMarker.setLatLng([lat, lng]);
+  } else {
+    myLocationMarker = L.marker([lat, lng], { icon, interactive: false, zIndexOffset: 1000 }).addTo(map);
+  }
+}
+
 document.getElementById('locateBtn').addEventListener('click', () => {
   if(!navigator.geolocation){ alert('Геолокация недоступна в этом браузере'); return; }
   document.getElementById('modeBadge').textContent = 'Ищу тебя...';
@@ -539,6 +795,7 @@ document.getElementById('locateBtn').addEventListener('click', () => {
     (pos) => {
       const { latitude, longitude } = pos.coords;
       map.setView([latitude, longitude], 16);
+      showMyLocationMarker(latitude, longitude);
       document.getElementById('modeBadge').textContent = 'Твоё местоположение';
       setTimeout(() => document.getElementById('modeBadge').textContent = 'Обычная карта', 2000);
     },
@@ -554,6 +811,7 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 if(navigator.geolocation){
   navigator.geolocation.getCurrentPosition(
     (pos) => {
+      showMyLocationMarker(pos.coords.latitude, pos.coords.longitude);
       if(spots.length === 0){
         map.setView([pos.coords.latitude, pos.coords.longitude], 15);
       }
