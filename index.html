@@ -32,11 +32,10 @@
 
   header{padding:14px 16px 8px; flex-shrink:0;}
   .headerTop{display:flex; align-items:center; justify-content:space-between; gap:10px;}
-  h1{font-size:20px; font-weight:800; letter-spacing:-0.02em; margin:0 0 4px;}
-  #statsBtn{
+  h1{font-size:20px; font-weight:800; letter-spacing:-0.02em; margin:0; text-align:center; flex:1;}
+  #menuBtn{
     background:var(--card); border:1px solid var(--line); color:var(--text);
-    border-radius:9px; padding:7px 11px; font-size:12px; font-weight:600; cursor:pointer;
-    white-space:nowrap; flex-shrink:0;
+    border-radius:9px; width:38px; height:38px; font-size:16px; cursor:pointer; flex-shrink:0;
   }
   .sub{color:var(--text-dim); font-size:12.5px; margin:0; line-height:1.4;}
 
@@ -159,8 +158,65 @@
     font-weight:700; cursor:pointer; background:var(--line); color:var(--text); margin-top:8px;}
   .statsEmpty{color:var(--text-dim); font-size:13px; text-align:center; padding:20px 10px;}
 
-  #resetLink{text-align:center; padding-bottom:12px; flex-shrink:0; font-size:11.5px; color:var(--text-dim);}
-  #resetLink a{color:var(--text-dim); text-decoration:underline; cursor:pointer;}
+  #settingsModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #settingsModalBg.show{display:flex;}
+  #settingsModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line);}
+  #settingsModal h3{margin:0 0 6px; font-size:16px;}
+  #settingsModal .coords{color:var(--text-dim); font-size:12px; margin:0 0 16px;}
+  #markerStyleOptions{display:flex; gap:12px; margin-bottom:16px;}
+  .markerOption{
+    flex:1; background:var(--asphalt-2); border:2px solid var(--line); border-radius:12px;
+    padding:16px 8px; text-align:center; cursor:pointer; font-size:12.5px; color:var(--text);
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .markerOption.active{border-color:var(--signal);}
+  .markerPreview{height:44px; display:flex; align-items:center; justify-content:center;}
+  .previewCircle{
+    width:34px; height:34px; border-radius:50%; background:var(--signal); color:#14171c;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;
+    border:2px solid rgba(255,255,255,0.35);
+  }
+  #settingsCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
+    font-weight:700; cursor:pointer; background:var(--signal); color:#14171c;}
+
+  /* значок-сумка курьера для точек на карте */
+  .bagPin{display:flex; flex-direction:column; align-items:center; position:relative;}
+  .bagStrap{
+    width:55%; aspect-ratio:2/1; border:3px solid; border-bottom:none;
+    border-radius:100% 100% 0 0 / 100% 100% 0 0; box-sizing:border-box; margin-bottom:-15%;
+  }
+  .bagBody{
+    width:100%; aspect-ratio:1/0.85; border-radius:7px; display:flex; align-items:center;
+    justify-content:center; font-weight:800; color:#14171c; border:2px solid rgba(255,255,255,0.35);
+  }
+
+  #drawerOverlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1500;
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  #drawerOverlay.show{opacity:1; pointer-events:auto;}
+  #sideDrawer{
+    position:fixed; top:0; left:0; bottom:0; width:78%; max-width:300px;
+    background:var(--card); z-index:1600; box-shadow:2px 0 20px rgba(0,0,0,0.5);
+    transform:translateX(-100%); transition:transform .25s ease;
+    display:flex; flex-direction:column; padding:6px 0;
+  }
+  #sideDrawer.show{transform:translateX(0);}
+  .drawerHeader{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 18px 14px; font-size:16px; font-weight:800; color:var(--text);
+    border-bottom:1px solid var(--line); margin-bottom:6px;
+  }
+  #drawerCloseBtn{background:none; border:none; color:var(--text-dim); font-size:18px; cursor:pointer;}
+  .drawerItem{
+    display:flex; align-items:center; gap:14px; padding:14px 18px; font-size:14.5px;
+    color:var(--text); cursor:pointer; font-weight:600;
+  }
+  .drawerItem:active{background:var(--asphalt-2);}
+  .drawerIcon{font-size:18px; width:22px; text-align:center; flex-shrink:0;}
+  .drawerDanger{color:var(--danger, #e85d5d); margin-top:auto; border-top:1px solid var(--line);}
 
   #placeSearchWrap{position:relative; margin:8px 14px 0; flex-shrink:0;}
   #placeSearchInput{
@@ -193,11 +249,41 @@
 </style>
 </head>
 <body>
+
+<div id="drawerOverlay" onclick="closeDrawer()"></div>
+<div id="sideDrawer">
+  <div class="drawerHeader">
+    <span>Меню</span>
+    <button id="drawerCloseBtn" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawerItem" onclick="closeDrawer(); openStatsModal();">
+    <span class="drawerIcon">📊</span>
+    <span>Статистика</span>
+  </div>
+  <div class="drawerItem" onclick="closeDrawer(); openSettingsModal();">
+    <span class="drawerIcon">⚙️</span>
+    <span>Настройки</span>
+  </div>
+  <div class="drawerItem" onclick="closeDrawer(); exportData();">
+    <span class="drawerIcon">💾</span>
+    <span>Сохранить копию</span>
+  </div>
+  <div class="drawerItem" onclick="closeDrawer(); document.getElementById('importFile').click();">
+    <span class="drawerIcon">📂</span>
+    <span>Восстановить из файла</span>
+  </div>
+  <div class="drawerItem drawerDanger" onclick="closeDrawer(); resetAll();">
+    <span class="drawerIcon">🗑️</span>
+    <span>Очистить все данные</span>
+  </div>
+</div>
+
 <div id="app">
   <header>
     <div class="headerTop">
+      <button id="menuBtn" onclick="openDrawer()">☰</button>
       <h1>Точки забора</h1>
-      <button id="statsBtn" onclick="openStatsModal()">📊 Статистика</button>
+      <div style="width:38px"></div>
     </div>
     <p class="sub">Тапни рядом с заведением на карте. Если поблизости уже есть точки — предложу выбрать нужную или добавить новую (пригодится для фудкортов и ТЦ, где несколько заведений рядом).</p>
   </header>
@@ -221,14 +307,7 @@
     <div id="rows"></div>
   </div>
 
-  <div id="resetLink">
-    <a onclick="exportData()">Сохранить копию</a>
-    &nbsp;·&nbsp;
-    <a onclick="document.getElementById('importFile').click()">Восстановить из файла</a>
-    &nbsp;·&nbsp;
-    <a onclick="resetAll()">Очистить все данные</a>
-    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
-  </div>
+  <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
 </div>
 
 <div id="modalBg">
@@ -263,10 +342,34 @@
   </div>
 </div>
 
+<div id="settingsModalBg">
+  <div id="settingsModal">
+    <h3>Настройки</h3>
+    <p class="coords">Как отмечать точки на карте</p>
+    <div id="markerStyleOptions">
+      <div class="markerOption" data-style="circle" onclick="chooseMarkerStyle('circle')">
+        <div class="markerPreview"><div class="previewCircle">3</div></div>
+        <span>Кружок</span>
+      </div>
+      <div class="markerOption" data-style="bag" onclick="chooseMarkerStyle('bag')">
+        <div class="markerPreview">
+          <div class="bagPin" style="width:34px;">
+            <div class="bagStrap" style="border-color:var(--signal);"></div>
+            <div class="bagBody" style="background:var(--signal); box-shadow:none;">3</div>
+          </div>
+        </div>
+        <span>Сумка курьера</span>
+      </div>
+    </div>
+    <button id="settingsCloseBtn" onclick="closeSettingsModal()">Готово</button>
+  </div>
+</div>
+
 <script>
 const STORAGE_KEY = 'pickup-spots-geo';
 const VISITS_KEY = 'pickup-visits-log'; // журнал каждого отдельного забора с датой - для статистики по дням
 const MAP_THEME_KEY = 'pickup-map-theme';
+const MARKER_STYLE_KEY = 'pickup-marker-style'; // 'circle' или 'bag'
 const CLUSTER_RADIUS_M = 40; // если тап ближе этого расстояния к точке - засчитываем ей же
 let spots = [];
 let visitsLog = []; // [{ spotId, ts }]
@@ -325,6 +428,18 @@ function sizeForCount(count, max){
 function makeIcon(spot, max){
   const size = sizeForCount(spot.count, max);
   const color = colorForCount(spot.count, max);
+  const style = localStorage.getItem(MARKER_STYLE_KEY) || 'circle';
+
+  if(style === 'bag'){
+    const w = size;
+    const h = Math.round(size * 1.2);
+    const html = `<div class="bagPin" style="width:${w}px;">
+      <div class="bagStrap" style="border-color:${color};"></div>
+      <div class="bagBody" style="background:${color}; box-shadow:0 0 ${size*0.4}px ${color}66; font-size:${size*0.38}px;">${spot.count}</div>
+    </div>`;
+    return L.divIcon({ html, className: '', iconSize: [w, h], iconAnchor: [w/2, h] });
+  }
+
   const html = `<div class="pinDiv" style="width:${size}px;height:${size}px;background:${color};box-shadow:0 0 ${size*0.5}px ${color}66;font-size:${size*0.4}px;">${spot.count}</div>`;
   return L.divIcon({ html, className: '', iconSize: [size, size], iconAnchor: [size/2, size/2] });
 }
@@ -393,6 +508,33 @@ function renderAll(){
   }
   const total = spots.reduce((a,s) => a + s.count, 0);
   document.getElementById('totalCount').textContent = total ? `всего заборов: ${total}` : '';
+}
+
+function openSettingsModal(){
+  const current = localStorage.getItem(MARKER_STYLE_KEY) || 'circle';
+  document.querySelectorAll('.markerOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.style === current);
+  });
+  document.getElementById('settingsModalBg').classList.add('show');
+}
+function closeSettingsModal(){
+  document.getElementById('settingsModalBg').classList.remove('show');
+}
+function chooseMarkerStyle(style){
+  localStorage.setItem(MARKER_STYLE_KEY, style);
+  document.querySelectorAll('.markerOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.style === style);
+  });
+  renderAll();
+}
+
+function openDrawer(){
+  document.getElementById('sideDrawer').classList.add('show');
+  document.getElementById('drawerOverlay').classList.add('show');
+}
+function closeDrawer(){
+  document.getElementById('sideDrawer').classList.remove('show');
+  document.getElementById('drawerOverlay').classList.remove('show');
 }
 
 function openStatsModal(){
