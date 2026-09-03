@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Точки забора заказов</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#14171c">
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Точки забора">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
@@ -15,15 +15,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root{
-    --asphalt: #14171c;
-    --asphalt-2: #1c2028;
-    --card: #20242c;
-    --line: #2c313c;
-    --text: #eef0f3;
-    --text-dim: #8b93a1;
-    --signal: #ffb020;
-    --signal-dim: #7a5619;
-    --cold: #4fb6c9;
+    --asphalt: #f4f6f5;
+    --asphalt-2: #ffffff;
+    --card: #ffffff;
+    --line: #e2e6e4;
+    --text: #14171c;
+    --text-dim: #6b7280;
+    --signal: #00a97b;
+    --signal-dim: #e2f7ef;
+    --signal-text: #ffffff;
+    --cold: #2f8fd6;
+    --danger: #e5484d;
+    --danger-dim: #fde8e8;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
   html,body{margin:0;padding:0;height:100%;background:var(--asphalt);color:var(--text);
@@ -67,11 +70,11 @@
 
 
   .pinDiv{display:flex; align-items:center; justify-content:center; border-radius:50%;
-    font-weight:800; color:#14171c; border:2px solid rgba(255,255,255,0.35);}
+    font-weight:800; color:var(--signal-text); border:2px solid rgba(255,255,255,0.6);}
 
   .myLocationDot{
     width:16px; height:16px; border-radius:50%; background:var(--cold);
-    border:3px solid #14171c; box-shadow:0 0 0 3px rgba(79,182,201,0.35);
+    border:3px solid #ffffff; box-shadow:0 0 0 3px rgba(47,143,214,0.35);
     position:relative;
   }
   .myLocationDot::after{
@@ -100,7 +103,7 @@
   .row .n{font-size:12.5px; color:var(--text-dim); min-width:60px; text-align:right;}
   .row button{background:var(--signal-dim); color:var(--signal); border:none; border-radius:8px;
     width:28px; height:28px; font-size:15px; font-weight:700; cursor:pointer;}
-  .row button.minus{background:#3a2020; color:var(--danger, #e85d5d);}
+  .row button.minus{background:var(--danger-dim); color:var(--danger);}
   .row .del{background:transparent; color:var(--text-dim); font-size:13px; width:22px;}
   .empty{color:var(--text-dim); font-size:13px; text-align:center; padding:16px 10px;}
 
@@ -117,7 +120,7 @@
   #modalBtns{display:flex; gap:10px; margin-top:14px;}
   #modalBtns button{flex:1; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
   #cancelBtn{background:var(--line); color:var(--text);}
-  #saveBtn{background:var(--signal); color:#14171c;}
+  #saveBtn{background:var(--signal); color:var(--signal-text);}
 
   #choiceModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
     align-items:flex-end; justify-content:center; z-index:1000;}
@@ -137,7 +140,7 @@
   .choiceCount{font-size:12px; color:var(--text-dim); flex-shrink:0;}
   #choiceBtns{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
   #choiceBtns button{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
-  #choiceNewBtn{background:var(--signal); color:#14171c;}
+  #choiceNewBtn{background:var(--signal); color:var(--signal-text);}
   #choiceCancelBtn{background:var(--line); color:var(--text);}
 
   #statsModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
@@ -180,7 +183,7 @@
   .markerOption.active{border-color:var(--signal);}
   .markerPreview{height:44px; display:flex; align-items:center; justify-content:center;}
   .previewCircle{
-    width:34px; height:34px; border-radius:50%; background:var(--signal); color:#14171c;
+    width:34px; height:34px; border-radius:50%; background:var(--signal); color:var(--signal-text);
     display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;
     border:2px solid rgba(255,255,255,0.35);
   }
@@ -192,7 +195,7 @@
   .themeOption.active{border-color:var(--signal);}
 
   #settingsCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
-    font-weight:700; cursor:pointer; background:var(--signal); color:#14171c;}
+    font-weight:700; cursor:pointer; background:var(--signal); color:var(--signal-text);}
 
   /* значок-сумка курьера для точек на карте */
   .bagPin{display:flex; flex-direction:column; align-items:center; position:relative;}
@@ -202,7 +205,7 @@
   }
   .bagBody{
     width:100%; aspect-ratio:1/0.85; border-radius:7px; display:flex; align-items:center;
-    justify-content:center; font-weight:800; color:#14171c; border:2px solid rgba(255,255,255,0.35);
+    justify-content:center; font-weight:800; color:var(--signal-text); border:2px solid rgba(255,255,255,0.35);
   }
 
   #drawerOverlay{
@@ -229,7 +232,7 @@
   }
   .drawerItem:active{background:var(--asphalt-2);}
   .drawerIcon{font-size:18px; width:22px; text-align:center; flex-shrink:0;}
-  .drawerDanger{color:var(--danger, #e85d5d); margin-top:auto; border-top:1px solid var(--line);}
+  .drawerDanger{color:var(--danger); margin-top:auto; border-top:1px solid var(--line);}
 
   #placeSearchWrap{position:relative; margin:8px 14px 0; flex-shrink:0;}
   #placeSearchInput{
@@ -422,7 +425,7 @@ function chooseMapTheme(theme){
   });
 }
 
-applyMapTheme((localStorage.getItem(MAP_THEME_KEY) || 'dark') === 'dark');
+applyMapTheme((localStorage.getItem(MAP_THEME_KEY) || 'light') === 'dark');
 
 function toggleMapFullscreen(){
   const mapOuter = document.getElementById('mapOuter');
@@ -441,7 +444,7 @@ function distMeters(lat1, lng1, lat2, lng2){
 
 function colorForCount(count, max){
   const t = max <= 1 ? 0 : Math.min(1, (count - 1) / (max - 1 || 1));
-  const c1 = [79, 182, 201], c2 = [255, 176, 32];
+  const c1 = [47, 143, 214], c2 = [0, 169, 123]; // --cold -> --signal
   const r = Math.round(c1[0] + (c2[0]-c1[0])*t);
   const g = Math.round(c1[1] + (c2[1]-c1[1])*t);
   const b = Math.round(c1[2] + (c2[2]-c1[2])*t);
