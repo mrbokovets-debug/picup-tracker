@@ -96,15 +96,23 @@
   #searchInput:focus{border-color:var(--signal);}
   #searchInput::placeholder{color:var(--text-dim);}
   .listTitle{font-size:12px; color:var(--text-dim); margin:6px 2px 8px; display:flex; justify-content:space-between;}
-  .row{display:flex; align-items:center; gap:10px; background:var(--card);
+  .row{display:flex; flex-direction:column; gap:5px; background:var(--card);
     border:1px solid var(--line); border-radius:10px; padding:9px 12px; margin-bottom:7px;}
+  .rowTop{display:flex; align-items:center; gap:10px;}
   .row .dot{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
   .row .name{flex:1; font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .row .n{font-size:12.5px; color:var(--text-dim); min-width:60px; text-align:right;}
+  .rowWait{font-size:11px; color:var(--text-dim); margin-left:20px;}
+  .rowBtns{display:flex; align-items:center; gap:6px; justify-content:flex-end;}
   .row button{background:var(--signal-dim); color:var(--signal); border:none; border-radius:8px;
-    width:28px; height:28px; font-size:15px; font-weight:700; cursor:pointer;}
+    width:28px; height:28px; font-size:15px; font-weight:700; cursor:pointer; flex-shrink:0;}
   .row button.minus{background:var(--danger-dim); color:var(--danger);}
   .row .del{background:transparent; color:var(--text-dim); font-size:13px; width:22px;}
+  .row .arriveBtn{
+    width:auto; height:28px; padding:0 10px; font-size:11.5px; font-weight:700;
+    background:var(--card); color:var(--signal); border:1.5px solid var(--signal);
+    margin-right:auto;
+  }
   .empty{color:var(--text-dim); font-size:13px; text-align:center; padding:16px 10px;}
 
   #modalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
@@ -131,13 +139,19 @@
   #choiceModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 12px;}
   #choiceList{display:flex; flex-direction:column; gap:8px;}
   .choiceRow{
-    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    display:flex; flex-direction:column; gap:6px;
     background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px;
     padding:12px 14px; cursor:pointer;
   }
   .choiceRow:active{background:var(--signal-dim);}
+  .choiceMain{display:flex; justify-content:space-between; align-items:center; gap:10px;}
   .choiceName{font-size:14px; font-weight:600; color:var(--text);}
   .choiceCount{font-size:12px; color:var(--text-dim); flex-shrink:0;}
+  .choiceWait{font-size:11px; color:var(--text-dim);}
+  .choiceArriveBtn{
+    align-self:flex-start; background:none; border:1.5px solid var(--signal); color:var(--signal);
+    border-radius:7px; padding:5px 10px; font-size:11.5px; font-weight:700; cursor:pointer; margin-top:2px;
+  }
   #choiceBtns{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
   #choiceBtns button{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
   #choiceNewBtn{background:var(--signal); color:var(--signal-text);}
@@ -166,6 +180,13 @@
   #statsCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
     font-weight:700; cursor:pointer; background:var(--line); color:var(--text); margin-top:8px;}
   .statsEmpty{color:var(--text-dim); font-size:13px; text-align:center; padding:20px 10px;}
+  #waitRanking{display:flex; flex-direction:column; gap:6px;}
+  .waitRow{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--asphalt-2); border:1px solid var(--line); border-radius:9px; padding:9px 12px;
+  }
+  .waitName{font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .waitTime{font-size:12.5px; font-weight:700; color:var(--signal); flex-shrink:0;}
 
   #settingsModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
     align-items:flex-end; justify-content:center; z-index:1000;}
@@ -207,6 +228,22 @@
     width:100%; aspect-ratio:1/0.85; border-radius:7px; display:flex; align-items:center;
     justify-content:center; font-weight:800; color:var(--signal-text); border:2px solid rgba(255,255,255,0.35);
   }
+
+  #arrivalBar{
+    position:fixed; top:0; left:0; right:0; z-index:1800;
+    background:var(--signal); color:#ffffff; padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
+    display:none; flex-direction:column; align-items:center; gap:8px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.25);
+  }
+  #arrivalBar.show{display:flex;}
+  #arrivalText{font-size:14px; font-weight:700;}
+  #arrivalTime{font-size:22px; font-weight:800; letter-spacing:0.02em;}
+  .arrivalBtns{display:flex; gap:10px; width:100%; max-width:400px;}
+  .arrivalBtns button{
+    flex:1; padding:10px; border-radius:9px; border:none; font-size:13px; font-weight:700; cursor:pointer;
+  }
+  #arrivalDoneBtn{background:#ffffff; color:var(--signal);}
+  #arrivalCancelBtn{background:rgba(255,255,255,0.2); color:#ffffff;}
 
   #drawerOverlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1500;
@@ -265,6 +302,15 @@
 </style>
 </head>
 <body>
+
+<div id="arrivalBar">
+  <div id="arrivalText">⏱ Ждём заказ: <span id="arrivalSpotName"></span></div>
+  <div id="arrivalTime">00:00</div>
+  <div class="arrivalBtns">
+    <button id="arrivalCancelBtn" onclick="cancelArrival()">Отмена</button>
+    <button id="arrivalDoneBtn" onclick="completeArrival()">✅ Получил заказ</button>
+  </div>
+</div>
 
 <div id="drawerOverlay" onclick="closeDrawer()"></div>
 <div id="sideDrawer">
@@ -397,6 +443,9 @@ const CLUSTER_RADIUS_M = 40; // если тап ближе этого расст
 let spots = [];
 let visitsLog = []; // [{ spotId, ts }]
 let pendingLatLng = null;
+const ARRIVAL_TIMER_KEY = 'pickup-active-arrival';
+let activeArrival = null; // { spotId, spotName, startTs }
+let arrivalInterval = null;
 let markers = {}; // id -> leaflet marker
 
 // Стартовая точка - примерное местоположение, потом попробуем уточнить через GPS браузера
@@ -525,16 +574,24 @@ function renderAll(){
   } else if(filtered.length === 0){
     rowsEl.innerHTML = '<div class="empty">Ничего не найдено по запросу «' + escapeHtml(query) + '»</div>';
   } else {
-    rowsEl.innerHTML = filtered.map(s => `
+    rowsEl.innerHTML = filtered.map(s => {
+      const avgWait = (s.waitCount > 0) ? formatDuration(Math.round(s.waitTotalSec / s.waitCount)) : null;
+      return `
       <div class="row">
-        <div class="dot" style="background:${colorForCount(s.count, max)}"></div>
-        <div class="name">${escapeHtml(s.name)}</div>
-        <div class="n">${s.count} раз${plural(s.count)}</div>
-        <button class="minus" onclick="unbump('${s.id}')">−1</button>
-        <button onclick="bump('${s.id}')">+1</button>
-        <button class="del" onclick="removeSpot('${s.id}')">✕</button>
+        <div class="rowTop">
+          <div class="dot" style="background:${colorForCount(s.count, max)}"></div>
+          <div class="name">${escapeHtml(s.name)}</div>
+          <div class="n">${s.count} раз${plural(s.count)}</div>
+        </div>
+        ${avgWait ? `<div class="rowWait">⏱ в среднем ждёшь тут: ${avgWait}</div>` : ''}
+        <div class="rowBtns">
+          <button class="arriveBtn" onclick="startArrival('${s.id}')" title="Отметить прибытие">⏱ Прибыл</button>
+          <button class="minus" onclick="unbump('${s.id}')">−1</button>
+          <button onclick="bump('${s.id}')">+1</button>
+          <button class="del" onclick="removeSpot('${s.id}')">✕</button>
+        </div>
       </div>
-    `).join('');
+    `}).join('');
   }
   const total = spots.reduce((a,s) => a + s.count, 0);
   document.getElementById('totalCount').textContent = total ? `всего заборов: ${total}` : '';
@@ -640,7 +697,27 @@ function renderStats(){
     </div>
   `;
 
-  body.innerHTML = cardsHtml + chartHtml;
+  const withWait = spots.filter(s => s.waitCount > 0)
+    .map(s => ({ name: s.name, avg: Math.round(s.waitTotalSec / s.waitCount), n: s.waitCount }))
+    .sort((a, b) => b.avg - a.avg)
+    .slice(0, 5);
+
+  const waitHtml = withWait.length > 0 ? `
+    <div class="statsChartTitle" style="margin-top:18px;">Дольше всего ждёшь тут</div>
+    <div id="waitRanking">
+      ${withWait.map(w => `
+        <div class="waitRow">
+          <span class="waitName">${escapeHtml(w.name)}</span>
+          <span class="waitTime">${formatDuration(w.avg)}</span>
+        </div>
+      `).join('')}
+    </div>
+  ` : `
+    <div class="statsChartTitle" style="margin-top:18px;">Время ожидания</div>
+    <div class="statsEmpty" style="padding:10px 0;">Пока нет данных. Нажимай "⏱ Прибыл" при заказе, чтобы начать замерять.</div>
+  `;
+
+  body.innerHTML = cardsHtml + chartHtml + waitHtml;
 }
 
 function plural(n){
@@ -652,6 +729,95 @@ function plural(n){
 function escapeHtml(str){
   const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
 }
+
+// --- Учёт времени ожидания: "Прибыл" -> "Получил заказ" ---
+function formatDuration(totalSec){
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  if(m === 0) return `${s} сек`;
+  return `${m} мин ${s} сек`;
+}
+
+function formatTimer(totalSec){
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function startArrival(spotId){
+  const s = spots.find(sp => sp.id === spotId);
+  if(!s) return;
+  if(activeArrival){
+    if(activeArrival.spotId === spotId) return; // уже идёт для этой же точки
+    if(!confirm(`Уже идёт отсчёт для «${activeArrival.spotName}». Начать заново для «${s.name}»? Прошлый отсчёт не будет засчитан.`)) return;
+  }
+  activeArrival = { spotId, spotName: s.name, startTs: Date.now() };
+  try{ localStorage.setItem(ARRIVAL_TIMER_KEY, JSON.stringify(activeArrival)); }catch(e){}
+  showArrivalBar();
+}
+
+function showArrivalBar(){
+  if(!activeArrival) return;
+  document.getElementById('arrivalSpotName').textContent = activeArrival.spotName;
+  document.getElementById('arrivalBar').classList.add('show');
+  updateArrivalTimerDisplay();
+  clearInterval(arrivalInterval);
+  arrivalInterval = setInterval(updateArrivalTimerDisplay, 1000);
+}
+
+function updateArrivalTimerDisplay(){
+  if(!activeArrival) return;
+  const elapsed = Math.floor((Date.now() - activeArrival.startTs) / 1000);
+  document.getElementById('arrivalTime').textContent = formatTimer(elapsed);
+}
+
+function hideArrivalBar(){
+  document.getElementById('arrivalBar').classList.remove('show');
+  clearInterval(arrivalInterval);
+  arrivalInterval = null;
+}
+
+function cancelArrival(){
+  activeArrival = null;
+  localStorage.removeItem(ARRIVAL_TIMER_KEY);
+  hideArrivalBar();
+}
+
+function completeArrival(){
+  if(!activeArrival) return;
+  const elapsedSec = Math.max(1, Math.floor((Date.now() - activeArrival.startTs) / 1000));
+  const s = spots.find(sp => sp.id === activeArrival.spotId);
+  const spotName = activeArrival.spotName;
+  localStorage.removeItem(ARRIVAL_TIMER_KEY);
+  hideArrivalBar();
+  activeArrival = null;
+
+  if(!s){ return; } // точку успели удалить, пока шёл отсчёт
+
+  s.waitTotalSec = (s.waitTotalSec || 0) + elapsedSec;
+  s.waitCount = (s.waitCount || 0) + 1;
+  const avgSec = Math.round(s.waitTotalSec / s.waitCount);
+
+  s.count += 1;
+  s.lastVisit = new Date().toISOString();
+  visitsLog.push({ spotId: s.id, ts: s.lastVisit });
+  persist();
+  persistVisits();
+  renderAll();
+
+  alert(`⏱️ Ждал: ${formatDuration(elapsedSec)}\n\nСреднее ожидание в «${spotName}»: ${formatDuration(avgSec)}`);
+}
+
+// восстанавливаем незавершённый отсчёт, если приложение закрыли во время ожидания
+(function restoreArrival(){
+  try{
+    const raw = localStorage.getItem(ARRIVAL_TIMER_KEY);
+    if(raw){
+      activeArrival = JSON.parse(raw);
+      showArrivalBar();
+    }
+  }catch(e){}
+})();
 
 function bump(id){
   const s = spots.find(s => s.id === id);
@@ -720,15 +886,28 @@ function openChoiceModal(lat, lng, nearby, prefillName){
   pendingLatLng = { lat, lng };
   pendingPrefillName = prefillName || null;
   const box = document.getElementById('choiceList');
-  box.innerHTML = nearby.map(s => `
+  box.innerHTML = nearby.map(s => {
+    const avgWait = (s.waitCount > 0) ? formatDuration(Math.round(s.waitTotalSec / s.waitCount)) : null;
+    return `
     <div class="choiceRow" data-id="${s.id}">
-      <span class="choiceName">${escapeHtml(s.name)}</span>
-      <span class="choiceCount">${s.count} раз${plural(s.count)}</span>
+      <div class="choiceMain">
+        <span class="choiceName">${escapeHtml(s.name)}</span>
+        <span class="choiceCount">${s.count} раз${plural(s.count)}</span>
+      </div>
+      ${avgWait ? `<div class="choiceWait">⏱ в среднем: ${avgWait}</div>` : ''}
+      <button class="choiceArriveBtn" data-arrive-id="${s.id}">⏱ Отметить прибытие</button>
     </div>
-  `).join('');
+  `}).join('');
   box.querySelectorAll('.choiceRow').forEach(el => {
     el.addEventListener('click', () => {
       bump(el.dataset.id);
+      closeChoiceModal();
+    });
+  });
+  box.querySelectorAll('.choiceArriveBtn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      startArrival(btn.dataset.arriveId);
       closeChoiceModal();
     });
   });
