@@ -64,9 +64,10 @@
   }
   #modeBadge{
     position:absolute; left:10px; top:10px; z-index:400; background:rgba(20,23,28,0.85);
-    color:var(--text-dim); font-size:11px; padding:6px 10px; border-radius:8px;
-    border:1px solid var(--line); pointer-events:none;
+    color:#ffffff; font-size:11px; padding:6px 10px; border-radius:8px;
+    border:1px solid var(--line); pointer-events:none; display:none;
   }
+  #modeBadge:not(:empty){display:block;}
 
 
   .pinDiv{display:flex; align-items:center; justify-content:center; border-radius:50%;
@@ -358,7 +359,7 @@
 
   <div id="mapOuter">
     <div id="map"></div>
-    <div id="modeBadge">Обычная карта</div>
+    <div id="modeBadge"></div>
     <button id="fullscreenBtn" title="На весь экран" onclick="toggleMapFullscreen()">⛶</button>
     <button id="locateBtn" title="Найти меня">📍</button>
   </div>
@@ -1152,11 +1153,11 @@ document.getElementById('locateBtn').addEventListener('click', () => {
       map.setView([latitude, longitude], 16);
       showMyLocationMarker(latitude, longitude);
       document.getElementById('modeBadge').textContent = 'Твоё местоположение';
-      setTimeout(() => document.getElementById('modeBadge').textContent = 'Обычная карта', 2000);
+      setTimeout(() => document.getElementById('modeBadge').textContent = '', 2000);
     },
     (err) => {
       document.getElementById('modeBadge').textContent = 'Доступ к GPS не дан';
-      setTimeout(() => document.getElementById('modeBadge').textContent = 'Обычная карта', 2000);
+      setTimeout(() => document.getElementById('modeBadge').textContent = '', 2000);
     },
     { enableHighAccuracy: true, timeout: 8000 }
   );
