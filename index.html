@@ -219,6 +219,55 @@
   #settingsCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
     font-weight:700; cursor:pointer; background:var(--signal); color:var(--signal-text);}
 
+  /* --- История --- */
+  #historyModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #historyModalBg.show{display:flex;}
+  #historyModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line); max-height:85vh; overflow-y:auto;}
+  #historyModal h3{margin:0 0 6px; font-size:16px;}
+  #historyModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 14px;}
+  .historyDayHeader{font-size:11.5px; font-weight:700; color:var(--text-dim); margin:14px 0 6px; text-transform:uppercase;}
+  .historyDayHeader:first-child{margin-top:0;}
+  .historyRow{
+    display:flex; align-items:center; gap:10px; background:var(--asphalt-2);
+    border:1px solid var(--line); border-radius:9px; padding:9px 12px; margin-bottom:6px;
+  }
+  .historyTime{font-size:12px; color:var(--text-dim); flex-shrink:0; width:42px;}
+  .historyName{flex:1; font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .historyWait{font-size:10.5px; color:var(--text-dim); flex-shrink:0;}
+  .historyUndo{
+    background:var(--danger-dim); color:var(--danger); border:none; border-radius:7px;
+    padding:5px 9px; font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0;
+  }
+  #historyCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
+    font-weight:700; cursor:pointer; background:var(--line); color:var(--text); margin-top:10px;}
+
+  /* --- Время до заведения --- */
+  #routeModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #routeModalBg.show{display:flex;}
+  #routeModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line); max-height:85vh; overflow-y:auto;}
+  #routeModal h3{margin:0 0 6px; font-size:16px;}
+  #routeModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 14px;}
+  #routeNewBtn{
+    width:100%; padding:13px; border-radius:10px; border:none; font-size:14.5px; font-weight:700;
+    cursor:pointer; background:var(--signal); color:var(--signal-text); margin-bottom:14px;
+  }
+  .routeActiveRow{
+    display:flex; align-items:center; gap:10px; background:var(--asphalt-2);
+    border:1px solid var(--line); border-radius:10px; padding:11px 12px; margin-bottom:8px;
+  }
+  .routeActiveTime{font-size:16px; font-weight:800; color:var(--signal); flex:1;}
+  .routeArriveBtn{
+    background:var(--signal); color:var(--signal-text); border:none; border-radius:8px;
+    padding:8px 12px; font-size:12.5px; font-weight:700; cursor:pointer;
+  }
+  #routeAvg{font-size:12.5px; color:var(--text-dim); text-align:center; margin:10px 0 14px;}
+  #routeCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
+    font-weight:700; cursor:pointer; background:var(--line); color:var(--text);}
+
   /* значок-сумка курьера для точек на карте */
   .bagPin{display:flex; flex-direction:column; align-items:center; position:relative;}
   .bagStrap{
@@ -270,6 +319,11 @@
   }
   .drawerItem:active{background:var(--asphalt-2);}
   .drawerIcon{font-size:18px; width:22px; text-align:center; flex-shrink:0;}
+  .drawerBadge{
+    margin-left:auto; background:var(--signal); color:#fff; font-size:11px; font-weight:800;
+    border-radius:10px; padding:2px 7px; display:none;
+  }
+  .drawerBadge:not(:empty){display:inline-block;}
   .drawerDanger{color:var(--danger); margin-top:auto; border-top:1px solid var(--line);}
 
   #placeSearchWrap{position:relative; margin:8px 14px 0; flex-shrink:0;}
@@ -322,6 +376,15 @@
   <div class="drawerItem" onclick="closeDrawer(); openStatsModal();">
     <span class="drawerIcon">📊</span>
     <span>Статистика</span>
+  </div>
+  <div class="drawerItem" onclick="closeDrawer(); openHistoryModal();">
+    <span class="drawerIcon">🕓</span>
+    <span>История</span>
+  </div>
+  <div class="drawerItem" onclick="closeDrawer(); openRouteModal();">
+    <span class="drawerIcon">🛵</span>
+    <span>Время до заведения</span>
+    <span id="routeBadge" class="drawerBadge"></span>
   </div>
   <div class="drawerItem" onclick="closeDrawer(); openSettingsModal();">
     <span class="drawerIcon">⚙️</span>
@@ -435,6 +498,26 @@
   </div>
 </div>
 
+<div id="historyModalBg">
+  <div id="historyModal">
+    <h3>История заборов</h3>
+    <p class="coords">Все отметки в хронологии. Если тапнул случайно не туда — найди запись и отмени именно её.</p>
+    <div id="historyBody"></div>
+    <button id="historyCloseBtn" onclick="closeHistoryModal()">Закрыть</button>
+  </div>
+</div>
+
+<div id="routeModalBg">
+  <div id="routeModal">
+    <h3>Время до заведения</h3>
+    <p class="coords">Жми "Заказ пришёл", когда взял заказ, и "Приехал", когда добрался до точки. Можно вести сразу несколько заказов параллельно.</p>
+    <button id="routeNewBtn" onclick="startNewRoute()">📩 Заказ пришёл</button>
+    <div id="routeActiveList"></div>
+    <div id="routeAvg"></div>
+    <button id="routeCloseBtn" onclick="closeRouteModal()">Закрыть</button>
+  </div>
+</div>
+
 <script>
 const STORAGE_KEY = 'pickup-spots-geo';
 const VISITS_KEY = 'pickup-visits-log'; // журнал каждого отдельного забора с датой - для статистики по дням
@@ -448,6 +531,12 @@ const ARRIVAL_TIMER_KEY = 'pickup-active-arrival';
 let activeArrival = null; // { spotId, spotName, startTs }
 let arrivalInterval = null;
 let markers = {}; // id -> leaflet marker
+
+const ROUTE_ACTIVE_KEY = 'pickup-route-active'; // [{ id, startTs }] - заказы в пути прямо сейчас
+const ROUTE_LOG_KEY = 'pickup-route-log'; // [{ id, startTs, endTs, durationSec }] - завершённые доезды
+let routeActive = [];
+let routeLog = [];
+let routeInterval = null;
 
 // Стартовая точка - примерное местоположение, потом попробуем уточнить через GPS браузера
 const DEFAULT_CENTER = [39.49061425228292, -0.34876301013819333];
@@ -533,6 +622,15 @@ function loadSpots(){
     const rawVisits = localStorage.getItem(VISITS_KEY);
     visitsLog = rawVisits ? JSON.parse(rawVisits) : [];
   }catch(e){ visitsLog = []; }
+  try{
+    const rawRouteActive = localStorage.getItem(ROUTE_ACTIVE_KEY);
+    routeActive = rawRouteActive ? JSON.parse(rawRouteActive) : [];
+  }catch(e){ routeActive = []; }
+  try{
+    const rawRouteLog = localStorage.getItem(ROUTE_LOG_KEY);
+    routeLog = rawRouteLog ? JSON.parse(rawRouteLog) : [];
+  }catch(e){ routeLog = []; }
+  updateRouteBadge();
   renderAll();
   if(spots.length){
     const group = L.featureGroup(Object.values(markers));
@@ -627,6 +725,169 @@ function openDrawer(){
 function closeDrawer(){
   document.getElementById('sideDrawer').classList.remove('show');
   document.getElementById('drawerOverlay').classList.remove('show');
+}
+
+// --- История заборов с точечной отменой ---
+// --- Время от получения заказа до приезда в заведение (несколько параллельно) ---
+function persistRouteActive(){
+  try{ localStorage.setItem(ROUTE_ACTIVE_KEY, JSON.stringify(routeActive)); }catch(e){}
+}
+function persistRouteLog(){
+  try{ localStorage.setItem(ROUTE_LOG_KEY, JSON.stringify(routeLog)); }catch(e){}
+}
+
+function updateRouteBadge(){
+  const badge = document.getElementById('routeBadge');
+  if(!badge) return;
+  badge.textContent = routeActive.length > 0 ? String(routeActive.length) : '';
+}
+
+function startNewRoute(){
+  routeActive.push({ id: 'route_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), startTs: Date.now() });
+  persistRouteActive();
+  updateRouteBadge();
+  renderRouteModal();
+}
+
+function markRouteArrived(routeId){
+  const idx = routeActive.findIndex(r => r.id === routeId);
+  if(idx === -1) return;
+  const route = routeActive[idx];
+  const durationSec = Math.max(1, Math.floor((Date.now() - route.startTs) / 1000));
+  routeActive.splice(idx, 1);
+  routeLog.push({ id: route.id, startTs: route.startTs, endTs: Date.now(), durationSec });
+  persistRouteActive();
+  persistRouteLog();
+  updateRouteBadge();
+  renderRouteModal();
+}
+
+function dayKeyFromTs(ts){
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function openRouteModal(){
+  renderRouteModal();
+  document.getElementById('routeModalBg').classList.add('show');
+  clearInterval(routeInterval);
+  routeInterval = setInterval(renderRouteActiveTimers, 1000);
+}
+function closeRouteModal(){
+  document.getElementById('routeModalBg').classList.remove('show');
+  clearInterval(routeInterval);
+  routeInterval = null;
+}
+
+function renderRouteActiveTimers(){
+  document.querySelectorAll('.routeActiveTime').forEach(el => {
+    const startTs = Number(el.dataset.startTs);
+    const elapsed = Math.floor((Date.now() - startTs) / 1000);
+    el.textContent = formatTimer(elapsed);
+  });
+}
+
+function renderRouteModal(){
+  const listEl = document.getElementById('routeActiveList');
+  if(routeActive.length === 0){
+    listEl.innerHTML = '';
+  } else {
+    listEl.innerHTML = routeActive.map((r, i) => `
+      <div class="routeActiveRow">
+        <span class="routeActiveTime" data-start-ts="${r.startTs}">00:00</span>
+        <span style="font-size:12px; color:var(--text-dim);">заказ ${i+1}</span>
+        <button class="routeArriveBtn" data-route-id="${r.id}">🏁 Приехал</button>
+      </div>
+    `).join('');
+    listEl.querySelectorAll('.routeArriveBtn').forEach(btn => {
+      btn.addEventListener('click', () => markRouteArrived(btn.dataset.routeId));
+    });
+    renderRouteActiveTimers();
+  }
+
+  const todayKey = dayKeyFromTs(Date.now());
+  const todayEntries = routeLog.filter(r => dayKeyFromTs(r.endTs) === todayKey);
+  const avgEl = document.getElementById('routeAvg');
+  if(todayEntries.length === 0){
+    avgEl.textContent = 'Сегодня пока нет завершённых доездов.';
+  } else {
+    const avgSec = Math.round(todayEntries.reduce((a, r) => a + r.durationSec, 0) / todayEntries.length);
+    avgEl.textContent = `Среднее время доезда сегодня: ${formatDuration(avgSec)} (доездов: ${todayEntries.length})`;
+  }
+}
+
+function openHistoryModal(){
+  renderHistory();
+  document.getElementById('historyModalBg').classList.add('show');
+}
+function closeHistoryModal(){
+  document.getElementById('historyModalBg').classList.remove('show');
+}
+
+function renderHistory(){
+  const body = document.getElementById('historyBody');
+  if(visitsLog.length === 0){
+    body.innerHTML = '<div class="statsEmpty">Пока пусто. Здесь появится список всех заборов по времени.</div>';
+    return;
+  }
+
+  const sorted = [...visitsLog].sort((a, b) => new Date(b.ts) - new Date(a.ts)).slice(0, 200);
+  const spotById = {};
+  spots.forEach(s => spotById[s.id] = s);
+
+  let lastDayLabel = null;
+  let html = '';
+  sorted.forEach(v => {
+    const d = new Date(v.ts);
+    const dayLabel = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    if(dayLabel !== lastDayLabel){
+      html += `<div class="historyDayHeader">${escapeHtml(dayLabel)}</div>`;
+      lastDayLabel = dayLabel;
+    }
+    const timeStr = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    const spot = spotById[v.spotId];
+    const spotName = spot ? spot.name : '(точка удалена)';
+    const waitStr = v.waitSec != null ? `⏱ ${formatDuration(v.waitSec)}` : '';
+    html += `
+      <div class="historyRow">
+        <span class="historyTime">${timeStr}</span>
+        <span class="historyName">${escapeHtml(spotName)}</span>
+        <span class="historyWait">${waitStr}</span>
+        <button class="historyUndo" data-visit-id="${v.id}">↩ отменить</button>
+      </div>
+    `;
+  });
+  body.innerHTML = html;
+
+  body.querySelectorAll('.historyUndo').forEach(btn => {
+    btn.addEventListener('click', () => undoVisit(btn.dataset.visitId));
+  });
+}
+
+function undoVisit(visitId){
+  const idx = visitsLog.findIndex(v => v.id === visitId);
+  if(idx === -1) return;
+  const visit = visitsLog[idx];
+  const s = spots.find(sp => sp.id === visit.spotId);
+
+  if(!confirm('Отменить эту отметку? Забор будет вычтен из точки.')) return;
+
+  if(s){
+    if(visit.waitSec != null && s.waitCount > 0){
+      s.waitTotalSec = Math.max(0, (s.waitTotalSec || 0) - visit.waitSec);
+      s.waitCount -= 1;
+    }
+    if(s.count <= 1){
+      spots = spots.filter(sp => sp.id !== s.id);
+    } else {
+      s.count -= 1;
+    }
+  }
+  visitsLog.splice(idx, 1);
+  persist();
+  persistVisits();
+  renderAll();
+  renderHistory();
 }
 
 function openStatsModal(){
@@ -801,7 +1062,7 @@ function completeArrival(){
 
   s.count += 1;
   s.lastVisit = new Date().toISOString();
-  visitsLog.push({ spotId: s.id, ts: s.lastVisit });
+  visitsLog.push({ id: makeVisitId(), spotId: s.id, ts: s.lastVisit, waitSec: elapsedSec });
   persist();
   persistVisits();
   renderAll();
@@ -820,12 +1081,16 @@ function completeArrival(){
   }catch(e){}
 })();
 
+function makeVisitId(){
+  return 'visit_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+}
+
 function bump(id){
   const s = spots.find(s => s.id === id);
   if(!s) return;
   s.count += 1;
   s.lastVisit = new Date().toISOString();
-  visitsLog.push({ spotId: id, ts: s.lastVisit });
+  visitsLog.push({ id: makeVisitId(), spotId: id, ts: s.lastVisit });
   persist();
   persistVisits();
   renderAll();
@@ -844,7 +1109,15 @@ function unbump(id){
   s.count -= 1;
   // убираем последнюю запись из журнала для этой точки, чтобы статистика оставалась верной
   for(let i = visitsLog.length - 1; i >= 0; i--){
-    if(visitsLog[i].spotId === id){ visitsLog.splice(i, 1); break; }
+    if(visitsLog[i].spotId === id){
+      const removed = visitsLog[i];
+      if(removed.waitSec != null && s.waitCount > 0){
+        s.waitTotalSec = Math.max(0, (s.waitTotalSec || 0) - removed.waitSec);
+        s.waitCount -= 1;
+      }
+      visitsLog.splice(i, 1);
+      break;
+    }
   }
   persist();
   persistVisits();
@@ -1030,15 +1303,19 @@ function closeModal(){
 function saveNewSpot(){
   const name = document.getElementById('nameInput').value.trim();
   if(!name || !pendingLatLng){ closeModal(); return; }
+  const newId = 'spot_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  const nowIso = new Date().toISOString();
   spots.push({
-    id: 'spot_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    id: newId,
     name,
     lat: pendingLatLng.lat,
     lng: pendingLatLng.lng,
     count: 1,
-    lastVisit: new Date().toISOString()
+    lastVisit: nowIso
   });
+  visitsLog.push({ id: makeVisitId(), spotId: newId, ts: nowIso });
   persist();
+  persistVisits();
   closeModal();
   renderAll();
 }
