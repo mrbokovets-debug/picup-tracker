@@ -334,13 +334,15 @@
   .drawerBadge:not(:empty){display:inline-block;}
   .drawerDanger{color:var(--danger); margin-top:auto; border-top:1px solid var(--line);}
 
-  #quickActions{display:flex; gap:10px; margin:8px 14px 0; flex-shrink:0;}
-  #quickActions button{
-    flex:1; padding:13px 8px; border-radius:12px; border:none; font-size:14px; font-weight:700;
+  #quickActions{margin:8px 14px 0; flex-shrink:0;}
+  #quickToggleBtn{
+    width:100%; padding:15px 8px; border-radius:12px; border:none; font-size:15px; font-weight:700;
     cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    background:var(--signal); color:var(--signal-text);
   }
-  #quickOrderBtn{background:var(--signal); color:var(--signal-text);}
-  #quickArriveBtn{background:var(--card); color:var(--signal); border:2px solid var(--signal) !important;}
+  #quickToggleBtn.active{
+    background:var(--card); color:var(--signal); border:2px solid var(--signal);
+  }
 
   #toast{
     position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px);
@@ -361,7 +363,7 @@
   <div id="arrivalTime">00:00</div>
   <div class="arrivalBtns">
     <button id="arrivalCancelBtn" onclick="cancelArrival()">Отмена</button>
-    <button id="arrivalDoneBtn" onclick="completeArrival()">✅ Получил заказ</button>
+    <button id="arrivalDoneBtn" onclick="completeArrival()">✅ Забрал заказ</button>
   </div>
 </div>
 
@@ -413,8 +415,7 @@
   </header>
 
   <div id="quickActions">
-    <button id="quickOrderBtn" onclick="quickOrderReceived()">📩 Получил заказ</button>
-    <button id="quickArriveBtn" onclick="quickArrived()">🏁 Прибыл</button>
+    <button id="quickToggleBtn" onclick="handleQuickToggle()">🏍️ Получил заказ</button>
   </div>
   <div id="toast"></div>
 
@@ -635,6 +636,7 @@ function loadSpots(){
     routeLog = rawRouteLog ? JSON.parse(rawRouteLog) : [];
   }catch(e){ routeLog = []; }
   updateRouteBadge();
+  updateQuickButton();
   renderAll();
   if(spots.length){
     const group = L.featureGroup(Object.values(markers));
@@ -756,11 +758,22 @@ function showToast(text){
   toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
-// --- Быстрые кнопки на главном экране: минимум тапов ---
+// --- Единая кнопка на главном экране: минимум тапов ---
+let quickBtnInterval = null;
+
+function handleQuickToggle(){
+  if(routeActive.length === 0){
+    quickOrderReceived();
+  } else {
+    quickArrived();
+  }
+}
+
 function quickOrderReceived(){
   startNewRoute();
   const n = routeActive.length;
-  showToast(n > 1 ? `📩 Таймер запущен (в пути заказов: ${n})` : '📩 Таймер запущен');
+  showToast(n > 1 ? `🏍️ Таймер запущен (в пути заказов: ${n})` : '🏍️ Таймер запущен');
+  updateQuickButton();
 }
 
 function quickArrived(){
@@ -773,7 +786,27 @@ function quickArrived(){
   const durationSec = Math.max(1, Math.floor((Date.now() - oldest.startTs) / 1000));
   markRouteArrived(oldest.id);
   showToast(`🏁 Доехал за ${formatDuration(durationSec)}`);
+  updateQuickButton();
 }
+
+function updateQuickButton(){
+  const btn = document.getElementById('quickToggleBtn');
+  if(!btn) return;
+  if(routeActive.length === 0){
+    btn.classList.remove('active');
+    btn.textContent = '🏍️ Получил заказ';
+  } else {
+    btn.classList.add('active');
+    const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
+    const elapsed = Math.floor((Date.now() - oldest.startTs) / 1000);
+    const suffix = routeActive.length > 1 ? ` (+${routeActive.length - 1})` : '';
+    btn.textContent = `🏁 Прибыл · ${formatTimer(elapsed)}${suffix}`;
+  }
+}
+
+// тикаем каждую секунду, чтобы таймер на кнопке шёл в реальном времени
+clearInterval(quickBtnInterval);
+quickBtnInterval = setInterval(updateQuickButton, 1000);
 
 function startNewRoute(){
   routeActive.push({ id: 'route_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), startTs: Date.now() });
