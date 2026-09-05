@@ -233,17 +233,19 @@
     display:flex; align-items:center; gap:10px; background:var(--asphalt-2);
     border:1px solid var(--line); border-radius:9px; padding:9px 12px; margin-bottom:6px;
   }
+  .historyRowRemove{opacity:0.75;}
   .historyTime{font-size:12px; color:var(--text-dim); flex-shrink:0; width:42px;}
+  .historyBadge{
+    font-size:11px; font-weight:800; border-radius:6px; padding:2px 6px; flex-shrink:0;
+  }
+  .historyBadgePlus{background:var(--signal-dim); color:var(--signal);}
+  .historyBadgeMinus{background:var(--danger-dim); color:var(--danger);}
   .historyName{flex:1; font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .historyWait{font-size:10.5px; color:var(--text-dim); flex-shrink:0;}
-  .historyUndo{
-    background:var(--danger-dim); color:var(--danger); border:none; border-radius:7px;
-    padding:5px 9px; font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0;
-  }
   #historyCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
     font-weight:700; cursor:pointer; background:var(--line); color:var(--text); margin-top:10px;}
 
-  /* --- Время до заведения --- */
+  /* --- Время в пути --- */
   #routeModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
     align-items:flex-end; justify-content:center; z-index:1000;}
   #routeModalBg.show{display:flex;}
@@ -264,6 +266,12 @@
     background:var(--signal); color:var(--signal-text); border:none; border-radius:8px;
     padding:8px 12px; font-size:12.5px; font-weight:700; cursor:pointer;
   }
+  #routePeriodTabs{display:flex; gap:6px; margin:14px 0 4px;}
+  .periodTab{
+    flex:1; padding:8px; border-radius:8px; border:1px solid var(--line); background:var(--asphalt-2);
+    color:var(--text-dim); font-size:12.5px; font-weight:600; cursor:pointer;
+  }
+  .periodTab.active{background:var(--signal); color:var(--signal-text); border-color:var(--signal);}
   #routeAvg{font-size:12.5px; color:var(--text-dim); text-align:center; margin:10px 0 14px;}
   #routeCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
     font-weight:700; cursor:pointer; background:var(--line); color:var(--text);}
@@ -326,31 +334,21 @@
   .drawerBadge:not(:empty){display:inline-block;}
   .drawerDanger{color:var(--danger); margin-top:auto; border-top:1px solid var(--line);}
 
-  #placeSearchWrap{position:relative; margin:8px 14px 0; flex-shrink:0;}
-  #placeSearchInput{
-    width:100%; box-sizing:border-box; padding:10px 36px 10px 12px; border-radius:10px;
-    border:1px solid var(--line); background:var(--card); color:var(--text);
-    font-size:14px; outline:none;
+  #quickActions{display:flex; gap:10px; margin:8px 14px 0; flex-shrink:0;}
+  #quickActions button{
+    flex:1; padding:13px 8px; border-radius:12px; border:none; font-size:14px; font-weight:700;
+    cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.15);
   }
-  #placeSearchInput:focus{border-color:var(--signal);}
-  #placeSearchInput::placeholder{color:var(--text-dim);}
-  #placeSearchClear{
-    position:absolute; right:10px; top:50%; transform:translateY(-50%);
-    background:none; border:none; color:var(--text-dim); font-size:16px; cursor:pointer; display:none;
+  #quickOrderBtn{background:var(--signal); color:var(--signal-text);}
+  #quickArriveBtn{background:var(--card); color:var(--signal); border:2px solid var(--signal) !important;}
+
+  #toast{
+    position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px);
+    background:#14171c; color:#ffffff; padding:11px 18px; border-radius:10px; font-size:13.5px;
+    font-weight:600; z-index:2500; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease;
+    max-width:85vw; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.3);
   }
-  #placeSearchClear.show{display:block;}
-  #placeResults{
-    position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:900;
-    background:var(--card); border:1px solid var(--line); border-radius:10px;
-    max-height:260px; overflow-y:auto; box-shadow:0 8px 20px rgba(0,0,0,0.4); display:none;
-  }
-  #placeResults.show{display:block;}
-  .placeItem{padding:10px 12px; cursor:pointer; border-bottom:1px solid var(--line);}
-  .placeItem:last-child{border-bottom:none;}
-  .placeItem:active{background:var(--asphalt-2);}
-  .placeItem .pName{font-size:13.5px; font-weight:600; color:var(--text);}
-  .placeItem .pAddr{font-size:11.5px; color:var(--text-dim); margin-top:2px;}
-  .placeLoading, .placeEmpty{padding:12px; font-size:12.5px; color:var(--text-dim); text-align:center;}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
   .leaflet-control-attribution{font-size:9px; background:rgba(20,23,28,0.7)!important; color:var(--text-dim)!important;}
   .leaflet-control-attribution a{color:var(--text-dim)!important;}
@@ -383,7 +381,7 @@
   </div>
   <div class="drawerItem" onclick="closeDrawer(); openRouteModal();">
     <span class="drawerIcon">🛵</span>
-    <span>Время до заведения</span>
+    <span>Время в пути</span>
     <span id="routeBadge" class="drawerBadge"></span>
   </div>
   <div class="drawerItem" onclick="closeDrawer(); openSettingsModal();">
@@ -414,11 +412,11 @@
     <p class="sub">Тапни рядом с заведением на карте. Если поблизости уже есть точки — предложу выбрать нужную или добавить новую (пригодится для фудкортов и ТЦ, где несколько заведений рядом).</p>
   </header>
 
-  <div id="placeSearchWrap">
-    <input id="placeSearchInput" type="text" placeholder="Найти заведение или адрес..." oninput="onPlaceSearchInput(event)">
-    <button id="placeSearchClear" onclick="clearPlaceSearch()">✕</button>
-    <div id="placeResults"></div>
+  <div id="quickActions">
+    <button id="quickOrderBtn" onclick="quickOrderReceived()">📩 Получил заказ</button>
+    <button id="quickArriveBtn" onclick="quickArrived()">🏁 Прибыл</button>
   </div>
+  <div id="toast"></div>
 
   <div id="mapOuter">
     <div id="map"></div>
@@ -501,7 +499,7 @@
 <div id="historyModalBg">
   <div id="historyModal">
     <h3>История заборов</h3>
-    <p class="coords">Все отметки в хронологии. Если тапнул случайно не туда — найди запись и отмени именно её.</p>
+    <p class="coords">Полная хроника: и добавления (+1), и отмены (−1). Если что-то пошло не так — здесь видно, где именно был случайный тап.</p>
     <div id="historyBody"></div>
     <button id="historyCloseBtn" onclick="closeHistoryModal()">Закрыть</button>
   </div>
@@ -509,10 +507,15 @@
 
 <div id="routeModalBg">
   <div id="routeModal">
-    <h3>Время до заведения</h3>
-    <p class="coords">Жми "Заказ пришёл", когда взял заказ, и "Приехал", когда добрался до точки. Можно вести сразу несколько заказов параллельно.</p>
+    <h3>Время в пути</h3>
+    <p class="coords">Кнопки "📩 Получил заказ" и "🏁 Прибыл" на главном экране запускают и останавливают этот отсчёт. Можно вести сразу несколько заказов параллельно — здесь же можно завершить любой из них вручную.</p>
     <button id="routeNewBtn" onclick="startNewRoute()">📩 Заказ пришёл</button>
     <div id="routeActiveList"></div>
+    <div id="routePeriodTabs">
+      <button class="periodTab active" data-period="day" onclick="setRoutePeriod('day')">День</button>
+      <button class="periodTab" data-period="week" onclick="setRoutePeriod('week')">Неделя</button>
+      <button class="periodTab" data-period="month" onclick="setRoutePeriod('month')">Месяц</button>
+    </div>
     <div id="routeAvg"></div>
     <button id="routeCloseBtn" onclick="closeRouteModal()">Закрыть</button>
   </div>
@@ -537,6 +540,7 @@ const ROUTE_LOG_KEY = 'pickup-route-log'; // [{ id, startTs, endTs, durationSec 
 let routeActive = [];
 let routeLog = [];
 let routeInterval = null;
+let currentRoutePeriod = 'day'; // 'day' | 'week' | 'month'
 
 // Стартовая точка - примерное местоположение, потом попробуем уточнить через GPS браузера
 const DEFAULT_CENTER = [39.49061425228292, -0.34876301013819333];
@@ -742,6 +746,35 @@ function updateRouteBadge(){
   badge.textContent = routeActive.length > 0 ? String(routeActive.length) : '';
 }
 
+// --- Всплывающее уведомление (тост) ---
+let toastTimer = null;
+function showToast(text){
+  const el = document.getElementById('toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// --- Быстрые кнопки на главном экране: минимум тапов ---
+function quickOrderReceived(){
+  startNewRoute();
+  const n = routeActive.length;
+  showToast(n > 1 ? `📩 Таймер запущен (в пути заказов: ${n})` : '📩 Таймер запущен');
+}
+
+function quickArrived(){
+  if(routeActive.length === 0){
+    showToast('Нет активных заказов в пути');
+    return;
+  }
+  // закрываем самый старый из активных (тот, что приняли раньше всех)
+  const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
+  const durationSec = Math.max(1, Math.floor((Date.now() - oldest.startTs) / 1000));
+  markRouteArrived(oldest.id);
+  showToast(`🏁 Доехал за ${formatDuration(durationSec)}`);
+}
+
 function startNewRoute(){
   routeActive.push({ id: 'route_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), startTs: Date.now() });
   persistRouteActive();
@@ -805,14 +838,41 @@ function renderRouteModal(){
     renderRouteActiveTimers();
   }
 
-  const todayKey = dayKeyFromTs(Date.now());
-  const todayEntries = routeLog.filter(r => dayKeyFromTs(r.endTs) === todayKey);
-  const avgEl = document.getElementById('routeAvg');
-  if(todayEntries.length === 0){
-    avgEl.textContent = 'Сегодня пока нет завершённых доездов.';
+  renderRouteAvgForPeriod();
+}
+
+function setRoutePeriod(period){
+  currentRoutePeriod = period;
+  document.querySelectorAll('.periodTab').forEach(el => {
+    el.classList.toggle('active', el.dataset.period === period);
+  });
+  renderRouteAvgForPeriod();
+}
+
+function renderRouteAvgForPeriod(){
+  const now = Date.now();
+  let cutoff;
+  let label;
+  if(currentRoutePeriod === 'day'){
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    cutoff = d.getTime();
+    label = 'сегодня';
+  } else if(currentRoutePeriod === 'week'){
+    cutoff = now - 7 * 86400000;
+    label = 'за 7 дней';
   } else {
-    const avgSec = Math.round(todayEntries.reduce((a, r) => a + r.durationSec, 0) / todayEntries.length);
-    avgEl.textContent = `Среднее время доезда сегодня: ${formatDuration(avgSec)} (доездов: ${todayEntries.length})`;
+    cutoff = now - 30 * 86400000;
+    label = 'за 30 дней';
+  }
+
+  const entries = routeLog.filter(r => r.endTs >= cutoff);
+  const avgEl = document.getElementById('routeAvg');
+  if(entries.length === 0){
+    avgEl.textContent = `Нет завершённых доездов (${label}).`;
+  } else {
+    const avgSec = Math.round(entries.reduce((a, r) => a + r.durationSec, 0) / entries.length);
+    avgEl.textContent = `Среднее время доезда ${label}: ${formatDuration(avgSec)} (доездов: ${entries.length})`;
   }
 }
 
@@ -827,11 +887,11 @@ function closeHistoryModal(){
 function renderHistory(){
   const body = document.getElementById('historyBody');
   if(visitsLog.length === 0){
-    body.innerHTML = '<div class="statsEmpty">Пока пусто. Здесь появится список всех заборов по времени.</div>';
+    body.innerHTML = '<div class="statsEmpty">Пока пусто. Здесь появится история всех +1 и −1 по точкам.</div>';
     return;
   }
 
-  const sorted = [...visitsLog].sort((a, b) => new Date(b.ts) - new Date(a.ts)).slice(0, 200);
+  const sorted = [...visitsLog].sort((a, b) => new Date(b.ts) - new Date(a.ts)).slice(0, 300);
   const spotById = {};
   spots.forEach(s => spotById[s.id] = s);
 
@@ -848,46 +908,20 @@ function renderHistory(){
     const spot = spotById[v.spotId];
     const spotName = spot ? spot.name : '(точка удалена)';
     const waitStr = v.waitSec != null ? `⏱ ${formatDuration(v.waitSec)}` : '';
+    const isRemove = v.type === 'remove';
+    const badge = isRemove
+      ? '<span class="historyBadge historyBadgeMinus">−1</span>'
+      : '<span class="historyBadge historyBadgePlus">+1</span>';
     html += `
-      <div class="historyRow">
+      <div class="historyRow${isRemove ? ' historyRowRemove' : ''}">
         <span class="historyTime">${timeStr}</span>
+        ${badge}
         <span class="historyName">${escapeHtml(spotName)}</span>
         <span class="historyWait">${waitStr}</span>
-        <button class="historyUndo" data-visit-id="${v.id}">↩ отменить</button>
       </div>
     `;
   });
   body.innerHTML = html;
-
-  body.querySelectorAll('.historyUndo').forEach(btn => {
-    btn.addEventListener('click', () => undoVisit(btn.dataset.visitId));
-  });
-}
-
-function undoVisit(visitId){
-  const idx = visitsLog.findIndex(v => v.id === visitId);
-  if(idx === -1) return;
-  const visit = visitsLog[idx];
-  const s = spots.find(sp => sp.id === visit.spotId);
-
-  if(!confirm('Отменить эту отметку? Забор будет вычтен из точки.')) return;
-
-  if(s){
-    if(visit.waitSec != null && s.waitCount > 0){
-      s.waitTotalSec = Math.max(0, (s.waitTotalSec || 0) - visit.waitSec);
-      s.waitCount -= 1;
-    }
-    if(s.count <= 1){
-      spots = spots.filter(sp => sp.id !== s.id);
-    } else {
-      s.count -= 1;
-    }
-  }
-  visitsLog.splice(idx, 1);
-  persist();
-  persistVisits();
-  renderAll();
-  renderHistory();
 }
 
 function openStatsModal(){
@@ -925,13 +959,21 @@ function renderStats(){
   const dayMap = {};
   days.forEach(d => dayMap[d.key] = d);
 
-  let todayCount = 0, yesterdayCount = 0, weekCount = 0;
+  let todayCount = 0, yesterdayCount = 0, weekCount = 0, totalNet = 0;
   visitsLog.forEach(v => {
+    const delta = v.type === 'remove' ? -1 : 1;
     const k = dayKey(new Date(v.ts));
-    if(k === todayKey) todayCount++;
-    if(k === yesterdayKey) yesterdayCount++;
-    if(dayMap[k]){ dayMap[k].count++; weekCount++; }
+    if(k === todayKey) todayCount += delta;
+    if(k === yesterdayKey) yesterdayCount += delta;
+    if(dayMap[k]){ dayMap[k].count += delta; weekCount += delta; }
+    totalNet += delta;
   });
+  // не даём барам и карточкам уходить в минус визуально
+  todayCount = Math.max(0, todayCount);
+  yesterdayCount = Math.max(0, yesterdayCount);
+  weekCount = Math.max(0, weekCount);
+  totalNet = Math.max(0, totalNet);
+  days.forEach(d => { d.count = Math.max(0, d.count); });
 
   const maxCount = Math.max(1, ...days.map(d => d.count));
 
@@ -940,7 +982,7 @@ function renderStats(){
       <div class="statsCard"><div class="num">${todayCount}</div><div class="lbl">сегодня</div></div>
       <div class="statsCard"><div class="num">${yesterdayCount}</div><div class="lbl">вчера</div></div>
       <div class="statsCard"><div class="num">${weekCount}</div><div class="lbl">за 7 дней</div></div>
-      <div class="statsCard"><div class="num">${visitsLog.length}</div><div class="lbl">всего</div></div>
+      <div class="statsCard"><div class="num">${totalNet}</div><div class="lbl">всего</div></div>
     </div>
   `;
 
@@ -1062,7 +1104,7 @@ function completeArrival(){
 
   s.count += 1;
   s.lastVisit = new Date().toISOString();
-  visitsLog.push({ id: makeVisitId(), spotId: s.id, ts: s.lastVisit, waitSec: elapsedSec });
+  visitsLog.push({ id: makeVisitId(), spotId: s.id, ts: s.lastVisit, waitSec: elapsedSec, type: 'add' });
   persist();
   persistVisits();
   renderAll();
@@ -1090,7 +1132,7 @@ function bump(id){
   if(!s) return;
   s.count += 1;
   s.lastVisit = new Date().toISOString();
-  visitsLog.push({ id: makeVisitId(), spotId: id, ts: s.lastVisit });
+  visitsLog.push({ id: makeVisitId(), spotId: id, ts: s.lastVisit, type: 'add' });
   persist();
   persistVisits();
   renderAll();
@@ -1107,18 +1149,20 @@ function unbump(id){
     return;
   }
   s.count -= 1;
-  // убираем последнюю запись из журнала для этой точки, чтобы статистика оставалась верной
+  // ищем последнюю ещё не "погашенную" запись добавления для этой точки, чтобы откатить статистику ожидания,
+  // но саму запись из истории не удаляем - помечаем как использованную и добавляем отдельное событие "-1"
   for(let i = visitsLog.length - 1; i >= 0; i--){
-    if(visitsLog[i].spotId === id){
-      const removed = visitsLog[i];
-      if(removed.waitSec != null && s.waitCount > 0){
-        s.waitTotalSec = Math.max(0, (s.waitTotalSec || 0) - removed.waitSec);
+    const v = visitsLog[i];
+    if(v.spotId === id && v.type !== 'remove' && !v.reversed){
+      if(v.waitSec != null && s.waitCount > 0){
+        s.waitTotalSec = Math.max(0, (s.waitTotalSec || 0) - v.waitSec);
         s.waitCount -= 1;
       }
-      visitsLog.splice(i, 1);
+      v.reversed = true;
       break;
     }
   }
+  visitsLog.push({ id: makeVisitId(), spotId: id, ts: new Date().toISOString(), type: 'remove' });
   persist();
   persistVisits();
   renderAll();
@@ -1199,93 +1243,6 @@ function choiceAddNew(){
   openModal(lat, lng, prefillName);
 }
 
-// --- Поиск реальных заведений/адресов через Nominatim (OpenStreetMap), бесплатно, без ключей ---
-let placeSearchTimer = null;
-let placeSearchAbort = null;
-
-function onPlaceSearchInput(e){
-  const q = e.target.value.trim();
-  document.getElementById('placeSearchClear').classList.toggle('show', q.length > 0);
-  clearTimeout(placeSearchTimer);
-  if(q.length < 3){
-    hidePlaceResults();
-    return;
-  }
-  showPlaceLoading();
-  // Nominatim просит не чаще 1 запроса в секунду - ждём паузу в наборе текста
-  placeSearchTimer = setTimeout(() => runPlaceSearch(q), 600);
-}
-
-function clearPlaceSearch(){
-  document.getElementById('placeSearchInput').value = '';
-  document.getElementById('placeSearchClear').classList.remove('show');
-  hidePlaceResults();
-}
-
-function showPlaceLoading(){
-  const box = document.getElementById('placeResults');
-  box.innerHTML = '<div class="placeLoading">Ищу...</div>';
-  box.classList.add('show');
-}
-
-function hidePlaceResults(){
-  const box = document.getElementById('placeResults');
-  box.classList.remove('show');
-  box.innerHTML = '';
-}
-
-async function runPlaceSearch(query){
-  if(placeSearchAbort) placeSearchAbort.abort();
-  placeSearchAbort = new AbortController();
-  try{
-    const center = map.getCenter();
-    // немного смещаем поиск в сторону текущей области карты, но не ограничиваем страной/регионом жёстко
-    const viewbox = [center.lng-0.15, center.lat+0.15, center.lng+0.15, center.lat-0.15].join(',');
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1&accept-language=ru&viewbox=${viewbox}`;
-    const res = await fetch(url, { signal: placeSearchAbort.signal });
-    const data = await res.json();
-    renderPlaceResults(data);
-  }catch(e){
-    if(e.name !== 'AbortError'){
-      const box = document.getElementById('placeResults');
-      box.innerHTML = '<div class="placeEmpty">Не получилось найти. Проверь интернет.</div>';
-      box.classList.add('show');
-    }
-  }
-}
-
-function renderPlaceResults(results){
-  const box = document.getElementById('placeResults');
-  if(!results || results.length === 0){
-    box.innerHTML = '<div class="placeEmpty">Ничего не найдено</div>';
-    box.classList.add('show');
-    return;
-  }
-  box.innerHTML = results.map((r, i) => {
-    const shortName = (r.display_name || '').split(',')[0];
-    const rest = (r.display_name || '').split(',').slice(1, 4).join(',').trim();
-    return `<div class="placeItem" data-idx="${i}">
-      <div class="pName">${escapeHtml(shortName)}</div>
-      <div class="pAddr">${escapeHtml(rest)}</div>
-    </div>`;
-  }).join('');
-  box.classList.add('show');
-
-  box.querySelectorAll('.placeItem').forEach(el => {
-    el.addEventListener('click', () => {
-      const idx = parseInt(el.dataset.idx, 10);
-      const r = results[idx];
-      const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
-      const shortName = (r.display_name || '').split(',')[0];
-      map.setView([lat, lng], 17);
-      hidePlaceResults();
-      document.getElementById('placeSearchInput').value = '';
-      document.getElementById('placeSearchClear').classList.remove('show');
-      handleMapTap(lat, lng, shortName);
-    });
-  });
-}
-
 function openModal(lat, lng, prefillName){
   document.getElementById('nameInput').value = prefillName || '';
   document.getElementById('coordsText').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
@@ -1313,7 +1270,7 @@ function saveNewSpot(){
     count: 1,
     lastVisit: nowIso
   });
-  visitsLog.push({ id: makeVisitId(), spotId: newId, ts: nowIso });
+  visitsLog.push({ id: makeVisitId(), spotId: newId, ts: nowIso, type: 'add' });
   persist();
   persistVisits();
   closeModal();
@@ -1322,7 +1279,7 @@ function saveNewSpot(){
 
 function exportData(){
   if(spots.length === 0){ alert('Пока нечего сохранять - список точек пуст.'); return; }
-  const payload = { spots, visitsLog };
+  const payload = { spots, visitsLog, routeLog };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
