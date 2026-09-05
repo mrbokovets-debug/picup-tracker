@@ -225,7 +225,16 @@
   #historyModalBg.show{display:flex;}
   #historyModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
     padding:20px; border-top:1px solid var(--line); max-height:85vh; overflow-y:auto;}
-  #historyModal h3{margin:0 0 6px; font-size:16px;}
+  #historyModal h3{margin:0; font-size:16px;}
+  .stickyHeader{
+    position:sticky; top:0; z-index:5; background:var(--card);
+    display:flex; align-items:center; justify-content:space-between;
+    padding-bottom:8px; margin-bottom:2px;
+  }
+  .modalXBtn{
+    background:var(--asphalt-2); border:1px solid var(--line); color:var(--text-dim);
+    width:30px; height:30px; border-radius:50%; font-size:14px; cursor:pointer; flex-shrink:0;
+  }
   #historyModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 14px;}
   .historyDayHeader{font-size:11.5px; font-weight:700; color:var(--text-dim); margin:14px 0 6px; text-transform:uppercase;}
   .historyDayHeader:first-child{margin-top:0;}
@@ -242,8 +251,6 @@
   .historyBadgeMinus{background:var(--danger-dim); color:var(--danger);}
   .historyName{flex:1; font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .historyWait{font-size:10.5px; color:var(--text-dim); flex-shrink:0;}
-  #historyCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
-    font-weight:700; cursor:pointer; background:var(--line); color:var(--text); margin-top:10px;}
 
   /* --- Время в пути --- */
   #routeModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
@@ -253,19 +260,6 @@
     padding:20px; border-top:1px solid var(--line); max-height:85vh; overflow-y:auto;}
   #routeModal h3{margin:0 0 6px; font-size:16px;}
   #routeModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 14px;}
-  #routeNewBtn{
-    width:100%; padding:13px; border-radius:10px; border:none; font-size:14.5px; font-weight:700;
-    cursor:pointer; background:var(--signal); color:var(--signal-text); margin-bottom:14px;
-  }
-  .routeActiveRow{
-    display:flex; align-items:center; gap:10px; background:var(--asphalt-2);
-    border:1px solid var(--line); border-radius:10px; padding:11px 12px; margin-bottom:8px;
-  }
-  .routeActiveTime{font-size:16px; font-weight:800; color:var(--signal); flex:1;}
-  .routeArriveBtn{
-    background:var(--signal); color:var(--signal-text); border:none; border-radius:8px;
-    padding:8px 12px; font-size:12.5px; font-weight:700; cursor:pointer;
-  }
   #routePeriodTabs{display:flex; gap:6px; margin:14px 0 4px;}
   .periodTab{
     flex:1; padding:8px; border-radius:8px; border:1px solid var(--line); background:var(--asphalt-2);
@@ -499,19 +493,19 @@
 
 <div id="historyModalBg">
   <div id="historyModal">
-    <h3>История заборов</h3>
+    <div class="stickyHeader">
+      <h3>История заборов</h3>
+      <button class="modalXBtn" onclick="closeHistoryModal()">✕</button>
+    </div>
     <p class="coords">Полная хроника: и добавления (+1), и отмены (−1). Если что-то пошло не так — здесь видно, где именно был случайный тап.</p>
     <div id="historyBody"></div>
-    <button id="historyCloseBtn" onclick="closeHistoryModal()">Закрыть</button>
   </div>
 </div>
 
 <div id="routeModalBg">
   <div id="routeModal">
     <h3>Время в пути</h3>
-    <p class="coords">Кнопки "📩 Получил заказ" и "🏁 Прибыл" на главном экране запускают и останавливают этот отсчёт. Можно вести сразу несколько заказов параллельно — здесь же можно завершить любой из них вручную.</p>
-    <button id="routeNewBtn" onclick="startNewRoute()">📩 Заказ пришёл</button>
-    <div id="routeActiveList"></div>
+    <p class="coords">Отчёт по времени доезда до заведений. Управляется кнопкой на главном экране: "🏍️ Получил заказ" → "🏁 Прибыл".</p>
     <div id="routePeriodTabs">
       <button class="periodTab active" data-period="day" onclick="setRoutePeriod('day')">День</button>
       <button class="periodTab" data-period="week" onclick="setRoutePeriod('week')">Неделя</button>
@@ -540,7 +534,6 @@ const ROUTE_ACTIVE_KEY = 'pickup-route-active'; // [{ id, startTs }] - зака�
 const ROUTE_LOG_KEY = 'pickup-route-log'; // [{ id, startTs, endTs, durationSec }] - завершённые доезды
 let routeActive = [];
 let routeLog = [];
-let routeInterval = null;
 let currentRoutePeriod = 'day'; // 'day' | 'week' | 'month'
 
 // Стартовая точка - примерное местоположение, потом попробуем уточнить через GPS браузера
@@ -686,7 +679,7 @@ function renderAll(){
         <div class="rowTop">
           <div class="dot" style="background:${colorForCount(s.count, max)}"></div>
           <div class="name">${escapeHtml(s.name)}</div>
-          <div class="n">${s.count} раз${plural(s.count)}</div>
+          <div class="n">${formatZaboros(s.count)}</div>
         </div>
         ${avgWait ? `<div class="rowWait">⏱ в среднем ждёшь тут: ${avgWait}</div>` : ''}
         <div class="rowBtns">
@@ -836,41 +829,12 @@ function dayKeyFromTs(ts){
 function openRouteModal(){
   renderRouteModal();
   document.getElementById('routeModalBg').classList.add('show');
-  clearInterval(routeInterval);
-  routeInterval = setInterval(renderRouteActiveTimers, 1000);
 }
 function closeRouteModal(){
   document.getElementById('routeModalBg').classList.remove('show');
-  clearInterval(routeInterval);
-  routeInterval = null;
-}
-
-function renderRouteActiveTimers(){
-  document.querySelectorAll('.routeActiveTime').forEach(el => {
-    const startTs = Number(el.dataset.startTs);
-    const elapsed = Math.floor((Date.now() - startTs) / 1000);
-    el.textContent = formatTimer(elapsed);
-  });
 }
 
 function renderRouteModal(){
-  const listEl = document.getElementById('routeActiveList');
-  if(routeActive.length === 0){
-    listEl.innerHTML = '';
-  } else {
-    listEl.innerHTML = routeActive.map((r, i) => `
-      <div class="routeActiveRow">
-        <span class="routeActiveTime" data-start-ts="${r.startTs}">00:00</span>
-        <span style="font-size:12px; color:var(--text-dim);">заказ ${i+1}</span>
-        <button class="routeArriveBtn" data-route-id="${r.id}">🏁 Приехал</button>
-      </div>
-    `).join('');
-    listEl.querySelectorAll('.routeArriveBtn').forEach(btn => {
-      btn.addEventListener('click', () => markRouteArrived(btn.dataset.routeId));
-    });
-    renderRouteActiveTimers();
-  }
-
   renderRouteAvgForPeriod();
 }
 
@@ -1063,6 +1027,13 @@ function plural(n){
   if([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) return 'а';
   return '';
 }
+
+function formatZaboros(n){
+  const mod10 = n % 10, mod100 = n % 100;
+  if(mod10 === 1 && mod100 !== 11) return `${n} забор`;
+  if([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) return `${n} забора`;
+  return `${n} заборов`;
+}
 function escapeHtml(str){
   const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
 }
@@ -1243,7 +1214,7 @@ function openChoiceModal(lat, lng, nearby, prefillName){
     <div class="choiceRow" data-id="${s.id}">
       <div class="choiceMain">
         <span class="choiceName">${escapeHtml(s.name)}</span>
-        <span class="choiceCount">${s.count} раз${plural(s.count)}</span>
+        <span class="choiceCount">${formatZaboros(s.count)}</span>
       </div>
       ${avgWait ? `<div class="choiceWait">⏱ в среднем: ${avgWait}</div>` : ''}
       <button class="choiceArriveBtn" data-arrive-id="${s.id}">⏱ Отметить прибытие</button>
