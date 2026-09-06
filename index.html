@@ -73,6 +73,13 @@
   .pinDiv{display:flex; align-items:center; justify-content:center; border-radius:50%;
     font-weight:800; color:var(--signal-text); border:2px solid rgba(255,255,255,0.6);}
 
+  .leaflet-tooltip.spotLabel{
+    background:rgba(20,23,28,0.85); color:#ffffff; border:none; border-radius:6px;
+    padding:2px 7px; font-size:11px; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.3);
+    white-space:nowrap;
+  }
+  .leaflet-tooltip.spotLabel::before{ display:none; }
+
   .myLocationDot{
     width:16px; height:16px; border-radius:50%; background:var(--cold);
     border:3px solid #ffffff; box-shadow:0 0 0 3px rgba(47,143,214,0.35);
@@ -567,6 +574,21 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap'
 }).addTo(map);
 
+// подписи с названиями заведений видны только при достаточном приближении карты,
+// иначе при большом числе точек рядом они бы наезжали друг на друга
+const LABEL_ZOOM_THRESHOLD = 16;
+function updateLabelVisibility(){
+  const show = map.getZoom() >= LABEL_ZOOM_THRESHOLD;
+  Object.values(markers).forEach(m => {
+    if(show){
+      if(!m.isTooltipOpen()) m.openTooltip();
+    } else {
+      m.closeTooltip();
+    }
+  });
+}
+map.on('zoomend', updateLabelVisibility);
+
 // затемняем тайлы под тёмную тему интерфейса (по умолчанию), с возможностью переключить на светлую
 const DARK_FILTER = 'invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9)';
 
@@ -584,10 +606,16 @@ function chooseMapTheme(theme){
 
 applyMapTheme((localStorage.getItem(MAP_THEME_KEY) || 'light') === 'dark');
 
+let suppressNextMapClick = false;
+
 function toggleMapFullscreen(){
   const mapOuter = document.getElementById('mapOuter');
   const isFull = mapOuter.classList.toggle('fullscreen');
   document.getElementById('fullscreenBtn').textContent = isFull ? '✕' : '⛶';
+  // при резкой смене размера карты браузер иногда "докидывает" тот же тап уже на саму карту -
+  // на секунду игнорируем случайный клик, чтобы не открывалось окно добавления точки
+  suppressNextMapClick = true;
+  setTimeout(() => { suppressNextMapClick = false; }, 500);
   setTimeout(() => map.invalidateSize(), 250);
 }
 
@@ -674,13 +702,14 @@ function renderAll(){
 
   spots.forEach(s => {
     const marker = L.marker([s.lat, s.lng], { icon: makeIcon(s, max) }).addTo(map);
-    marker.bindTooltip(s.name, { direction: 'top', offset: [0, -8] });
+    marker.bindTooltip(s.name, { permanent: true, direction: 'top', offset: [0, -8], className: 'spotLabel' });
     marker.on('click', (e) => {
       L.DomEvent.stopPropagation(e);
       bump(s.id);
     });
     markers[s.id] = marker;
   });
+  updateLabelVisibility();
 
   const sorted = [...spots].sort((a,b) => b.count - a.count);
   const rowsEl = document.getElementById('rows');
@@ -1323,6 +1352,10 @@ function removeSpot(id){
 }
 
 map.on('click', (e) => {
+  if(suppressNextMapClick){
+    suppressNextMapClick = false;
+    return;
+  }
   const { lat, lng } = e.latlng;
   handleMapTap(lat, lng);
 });
