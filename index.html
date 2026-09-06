@@ -189,6 +189,26 @@
   .waitName{font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .waitTime{font-size:12.5px; font-weight:700; color:var(--signal); flex-shrink:0;}
 
+  #hourPeriodTabs{display:flex; gap:6px; margin:8px 0 10px;}
+  #hourChart{
+    display:flex; align-items:flex-end; gap:2px; height:82px; margin-bottom:6px;
+    background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px; padding:8px 6px 4px;
+  }
+  .hourBarWrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;}
+  .hourBar{width:100%; max-width:10px; background:var(--cold); border-radius:2px 2px 0 0; min-height:2px;}
+  .hourBar.peak{background:var(--signal);}
+  .hourBar.now{box-shadow:0 0 0 1.5px var(--text) inset;}
+  .hourLabel{font-size:8px; color:var(--text-dim); margin-top:3px; height:10px;}
+  .hourSummary{font-size:12px; color:var(--text-dim); text-align:center; margin-bottom:4px;}
+  #hourTrendList{display:flex; flex-direction:column; gap:6px;}
+  .hourTrendRow{
+    display:flex; align-items:center; gap:8px; background:var(--asphalt-2);
+    border:1px solid var(--line); border-radius:9px; padding:8px 12px; font-size:12px;
+  }
+  .hourTrendDate{font-weight:700; color:var(--text); flex-shrink:0; width:56px;}
+  .hourTrendPeak{flex:1; color:var(--text-dim);}
+  .hourTrendCount{color:var(--signal); font-weight:700; flex-shrink:0; font-size:11px;}
+
   #settingsModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
     align-items:flex-end; justify-content:center; z-index:1000;}
   #settingsModalBg.show{display:flex;}
@@ -1018,7 +1038,129 @@ function renderStats(){
     <div class="statsEmpty" style="padding:10px 0;">Пока нет данных. Нажимай "⏱ Прибыл" при заказе, чтобы начать замерять.</div>
   `;
 
-  body.innerHTML = cardsHtml + chartHtml + waitHtml;
+  const hourHtml = `
+    <div class="statsChartTitle" style="margin-top:18px; display:flex; justify-content:space-between; align-items:center;">
+      <span>🕐 Часы пик</span>
+    </div>
+    <div id="hourPeriodTabs">
+      <button class="periodTab${currentHourPeriod === 'day' ? ' active' : ''}" data-period="day" onclick="setHourPeriod('day')">Сегодня</button>
+      <button class="periodTab${currentHourPeriod === 'week' ? ' active' : ''}" data-period="week" onclick="setHourPeriod('week')">7 дней</button>
+      <button class="periodTab${currentHourPeriod === 'month' ? ' active' : ''}" data-period="month" onclick="setHourPeriod('month')">30 дней</button>
+    </div>
+    <div id="hourChartWrap"></div>
+    <div id="hourTrend"></div>
+  `;
+
+  body.innerHTML = cardsHtml + chartHtml + waitHtml + hourHtml;
+  renderHourChart();
+  renderHourTrend();
+}
+
+// --- Часы пик: в какое время суток чаще всего забираешь заказы ---
+let currentHourPeriod = 'day'; // 'day' | 'week' | 'month'
+
+function setHourPeriod(period){
+  currentHourPeriod = period;
+  document.querySelectorAll('#hourPeriodTabs .periodTab').forEach(el => {
+    el.classList.toggle('active', el.dataset.period === period);
+  });
+  renderHourChart();
+}
+
+function renderHourChart(){
+  const wrap = document.getElementById('hourChartWrap');
+  if(!wrap) return;
+
+  const now = Date.now();
+  let cutoff;
+  if(currentHourPeriod === 'day'){
+    const d = new Date(); d.setHours(0,0,0,0);
+    cutoff = d.getTime();
+  } else if(currentHourPeriod === 'week'){
+    cutoff = now - 7 * 86400000;
+  } else {
+    cutoff = now - 30 * 86400000;
+  }
+
+  const hours = Array.from({ length: 24 }, () => 0);
+  visitsLog.forEach(v => {
+    const ts = new Date(v.ts).getTime();
+    if(ts < cutoff) return;
+    const h = new Date(v.ts).getHours();
+    hours[h] += (v.type === 'remove' ? -1 : 1);
+  });
+  for(let i = 0; i < 24; i++) hours[i] = Math.max(0, hours[i]);
+
+  const maxH = Math.max(1, ...hours);
+  const currentHour = new Date().getHours();
+  const peakVal = Math.max(...hours);
+
+  const barsHtml = hours.map((count, h) => {
+    const height = Math.max(3, Math.round((count / maxH) * 70));
+    const isPeak = count === peakVal && peakVal > 0;
+    const isNow = currentHourPeriod === 'day' && h === currentHour;
+    const showLabel = h % 3 === 0;
+    return `<div class="hourBarWrap">
+      <div class="hourBar${isPeak ? ' peak' : ''}${isNow ? ' now' : ''}" style="height:${height}px"></div>
+      ${showLabel ? `<div class="hourLabel">${h}</div>` : '<div class="hourLabel"></div>'}
+    </div>`;
+  }).join('');
+
+  let summary = 'Пока нет данных за этот период.';
+  if(peakVal > 0){
+    const peakHours = hours.map((c, h) => ({ c, h })).filter(x => x.c === peakVal).map(x => x.h);
+    const peakStr = peakHours.map(h => `${h}:00`).join(', ');
+    summary = `Пик активности: ${peakStr} (${formatZaboros(peakVal)})`;
+  }
+
+  wrap.innerHTML = `<div id="hourChart">${barsHtml}</div><div class="hourSummary">${summary}</div>`;
+}
+
+function renderHourTrend(){
+  const trendEl = document.getElementById('hourTrend');
+  if(!trendEl) return;
+
+  const now = new Date();
+  const rows = [];
+  for(let i = 0; i < 7; i++){
+    const d = new Date(now); d.setDate(d.getDate() - i);
+    const key = dayKey(d);
+    const hours = Array.from({ length: 24 }, () => 0);
+    let hasData = false;
+    visitsLog.forEach(v => {
+      if(dayKey(new Date(v.ts)) !== key) return;
+      hasData = true;
+      hours[new Date(v.ts).getHours()] += (v.type === 'remove' ? -1 : 1);
+    });
+    if(!hasData) continue;
+    for(let h = 0; h < 24; h++) hours[h] = Math.max(0, hours[h]);
+    const max = Math.max(...hours);
+    if(max <= 0) continue;
+    const peakHours = hours.map((c, h) => ({ c, h })).filter(x => x.c === max).map(x => `${x.h}:00`);
+    rows.push({
+      label: d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+      peak: peakHours.join(', '),
+      count: max
+    });
+  }
+
+  if(rows.length === 0){
+    trendEl.innerHTML = '';
+    return;
+  }
+
+  trendEl.innerHTML = `
+    <div class="statsChartTitle" style="margin-top:14px;">Как менялся пик по дням</div>
+    <div id="hourTrendList">
+      ${rows.map(r => `
+        <div class="hourTrendRow">
+          <span class="hourTrendDate">${escapeHtml(r.label)}</span>
+          <span class="hourTrendPeak">пик в ${escapeHtml(r.peak)}</span>
+          <span class="hourTrendCount">${formatZaboros(r.count)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
 function plural(n){
