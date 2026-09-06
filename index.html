@@ -443,7 +443,7 @@
   <div id="mapOuter">
     <div id="map"></div>
     <div id="modeBadge"></div>
-    <button id="fullscreenBtn" title="На весь экран" onclick="toggleMapFullscreen()">⛶</button>
+    <button id="fullscreenBtn" title="На весь экран" onclick="toggleMapFullscreen(event)">⛶</button>
     <button id="locateBtn" title="Найти меня">📍</button>
   </div>
 
@@ -569,6 +569,17 @@ const DEFAULT_CENTER = [39.49061425228292, -0.34876301013819333];
 const map = L.map('map', { zoomControl: true, attributionControl: true })
   .setView(DEFAULT_CENTER, 14);
 
+// защищаем свои кнопки над картой (лежат вне слоя Leaflet) от того, чтобы тап по ним
+// хоть как-то воспринимался картой как тап по самой карте - иначе после быстрой смены
+// размера (полный экран) на телефоне может проскочить "призрачный" клик по карте
+['fullscreenBtn', 'locateBtn'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el){
+    L.DomEvent.disableClickPropagation(el);
+    L.DomEvent.disableScrollPropagation(el);
+  }
+});
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© OpenStreetMap'
@@ -608,14 +619,15 @@ applyMapTheme((localStorage.getItem(MAP_THEME_KEY) || 'light') === 'dark');
 
 let suppressNextMapClick = false;
 
-function toggleMapFullscreen(){
+function toggleMapFullscreen(event){
+  if(event){ event.preventDefault(); event.stopPropagation(); }
   const mapOuter = document.getElementById('mapOuter');
   const isFull = mapOuter.classList.toggle('fullscreen');
   document.getElementById('fullscreenBtn').textContent = isFull ? '✕' : '⛶';
   // при резкой смене размера карты браузер иногда "докидывает" тот же тап уже на саму карту -
-  // на секунду игнорируем случайный клик, чтобы не открывалось окно добавления точки
+  // на время игнорируем случайный клик, чтобы не открывалось окно добавления точки
   suppressNextMapClick = true;
-  setTimeout(() => { suppressNextMapClick = false; }, 500);
+  setTimeout(() => { suppressNextMapClick = false; }, 900);
   setTimeout(() => map.invalidateSize(), 250);
 }
 
