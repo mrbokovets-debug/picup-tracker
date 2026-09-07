@@ -73,6 +73,14 @@
   .pinDiv{display:flex; align-items:center; justify-content:center; border-radius:50%;
     font-weight:800; color:var(--signal-text); border:2px solid rgba(255,255,255,0.6);}
 
+  .pinDiv.longPressing, .bagBody.longPressing{
+    animation: longPressPulse var(--pressDur, 550ms) ease-in forwards;
+  }
+  @keyframes longPressPulse{
+    0%{ box-shadow:0 0 0 0 rgba(0,0,0,0); transform:scale(1); }
+    100%{ box-shadow:0 0 0 8px var(--cold); transform:scale(1.15); }
+  }
+
   .leaflet-tooltip.spotLabel{
     background:rgba(20,23,28,0.85); color:#ffffff; border:none; border-radius:6px;
     padding:2px 7px; font-size:11px; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.3);
@@ -717,8 +725,10 @@ function renderAll(){
     marker.bindTooltip(s.name, { permanent: true, direction: 'top', offset: [0, -8], className: 'spotLabel' });
     marker.on('click', (e) => {
       L.DomEvent.stopPropagation(e);
+      if(marker._longPressFired){ marker._longPressFired = false; return; }
       bump(s.id);
     });
+    attachLongPress(marker, s.id);
     markers[s.id] = marker;
   });
   updateLabelVisibility();
@@ -1233,6 +1243,41 @@ function formatTimer(totalSec){
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// --- Долгое нажатие на точку на карте запускает таймер "Прибыл" без похода в список ---
+const LONG_PRESS_MS = 550;
+
+function attachLongPress(marker, spotId){
+  const el = marker.getElement();
+  if(!el) return;
+  let pressTimer = null;
+
+  const cancelPress = () => {
+    clearTimeout(pressTimer);
+    const inner = el.querySelector('.pinDiv, .bagBody');
+    if(inner) inner.classList.remove('longPressing');
+  };
+
+  const startPress = (ev) => {
+    marker._longPressFired = false;
+    const inner = el.querySelector('.pinDiv, .bagBody');
+    if(inner){
+      inner.style.setProperty('--pressDur', LONG_PRESS_MS + 'ms');
+      inner.classList.add('longPressing');
+    }
+    pressTimer = setTimeout(() => {
+      marker._longPressFired = true;
+      cancelPress();
+      if(navigator.vibrate) navigator.vibrate(40);
+      startArrival(spotId);
+    }, LONG_PRESS_MS);
+  };
+
+  el.addEventListener('pointerdown', startPress);
+  el.addEventListener('pointerup', cancelPress);
+  el.addEventListener('pointerleave', cancelPress);
+  el.addEventListener('pointercancel', cancelPress);
 }
 
 function startArrival(spotId){
