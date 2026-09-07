@@ -198,11 +198,13 @@
   .statsEmpty{color:var(--text-dim); font-size:13px; text-align:center; padding:20px 10px;}
   #waitRanking{display:flex; flex-direction:column; gap:6px;}
   .waitRow{
-    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    display:flex; flex-direction:column; gap:2px;
     background:var(--asphalt-2); border:1px solid var(--line); border-radius:9px; padding:9px 12px;
   }
+  .waitRowMain{display:flex; justify-content:space-between; align-items:center; gap:10px;}
   .waitName{font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .waitTime{font-size:12.5px; font-weight:700; color:var(--signal); flex-shrink:0;}
+  .waitRowDate{font-size:10.5px; color:var(--text-dim);}
 
   #hourPeriodTabs{display:flex; gap:6px; margin:8px 0 10px;}
   #hourChart{
@@ -1069,20 +1071,32 @@ function renderStats(){
     </div>
   `;
 
-  const withWait = spots.filter(s => s.waitCount > 0)
-    .map(s => ({ name: s.name, avg: Math.round(s.waitTotalSec / s.waitCount), n: s.waitCount }))
-    .sort((a, b) => b.avg - a.avg)
+  const spotByIdForWait = {};
+  spots.forEach(s => spotByIdForWait[s.id] = s);
+
+  const longestWaits = visitsLog
+    .filter(v => v.waitSec != null && v.type !== 'remove' && !v.reversed)
+    .sort((a, b) => b.waitSec - a.waitSec)
     .slice(0, 5);
 
-  const waitHtml = withWait.length > 0 ? `
-    <div class="statsChartTitle" style="margin-top:18px;">Дольше всего ждёшь тут</div>
+  const waitHtml = longestWaits.length > 0 ? `
+    <div class="statsChartTitle" style="margin-top:18px;">Дольше всего ждал</div>
     <div id="waitRanking">
-      ${withWait.map(w => `
+      ${longestWaits.map(v => {
+        const spot = spotByIdForWait[v.spotId];
+        const spotName = spot ? spot.name : '(точка удалена)';
+        const d = new Date(v.ts);
+        const dateStr = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+        const timeStr = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        return `
         <div class="waitRow">
-          <span class="waitName">${escapeHtml(w.name)}</span>
-          <span class="waitTime">${formatDuration(w.avg)}</span>
+          <div class="waitRowMain">
+            <span class="waitName">${escapeHtml(spotName)}</span>
+            <span class="waitTime">${formatDuration(v.waitSec)}</span>
+          </div>
+          <div class="waitRowDate">${escapeHtml(dateStr)}, ${escapeHtml(timeStr)}</div>
         </div>
-      `).join('')}
+      `}).join('')}
     </div>
   ` : `
     <div class="statsChartTitle" style="margin-top:18px;">Время ожидания</div>
