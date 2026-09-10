@@ -178,7 +178,7 @@
   #statsModalBg.show{display:flex;}
   #statsModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
     padding:20px; border-top:1px solid var(--line); max-height:85vh; overflow-y:auto;}
-  #statsModal h3{margin:0 0 14px; font-size:16px;}
+  #statsModal h3{margin:0; font-size:16px;}
   .statsRow{display:flex; gap:8px; margin-bottom:16px;}
   .statsCard{
     flex:1; background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px;
@@ -193,8 +193,6 @@
   .statsBar.today{background:var(--signal);}
   .statsBarNum{font-size:10px; color:var(--text-dim); margin-bottom:3px;}
   .statsBarDay{font-size:9.5px; color:var(--text-dim); margin-top:5px;}
-  #statsCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
-    font-weight:700; cursor:pointer; background:var(--line); color:var(--text); margin-top:8px;}
   .statsEmpty{color:var(--text-dim); font-size:13px; text-align:center; padding:20px 10px;}
   #waitRanking{display:flex; flex-direction:column; gap:6px;}
   .waitRow{
@@ -273,7 +271,11 @@
     width:30px; height:30px; border-radius:50%; font-size:14px; cursor:pointer; flex-shrink:0;
   }
   #historyModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 14px;}
-  .historyDayHeader{font-size:11.5px; font-weight:700; color:var(--text-dim); margin:14px 0 6px; text-transform:uppercase;}
+  .historyDayHeader{
+    font-size:11.5px; font-weight:700; color:var(--text-dim); margin:14px 0 6px; text-transform:uppercase;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .historyDayCount{color:var(--signal); font-weight:800;}
   .historyDayHeader:first-child{margin-top:0;}
   .historyRow{
     display:flex; align-items:center; gap:10px; background:var(--asphalt-2);
@@ -304,6 +306,13 @@
   }
   .periodTab.active{background:var(--signal); color:var(--signal-text); border-color:var(--signal);}
   #routeAvg{font-size:12.5px; color:var(--text-dim); text-align:center; margin:10px 0 14px;}
+
+  .periodTabsScroll{
+    display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    margin:8px 0 10px; padding-bottom:2px; scrollbar-width:none;
+  }
+  .periodTabsScroll::-webkit-scrollbar{display:none;}
+  .periodTabsScroll .periodTab{flex:0 0 auto; padding:7px 12px; white-space:nowrap;}
   #routeCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
     font-weight:700; cursor:pointer; background:var(--line); color:var(--text);}
 
@@ -459,6 +468,13 @@
 
   <div id="list">
     <input id="searchInput" type="text" placeholder="Поиск среди своих точек..." oninput="renderAll()">
+    <div id="listPeriodTabs" class="periodTabsScroll">
+      <button class="periodTab active" data-period="all" onclick="setListPeriod('all')">Всё время</button>
+      <button class="periodTab" data-period="today" onclick="setListPeriod('today')">Сегодня</button>
+      <button class="periodTab" data-period="yesterday" onclick="setListPeriod('yesterday')">Вчера</button>
+      <button class="periodTab" data-period="week" onclick="setListPeriod('week')">7 дней</button>
+      <button class="periodTab" data-period="month" onclick="setListPeriod('month')">30 дней</button>
+    </div>
     <div class="listTitle"><span>По частоте</span><span id="totalCount"></span></div>
     <div id="rows"></div>
   </div>
@@ -492,9 +508,11 @@
 
 <div id="statsModalBg">
   <div id="statsModal">
-    <h3>Статистика по дням</h3>
+    <div class="stickyHeader">
+      <h3>Статистика по дням</h3>
+      <button class="modalXBtn" onclick="closeStatsModal()">✕</button>
+    </div>
     <div id="statsBody"></div>
-    <button id="statsCloseBtn" onclick="closeStatsModal()">Закрыть</button>
   </div>
 </div>
 
@@ -535,6 +553,13 @@
       <button class="modalXBtn" onclick="closeHistoryModal()">✕</button>
     </div>
     <p class="coords">Полная хроника: и добавления (+1), и отмены (−1). Если что-то пошло не так — здесь видно, где именно был случайный тап.</p>
+    <div id="historyPeriodTabs" class="periodTabsScroll">
+      <button class="periodTab active" data-period="all" onclick="setHistoryPeriod('all')">Всё время</button>
+      <button class="periodTab" data-period="today" onclick="setHistoryPeriod('today')">Сегодня</button>
+      <button class="periodTab" data-period="yesterday" onclick="setHistoryPeriod('yesterday')">Вчера</button>
+      <button class="periodTab" data-period="week" onclick="setHistoryPeriod('week')">7 дней</button>
+      <button class="periodTab" data-period="month" onclick="setHistoryPeriod('month')">30 дней</button>
+    </div>
     <div id="historyBody"></div>
   </div>
 </div>
@@ -717,6 +742,33 @@ function persistVisits(){
   catch(e){ console.error('storage error', e); }
 }
 
+// --- Общий фильтр по периоду: используется и в списке точек, и в истории ---
+function getPeriodRange(period){
+  const now = new Date();
+  if(period === 'today'){
+    const s = new Date(now); s.setHours(0, 0, 0, 0);
+    return [s.getTime(), Infinity];
+  }
+  if(period === 'yesterday'){
+    const s = new Date(now); s.setDate(s.getDate() - 1); s.setHours(0, 0, 0, 0);
+    const e = new Date(s); e.setHours(23, 59, 59, 999);
+    return [s.getTime(), e.getTime()];
+  }
+  if(period === 'week') return [now.getTime() - 7 * 86400000, Infinity];
+  if(period === 'month') return [now.getTime() - 30 * 86400000, Infinity];
+  return [-Infinity, Infinity]; // 'all'
+}
+
+let currentListPeriod = 'all';
+
+function setListPeriod(period){
+  currentListPeriod = period;
+  document.querySelectorAll('#listPeriodTabs .periodTab').forEach(el => {
+    el.classList.toggle('active', el.dataset.period === period);
+  });
+  renderAll();
+}
+
 function renderAll(){
   Object.values(markers).forEach(m => map.removeLayer(m));
   markers = {};
@@ -735,13 +787,34 @@ function renderAll(){
   });
   updateLabelVisibility();
 
-  const sorted = [...spots].sort((a,b) => b.count - a.count);
+  const [rangeStart, rangeEnd] = getPeriodRange(currentListPeriod);
+  let periodCounts = null;
+  if(currentListPeriod !== 'all'){
+    periodCounts = {};
+    visitsLog.forEach(v => {
+      const t = new Date(v.ts).getTime();
+      if(t >= rangeStart && t <= rangeEnd){
+        periodCounts[v.spotId] = (periodCounts[v.spotId] || 0) + (v.type === 'remove' ? -1 : 1);
+      }
+    });
+  }
+
+  const sorted = periodCounts
+    ? spots
+        .map(s => ({ ...s, _displayCount: Math.max(0, periodCounts[s.id] || 0) }))
+        .filter(s => s._displayCount > 0)
+        .sort((a, b) => b._displayCount - a._displayCount)
+    : [...spots].map(s => ({ ...s, _displayCount: s.count })).sort((a, b) => b.count - a.count);
+
   const rowsEl = document.getElementById('rows');
   const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
   const filtered = query ? sorted.filter(s => s.name.toLowerCase().includes(query)) : sorted;
 
   if(sorted.length === 0){
-    rowsEl.innerHTML = '<div class="empty">Пока пусто. Тапни по карте, где обычно забираешь заказы.</div>';
+    const emptyMsg = periodCounts
+      ? 'За выбранный период заборов не было.'
+      : 'Пока пусто. Тапни по карте, где обычно забираешь заказы.';
+    rowsEl.innerHTML = `<div class="empty">${emptyMsg}</div>`;
   } else if(filtered.length === 0){
     rowsEl.innerHTML = '<div class="empty">Ничего не найдено по запросу «' + escapeHtml(query) + '»</div>';
   } else {
@@ -752,7 +825,7 @@ function renderAll(){
         <div class="rowTop">
           <div class="dot" style="background:${colorForCount(s.count, max)}"></div>
           <div class="name">${escapeHtml(s.name)}</div>
-          <div class="n">${formatZaboros(s.count)}</div>
+          <div class="n">${formatZaboros(s._displayCount)}</div>
         </div>
         ${avgWait ? `<div class="rowWait">⏱ в среднем ждёшь тут: ${avgWait}</div>` : ''}
         <div class="rowBtns">
@@ -764,7 +837,9 @@ function renderAll(){
       </div>
     `}).join('');
   }
-  const total = spots.reduce((a,s) => a + s.count, 0);
+  const total = periodCounts
+    ? Object.values(periodCounts).reduce((a, c) => a + Math.max(0, c), 0)
+    : spots.reduce((a,s) => a + s.count, 0);
   document.getElementById('totalCount').textContent = total ? `всего заборов: ${total}` : '';
 }
 
@@ -946,6 +1021,16 @@ function renderRouteAvgForPeriod(){
   }
 }
 
+let currentHistoryPeriod = 'all';
+
+function setHistoryPeriod(period){
+  currentHistoryPeriod = period;
+  document.querySelectorAll('#historyPeriodTabs .periodTab').forEach(el => {
+    el.classList.toggle('active', el.dataset.period === period);
+  });
+  renderHistory();
+}
+
 function openHistoryModal(){
   renderHistory();
   document.getElementById('historyModalBg').classList.add('show');
@@ -961,9 +1046,28 @@ function renderHistory(){
     return;
   }
 
-  const sorted = [...visitsLog].sort((a, b) => new Date(b.ts) - new Date(a.ts)).slice(0, 300);
+  const [rangeStart, rangeEnd] = getPeriodRange(currentHistoryPeriod);
+  const inRange = (v) => {
+    const t = new Date(v.ts).getTime();
+    return t >= rangeStart && t <= rangeEnd;
+  };
+  const rangedLog = visitsLog.filter(inRange);
+
+  if(rangedLog.length === 0){
+    body.innerHTML = '<div class="statsEmpty">За выбранный период записей нет.</div>';
+    return;
+  }
+
+  const sorted = [...rangedLog].sort((a, b) => new Date(b.ts) - new Date(a.ts)).slice(0, 300);
   const spotById = {};
   spots.forEach(s => spotById[s.id] = s);
+
+  // считаем чистое число заборов за каждый день (добавления минус отмены) в пределах выбранного периода
+  const dayNetCounts = {};
+  rangedLog.forEach(v => {
+    const label = new Date(v.ts).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    dayNetCounts[label] = (dayNetCounts[label] || 0) + (v.type === 'remove' ? -1 : 1);
+  });
 
   let lastDayLabel = null;
   let html = '';
@@ -971,7 +1075,8 @@ function renderHistory(){
     const d = new Date(v.ts);
     const dayLabel = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
     if(dayLabel !== lastDayLabel){
-      html += `<div class="historyDayHeader">${escapeHtml(dayLabel)}</div>`;
+      const dayCount = Math.max(0, dayNetCounts[dayLabel] || 0);
+      html += `<div class="historyDayHeader"><span>${escapeHtml(dayLabel)}</span><span class="historyDayCount">${formatZaboros(dayCount)}</span></div>`;
       lastDayLabel = dayLabel;
     }
     const timeStr = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
@@ -1628,38 +1733,45 @@ function showMyLocationMarker(lat, lng){
   }
 }
 
+let geoWatchId = null;
+let lastKnownCoords = null;
+
+function startGeoWatch(){
+  if(geoWatchId != null || !navigator.geolocation) return; // уже следим
+  geoWatchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      lastKnownCoords = [pos.coords.latitude, pos.coords.longitude];
+      showMyLocationMarker(pos.coords.latitude, pos.coords.longitude);
+    },
+    () => { /* тихо игнорируем сбои слежения, не спамим предупреждениями */ },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+  );
+}
+
 document.getElementById('locateBtn').addEventListener('click', () => {
   if(!navigator.geolocation){ alert('Геолокация недоступна в этом браузере'); return; }
   document.getElementById('modeBadge').textContent = 'Ищу тебя...';
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const { latitude, longitude } = pos.coords;
-      map.setView([latitude, longitude], 16);
-      showMyLocationMarker(latitude, longitude);
-      document.getElementById('modeBadge').textContent = 'Твоё местоположение';
-      setTimeout(() => document.getElementById('modeBadge').textContent = '', 2000);
-    },
-    (err) => {
-      document.getElementById('modeBadge').textContent = 'Доступ к GPS не дан';
-      setTimeout(() => document.getElementById('modeBadge').textContent = '', 2000);
-    },
-    { enableHighAccuracy: true, timeout: 8000 }
-  );
-});
+  startGeoWatch();
 
-// пробуем сразу мягко получить геолокацию для более точного центра карты
-if(navigator.geolocation){
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      showMyLocationMarker(pos.coords.latitude, pos.coords.longitude);
-      if(spots.length === 0){
-        map.setView([pos.coords.latitude, pos.coords.longitude], 15);
-      }
-    },
-    () => {},
-    { timeout: 4000 }
-  );
-}
+  const finishCentering = (lat, lng) => {
+    map.setView([lat, lng], 16);
+    document.getElementById('modeBadge').textContent = 'Твоё местоположение';
+    setTimeout(() => document.getElementById('modeBadge').textContent = '', 2000);
+  };
+
+  if(lastKnownCoords){
+    finishCentering(lastKnownCoords[0], lastKnownCoords[1]);
+  } else {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => finishCentering(pos.coords.latitude, pos.coords.longitude),
+      () => {
+        document.getElementById('modeBadge').textContent = 'Доступ к GPS не дан';
+        setTimeout(() => document.getElementById('modeBadge').textContent = '', 2000);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+});
 
 loadSpots();
 </script>
