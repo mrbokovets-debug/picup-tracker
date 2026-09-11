@@ -316,6 +316,51 @@
   #routeCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
     font-weight:700; cursor:pointer; background:var(--line); color:var(--text);}
 
+  /* --- Панель выбора периода в истории (открывает календарь) --- */
+  #historyDateFilterBar{
+    display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+    background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px;
+    padding:10px 14px; margin-bottom:14px; font-size:13px; font-weight:700; color:var(--signal);
+  }
+  .historyDateFilterArrow{color:var(--text-dim); font-size:16px;}
+
+  /* --- Модалка календаря --- */
+  #calendarModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
+    align-items:flex-end; justify-content:center; z-index:1100;}
+  #calendarModalBg.show{display:flex;}
+  #calendarModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line); max-height:88vh; overflow-y:auto;}
+  .calHeader{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .calHeader span{font-size:15px; font-weight:800; color:var(--text); text-transform:capitalize;}
+  .calNavBtn{
+    width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:var(--asphalt-2);
+    color:var(--text); font-size:18px; cursor:pointer;
+  }
+  #calTodayBtn{
+    background:none; border:none; color:var(--signal); font-size:12.5px; font-weight:700;
+    cursor:pointer; padding:0 0 10px; display:block; margin-left:auto;
+  }
+  .calWeekdays{
+    display:grid; grid-template-columns:repeat(7, 1fr); text-align:center;
+    font-size:11px; color:var(--text-dim); margin-bottom:4px;
+  }
+  #calGrid{display:grid; grid-template-columns:repeat(7, 1fr); gap:3px;}
+  .calDay{
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px;
+    font-size:13px; font-weight:600; color:var(--text); cursor:pointer; background:var(--asphalt-2);
+  }
+  .calDay.otherMonth{color:var(--text-dim); opacity:0.35; cursor:default;}
+  .calDay.today{border:1.5px solid var(--signal);}
+  .calDay.inRange{background:var(--signal-dim); color:var(--signal); border-radius:0;}
+  .calDay.rangeStart{background:var(--signal); color:var(--signal-text); border-radius:8px 0 0 8px;}
+  .calDay.rangeEnd{background:var(--signal); color:var(--signal-text); border-radius:0 8px 8px 0;}
+  .calDay.singleSelected{background:var(--signal); color:var(--signal-text);}
+  #calHint{font-size:11px; color:var(--text-dim); text-align:center; margin:12px 0 10px;}
+  #calBtns{display:flex; gap:10px;}
+  #calBtns button{flex:1; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
+  #calResetBtn{background:var(--line); color:var(--text);}
+  #calApplyBtn{background:var(--signal); color:var(--signal-text);}
+
   /* значок-сумка курьера для точек на карте */
   .bagPin{display:flex; flex-direction:column; align-items:center; position:relative;}
   .bagStrap{
@@ -468,13 +513,6 @@
 
   <div id="list">
     <input id="searchInput" type="text" placeholder="Поиск среди своих точек..." oninput="renderAll()">
-    <div id="listPeriodTabs" class="periodTabsScroll">
-      <button class="periodTab active" data-period="all" onclick="setListPeriod('all')">Всё время</button>
-      <button class="periodTab" data-period="today" onclick="setListPeriod('today')">Сегодня</button>
-      <button class="periodTab" data-period="yesterday" onclick="setListPeriod('yesterday')">Вчера</button>
-      <button class="periodTab" data-period="week" onclick="setListPeriod('week')">7 дней</button>
-      <button class="periodTab" data-period="month" onclick="setListPeriod('month')">30 дней</button>
-    </div>
     <div class="listTitle"><span>По частоте</span><span id="totalCount"></span></div>
     <div id="rows"></div>
   </div>
@@ -553,14 +591,31 @@
       <button class="modalXBtn" onclick="closeHistoryModal()">✕</button>
     </div>
     <p class="coords">Полная хроника: и добавления (+1), и отмены (−1). Если что-то пошло не так — здесь видно, где именно был случайный тап.</p>
-    <div id="historyPeriodTabs" class="periodTabsScroll">
-      <button class="periodTab active" data-period="all" onclick="setHistoryPeriod('all')">Всё время</button>
-      <button class="periodTab" data-period="today" onclick="setHistoryPeriod('today')">Сегодня</button>
-      <button class="periodTab" data-period="yesterday" onclick="setHistoryPeriod('yesterday')">Вчера</button>
-      <button class="periodTab" data-period="week" onclick="setHistoryPeriod('week')">7 дней</button>
-      <button class="periodTab" data-period="month" onclick="setHistoryPeriod('month')">30 дней</button>
+    <div id="historyDateFilterBar" onclick="openCalendarModal()">
+      <span id="historyDateFilterLabel">📅 Все даты</span>
+      <span class="historyDateFilterArrow">›</span>
     </div>
     <div id="historyBody"></div>
+  </div>
+</div>
+
+<div id="calendarModalBg">
+  <div id="calendarModal">
+    <div class="calHeader">
+      <button class="calNavBtn" onclick="changeCalendarMonth(-1)">‹</button>
+      <span id="calMonthLabel"></span>
+      <button class="calNavBtn" onclick="changeCalendarMonth(1)">›</button>
+    </div>
+    <button id="calTodayBtn" onclick="calendarPickToday()">Сегодня</button>
+    <div class="calWeekdays">
+      <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+    </div>
+    <div id="calGrid"></div>
+    <p id="calHint">Выбери один день, или два дня — для диапазона между ними</p>
+    <div id="calBtns">
+      <button id="calResetBtn" onclick="calendarReset()">Сбросить</button>
+      <button id="calApplyBtn" onclick="calendarApply()">Показать</button>
+    </div>
   </div>
 </div>
 
@@ -742,33 +797,6 @@ function persistVisits(){
   catch(e){ console.error('storage error', e); }
 }
 
-// --- Общий фильтр по периоду: используется и в списке точек, и в истории ---
-function getPeriodRange(period){
-  const now = new Date();
-  if(period === 'today'){
-    const s = new Date(now); s.setHours(0, 0, 0, 0);
-    return [s.getTime(), Infinity];
-  }
-  if(period === 'yesterday'){
-    const s = new Date(now); s.setDate(s.getDate() - 1); s.setHours(0, 0, 0, 0);
-    const e = new Date(s); e.setHours(23, 59, 59, 999);
-    return [s.getTime(), e.getTime()];
-  }
-  if(period === 'week') return [now.getTime() - 7 * 86400000, Infinity];
-  if(period === 'month') return [now.getTime() - 30 * 86400000, Infinity];
-  return [-Infinity, Infinity]; // 'all'
-}
-
-let currentListPeriod = 'all';
-
-function setListPeriod(period){
-  currentListPeriod = period;
-  document.querySelectorAll('#listPeriodTabs .periodTab').forEach(el => {
-    el.classList.toggle('active', el.dataset.period === period);
-  });
-  renderAll();
-}
-
 function renderAll(){
   Object.values(markers).forEach(m => map.removeLayer(m));
   markers = {};
@@ -787,34 +815,13 @@ function renderAll(){
   });
   updateLabelVisibility();
 
-  const [rangeStart, rangeEnd] = getPeriodRange(currentListPeriod);
-  let periodCounts = null;
-  if(currentListPeriod !== 'all'){
-    periodCounts = {};
-    visitsLog.forEach(v => {
-      const t = new Date(v.ts).getTime();
-      if(t >= rangeStart && t <= rangeEnd){
-        periodCounts[v.spotId] = (periodCounts[v.spotId] || 0) + (v.type === 'remove' ? -1 : 1);
-      }
-    });
-  }
-
-  const sorted = periodCounts
-    ? spots
-        .map(s => ({ ...s, _displayCount: Math.max(0, periodCounts[s.id] || 0) }))
-        .filter(s => s._displayCount > 0)
-        .sort((a, b) => b._displayCount - a._displayCount)
-    : [...spots].map(s => ({ ...s, _displayCount: s.count })).sort((a, b) => b.count - a.count);
-
+  const sorted = [...spots].sort((a, b) => b.count - a.count);
   const rowsEl = document.getElementById('rows');
   const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
   const filtered = query ? sorted.filter(s => s.name.toLowerCase().includes(query)) : sorted;
 
   if(sorted.length === 0){
-    const emptyMsg = periodCounts
-      ? 'За выбранный период заборов не было.'
-      : 'Пока пусто. Тапни по карте, где обычно забираешь заказы.';
-    rowsEl.innerHTML = `<div class="empty">${emptyMsg}</div>`;
+    rowsEl.innerHTML = '<div class="empty">Пока пусто. Тапни по карте, где обычно забираешь заказы.</div>';
   } else if(filtered.length === 0){
     rowsEl.innerHTML = '<div class="empty">Ничего не найдено по запросу «' + escapeHtml(query) + '»</div>';
   } else {
@@ -825,7 +832,7 @@ function renderAll(){
         <div class="rowTop">
           <div class="dot" style="background:${colorForCount(s.count, max)}"></div>
           <div class="name">${escapeHtml(s.name)}</div>
-          <div class="n">${formatZaboros(s._displayCount)}</div>
+          <div class="n">${formatZaboros(s.count)}</div>
         </div>
         ${avgWait ? `<div class="rowWait">⏱ в среднем ждёшь тут: ${avgWait}</div>` : ''}
         <div class="rowBtns">
@@ -837,9 +844,7 @@ function renderAll(){
       </div>
     `}).join('');
   }
-  const total = periodCounts
-    ? Object.values(periodCounts).reduce((a, c) => a + Math.max(0, c), 0)
-    : spots.reduce((a,s) => a + s.count, 0);
+  const total = spots.reduce((a,s) => a + s.count, 0);
   document.getElementById('totalCount').textContent = total ? `всего заборов: ${total}` : '';
 }
 
@@ -1021,14 +1026,128 @@ function renderRouteAvgForPeriod(){
   }
 }
 
-let currentHistoryPeriod = 'all';
+// --- Календарь для выбора даты/диапазона дат в истории ---
+let historyRangeStart = null; // ms, начало дня
+let historyRangeEnd = null;   // ms, конец дня
+let calPickStart = null;      // временный выбор внутри открытого календаря
+let calPickEnd = null;
+let calViewDate = new Date(); // какой месяц сейчас показан в календаре
 
-function setHistoryPeriod(period){
-  currentHistoryPeriod = period;
-  document.querySelectorAll('#historyPeriodTabs .periodTab').forEach(el => {
-    el.classList.toggle('active', el.dataset.period === period);
-  });
+function startOfDay(d){ const x = new Date(d); x.setHours(0,0,0,0); return x.getTime(); }
+function endOfDay(d){ const x = new Date(d); x.setHours(23,59,59,999); return x.getTime(); }
+
+function openCalendarModal(){
+  calPickStart = historyRangeStart;
+  calPickEnd = historyRangeEnd;
+  calViewDate = historyRangeStart ? new Date(historyRangeStart) : new Date();
+  renderCalendar();
+  document.getElementById('calendarModalBg').classList.add('show');
+}
+function closeCalendarModal(){
+  document.getElementById('calendarModalBg').classList.remove('show');
+}
+
+function changeCalendarMonth(delta){
+  calViewDate.setMonth(calViewDate.getMonth() + delta);
+  renderCalendar();
+}
+
+function calendarPickToday(){
+  const today = startOfDay(new Date());
+  calPickStart = today;
+  calPickEnd = today;
+  calViewDate = new Date();
+  renderCalendar();
+}
+
+function onCalendarDayClick(ts){
+  if(calPickStart == null || (calPickStart != null && calPickEnd != null)){
+    // начинаем новый выбор с чистого листа
+    calPickStart = ts;
+    calPickEnd = null;
+  } else {
+    // второй тап - завершаем диапазон (меняем местами, если кликнули раньше начала)
+    if(ts < calPickStart){
+      calPickEnd = calPickStart;
+      calPickStart = ts;
+    } else {
+      calPickEnd = ts;
+    }
+  }
+  renderCalendar();
+}
+
+function calendarReset(){
+  historyRangeStart = null;
+  historyRangeEnd = null;
+  calPickStart = null;
+  calPickEnd = null;
+  document.getElementById('historyDateFilterLabel').textContent = '📅 Все даты';
+  closeCalendarModal();
   renderHistory();
+}
+
+function calendarApply(){
+  if(calPickStart == null){ closeCalendarModal(); return; }
+  historyRangeStart = startOfDay(calPickStart);
+  historyRangeEnd = endOfDay(calPickEnd != null ? calPickEnd : calPickStart);
+
+  const startLabel = new Date(historyRangeStart).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  if(calPickEnd != null && startOfDay(calPickEnd) !== startOfDay(calPickStart)){
+    const endLabel = new Date(historyRangeEnd).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    document.getElementById('historyDateFilterLabel').textContent = `📅 ${startLabel} — ${endLabel}`;
+  } else {
+    document.getElementById('historyDateFilterLabel').textContent = `📅 ${startLabel}`;
+  }
+  closeCalendarModal();
+  renderHistory();
+}
+
+function renderCalendar(){
+  const monthLabel = calViewDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+  document.getElementById('calMonthLabel').textContent = monthLabel;
+
+  const year = calViewDate.getFullYear();
+  const month = calViewDate.getMonth();
+  const firstOfMonth = new Date(year, month, 1);
+  // понедельник = 0 ... воскресенье = 6
+  const firstWeekday = (firstOfMonth.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  const todayTs = startOfDay(new Date());
+  const cells = [];
+
+  for(let i = firstWeekday - 1; i >= 0; i--){
+    cells.push({ day: daysInPrevMonth - i, other: true, ts: null });
+  }
+  for(let d = 1; d <= daysInMonth; d++){
+    cells.push({ day: d, other: false, ts: startOfDay(new Date(year, month, d)) });
+  }
+  while(cells.length % 7 !== 0){
+    const nextDay = cells.length - (firstWeekday + daysInMonth) + 1;
+    cells.push({ day: nextDay, other: true, ts: null });
+  }
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = cells.map(c => {
+    if(c.other){
+      return `<div class="calDay otherMonth">${c.day}</div>`;
+    }
+    let cls = 'calDay';
+    if(c.ts === todayTs) cls += ' today';
+    if(calPickStart != null && calPickEnd == null && c.ts === calPickStart) cls += ' singleSelected';
+    if(calPickStart != null && calPickEnd != null){
+      if(c.ts === calPickStart) cls += ' rangeStart';
+      else if(c.ts === calPickEnd) cls += ' rangeEnd';
+      else if(c.ts > calPickStart && c.ts < calPickEnd) cls += ' inRange';
+    }
+    return `<div class="${cls}" data-ts="${c.ts}">${c.day}</div>`;
+  }).join('');
+
+  grid.querySelectorAll('.calDay:not(.otherMonth)').forEach(el => {
+    el.addEventListener('click', () => onCalendarDayClick(Number(el.dataset.ts)));
+  });
 }
 
 function openHistoryModal(){
@@ -1046,7 +1165,8 @@ function renderHistory(){
     return;
   }
 
-  const [rangeStart, rangeEnd] = getPeriodRange(currentHistoryPeriod);
+  const rangeStart = historyRangeStart != null ? historyRangeStart : -Infinity;
+  const rangeEnd = historyRangeEnd != null ? historyRangeEnd : Infinity;
   const inRange = (v) => {
     const t = new Date(v.ts).getTime();
     return t >= rangeStart && t <= rangeEnd;
