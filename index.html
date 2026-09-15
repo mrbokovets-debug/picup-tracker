@@ -28,12 +28,26 @@
     --danger: #e5484d;
     --danger-dim: #fde8e8;
   }
+  body.app-dark{
+    --asphalt: #14171c;
+    --asphalt-2: #1c2028;
+    --card: #20242c;
+    --line: #2c313c;
+    --text: #eef0f3;
+    --text-dim: #8b93a1;
+    --signal: #00c98d;
+    --signal-dim: #123d30;
+    --signal-text: #0b0f0d;
+    --cold: #4fa8e6;
+    --danger: #ff6b6f;
+    --danger-dim: #3a1f20;
+  }
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
   html,body{margin:0;padding:0;height:100%;background:var(--asphalt);color:var(--text);
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;}
   #app{display:flex; flex-direction:column; height:100vh; max-width:520px; margin:0 auto;}
 
-  header{padding:14px 16px 8px; flex-shrink:0;}
+  header{padding:14px 16px 4px; flex-shrink:0;}
   .headerTop{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   h1{font-size:20px; font-weight:800; letter-spacing:-0.02em; margin:0; text-align:center; flex:1;}
   #menuBtn{
@@ -177,7 +191,8 @@
     align-items:flex-end; justify-content:center; z-index:1000;}
   #statsModalBg.show{display:flex;}
   #statsModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
-    padding:20px; border-top:1px solid var(--line); max-height:85vh; overflow-y:auto;}
+    overflow:hidden;}
+  #statsModalScroll{padding:20px; max-height:85vh; overflow-y:auto;}
   #statsModal h3{margin:0; font-size:16px;}
   .statsRow{display:flex; gap:8px; margin-bottom:16px;}
   .statsCard{
@@ -259,7 +274,8 @@
     align-items:flex-end; justify-content:center; z-index:1000;}
   #historyModalBg.show{display:flex;}
   #historyModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
-    padding:20px; border-top:1px solid var(--line); max-height:85vh; overflow-y:auto;}
+    overflow:hidden;}
+  #historyModalScroll{padding:20px; max-height:85vh; overflow-y:auto;}
   #historyModal h3{margin:0; font-size:16px;}
   .stickyHeader{
     position:sticky; top:0; z-index:5; background:var(--card);
@@ -493,14 +509,11 @@
   <header>
     <div class="headerTop">
       <button id="menuBtn" onclick="openDrawer()">☰</button>
-      <h1>Точки забора</h1>
-      <div style="width:38px"></div>
     </div>
-    <p class="sub">Тапни рядом с заведением на карте. Если поблизости уже есть точки — предложу выбрать нужную или добавить новую (пригодится для фудкортов и ТЦ, где несколько заведений рядом).</p>
   </header>
 
   <div id="quickActions">
-    <button id="quickToggleBtn" onclick="handleQuickToggle()">🏍️ Получил заказ</button>
+    <button id="quickToggleBtn" onclick="handleQuickToggle()">🏍️ Принял заказ</button>
   </div>
   <div id="toast"></div>
 
@@ -546,11 +559,13 @@
 
 <div id="statsModalBg">
   <div id="statsModal">
-    <div class="stickyHeader">
-      <h3>Статистика по дням</h3>
-      <button class="modalXBtn" onclick="closeStatsModal()">✕</button>
+    <div id="statsModalScroll">
+      <div class="stickyHeader">
+        <h3>Статистика по дням</h3>
+        <button class="modalXBtn" onclick="closeStatsModal()">✕</button>
+      </div>
+      <div id="statsBody"></div>
     </div>
-    <div id="statsBody"></div>
   </div>
 </div>
 
@@ -574,7 +589,13 @@
       </div>
     </div>
 
-    <p class="coords">Оформление карты</p>
+    <p class="coords">Оформление приложения</p>
+    <div id="appThemeOptions">
+      <div class="themeOption" data-theme="light" onclick="chooseAppTheme('light')">☀️ Светлая</div>
+      <div class="themeOption" data-theme="dark" onclick="chooseAppTheme('dark')">🌙 Тёмная</div>
+    </div>
+
+    <p class="coords">Оформление карты (можно отдельно от приложения)</p>
     <div id="mapThemeOptions">
       <div class="themeOption" data-theme="dark" onclick="chooseMapTheme('dark')">🌙 Тёмная</div>
       <div class="themeOption" data-theme="light" onclick="chooseMapTheme('light')">☀️ Светлая</div>
@@ -586,16 +607,18 @@
 
 <div id="historyModalBg">
   <div id="historyModal">
-    <div class="stickyHeader">
-      <h3>История заборов</h3>
-      <button class="modalXBtn" onclick="closeHistoryModal()">✕</button>
+    <div id="historyModalScroll">
+      <div class="stickyHeader">
+        <h3>История заборов</h3>
+        <button class="modalXBtn" onclick="closeHistoryModal()">✕</button>
+      </div>
+      <p class="coords">Полная хроника: и добавления (+1), и отмены (−1). Если что-то пошло не так — здесь видно, где именно был случайный тап.</p>
+      <div id="historyDateFilterBar" onclick="openCalendarModal()">
+        <span id="historyDateFilterLabel">📅 Поиск по дате</span>
+        <span class="historyDateFilterArrow">›</span>
+      </div>
+      <div id="historyBody"></div>
     </div>
-    <p class="coords">Полная хроника: и добавления (+1), и отмены (−1). Если что-то пошло не так — здесь видно, где именно был случайный тап.</p>
-    <div id="historyDateFilterBar" onclick="openCalendarModal()">
-      <span id="historyDateFilterLabel">📅 Все даты</span>
-      <span class="historyDateFilterArrow">›</span>
-    </div>
-    <div id="historyBody"></div>
   </div>
 </div>
 
@@ -622,7 +645,7 @@
 <div id="routeModalBg">
   <div id="routeModal">
     <h3>Время в пути</h3>
-    <p class="coords">Отчёт по времени доезда до заведений. Управляется кнопкой на главном экране: "🏍️ Получил заказ" → "🏁 Прибыл".</p>
+    <p class="coords">Отчёт по времени доезда до заведений. Управляется кнопкой на главном экране: "🏍️ Принял заказ" → "🏁 Прибыл".</p>
     <div id="routePeriodTabs">
       <button class="periodTab active" data-period="day" onclick="setRoutePeriod('day')">День</button>
       <button class="periodTab" data-period="week" onclick="setRoutePeriod('week')">Неделя</button>
@@ -637,6 +660,7 @@
 const STORAGE_KEY = 'pickup-spots-geo';
 const VISITS_KEY = 'pickup-visits-log'; // журнал каждого отдельного забора с датой - для статистики по дням
 const MAP_THEME_KEY = 'pickup-map-theme';
+const APP_THEME_KEY = 'pickup-app-theme'; // тема всего приложения, независимо от темы карты
 const MARKER_STYLE_KEY = 'pickup-marker-style'; // 'circle' или 'bag'
 const CLUSTER_RADIUS_M = 40; // если тап ближе этого расстояния к точке - засчитываем ей же
 let spots = [];
@@ -700,12 +724,26 @@ function applyMapTheme(isDark){
 function chooseMapTheme(theme){
   localStorage.setItem(MAP_THEME_KEY, theme);
   applyMapTheme(theme === 'dark');
-  document.querySelectorAll('.themeOption').forEach(el => {
+  document.querySelectorAll('#mapThemeOptions .themeOption').forEach(el => {
     el.classList.toggle('active', el.dataset.theme === theme);
   });
 }
 
 applyMapTheme((localStorage.getItem(MAP_THEME_KEY) || 'light') === 'dark');
+
+function applyAppTheme(theme){
+  document.body.classList.toggle('app-dark', theme === 'dark');
+}
+
+function chooseAppTheme(theme){
+  localStorage.setItem(APP_THEME_KEY, theme);
+  applyAppTheme(theme);
+  document.querySelectorAll('#appThemeOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === theme);
+  });
+}
+
+applyAppTheme(localStorage.getItem(APP_THEME_KEY) || 'light');
 
 let suppressNextMapClick = false;
 
@@ -853,9 +891,13 @@ function openSettingsModal(){
   document.querySelectorAll('.markerOption').forEach(el => {
     el.classList.toggle('active', el.dataset.style === current);
   });
-  const currentTheme = localStorage.getItem(MAP_THEME_KEY) || 'dark';
-  document.querySelectorAll('.themeOption').forEach(el => {
-    el.classList.toggle('active', el.dataset.theme === currentTheme);
+  const currentAppTheme = localStorage.getItem(APP_THEME_KEY) || 'light';
+  document.querySelectorAll('#appThemeOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === currentAppTheme);
+  });
+  const currentMapTheme = localStorage.getItem(MAP_THEME_KEY) || 'light';
+  document.querySelectorAll('#mapThemeOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === currentMapTheme);
   });
   document.getElementById('settingsModalBg').classList.add('show');
 }
@@ -940,7 +982,7 @@ function updateQuickButton(){
   if(!btn) return;
   if(routeActive.length === 0){
     btn.classList.remove('active');
-    btn.textContent = '🏍️ Получил заказ';
+    btn.textContent = '🏍️ Принял заказ';
   } else {
     btn.classList.add('active');
     const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
@@ -1082,7 +1124,7 @@ function calendarReset(){
   historyRangeEnd = null;
   calPickStart = null;
   calPickEnd = null;
-  document.getElementById('historyDateFilterLabel').textContent = '📅 Все даты';
+  document.getElementById('historyDateFilterLabel').textContent = '📅 Поиск по дате';
   closeCalendarModal();
   renderHistory();
 }
@@ -1470,7 +1512,7 @@ function escapeHtml(str){
   const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
 }
 
-// --- Учёт времени ожидания: "Прибыл" -> "Получил заказ" ---
+// --- Учёт времени ожидания у стойки: "⏱ Прибыл" -> "✅ Забрал заказ" (не путать с главной кнопкой) ---
 function formatDuration(totalSec){
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
