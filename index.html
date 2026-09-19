@@ -117,7 +117,6 @@
     to{transform:scale(1.8); opacity:0;}
   }
 
-  #list{padding:2px 16px 6px; flex-shrink:0; max-height:30vh; overflow-y:auto;}
   #searchInput{
     width:100%; padding:9px 12px; border-radius:9px; border:1px solid var(--line);
     background:var(--card); color:var(--text); font-size:13.5px; outline:none;
@@ -276,11 +275,22 @@
   #historyModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
     overflow:hidden;}
   #historyModalScroll{padding:20px; max-height:85vh; overflow-y:auto;}
+
+  #ordersModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #ordersModalBg.show{display:flex;}
+  #ordersModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    overflow:hidden;}
+  #ordersModalScroll{padding:20px; max-height:85vh; overflow-y:auto;}
+  #ordersModal h3{margin:0; font-size:16px;}
   #historyModal h3{margin:0; font-size:16px;}
   .stickyHeader{
-    position:sticky; top:0; z-index:5; background:var(--card);
+    position:sticky; top:0; z-index:50; background:var(--card);
     display:flex; align-items:center; justify-content:space-between;
-    padding-bottom:8px; margin-bottom:2px;
+    padding:0 0 10px; margin:0 0 4px;
+    box-shadow:0 6px 8px -4px rgba(0,0,0,0.25);
+    -webkit-transform:translateZ(0); transform:translateZ(0);
+    isolation:isolate;
   }
   .modalXBtn{
     background:var(--asphalt-2); border:1px solid var(--line); color:var(--text-dim);
@@ -474,6 +484,10 @@
     <span>Меню</span>
     <button id="drawerCloseBtn" onclick="closeDrawer()">✕</button>
   </div>
+  <div class="drawerItem" onclick="closeDrawer(); openOrdersModal();">
+    <span class="drawerIcon">🧾</span>
+    <span>Мои заказы</span>
+  </div>
   <div class="drawerItem" onclick="closeDrawer(); openStatsModal();">
     <span class="drawerIcon">📊</span>
     <span>Статистика</span>
@@ -524,13 +538,21 @@
     <button id="locateBtn" title="Найти меня">📍</button>
   </div>
 
-  <div id="list">
-    <input id="searchInput" type="text" placeholder="Поиск среди своих точек..." oninput="renderAll()">
-    <div class="listTitle"><span>По частоте</span><span id="totalCount"></span></div>
-    <div id="rows"></div>
-  </div>
-
   <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+</div>
+
+<div id="ordersModalBg">
+  <div id="ordersModal">
+    <div id="ordersModalScroll">
+      <div class="stickyHeader">
+        <h3>Мои заказы</h3>
+        <button class="modalXBtn" onclick="closeOrdersModal()">✕</button>
+      </div>
+      <input id="searchInput" type="text" placeholder="Поиск среди своих точек..." oninput="renderAll()">
+      <div class="listTitle"><span>По частоте</span><span id="totalCount"></span></div>
+      <div id="rows"></div>
+    </div>
+  </div>
 </div>
 
 <div id="modalBg">
@@ -1190,6 +1212,14 @@ function renderCalendar(){
   grid.querySelectorAll('.calDay:not(.otherMonth)').forEach(el => {
     el.addEventListener('click', () => onCalendarDayClick(Number(el.dataset.ts)));
   });
+}
+
+function openOrdersModal(){
+  renderAll();
+  document.getElementById('ordersModalBg').classList.add('show');
+}
+function closeOrdersModal(){
+  document.getElementById('ordersModalBg').classList.remove('show');
 }
 
 function openHistoryModal(){
