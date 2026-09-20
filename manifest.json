@@ -1,6 +1,6 @@
 {
-  "name": "Точки забора заказов",
-  "short_name": "Точки забора",
+  "name": "PickupMap",
+  "short_name": "PickupMap",
   "description": "Трекер мест, где чаще всего забираешь заказы",
   "start_url": "./index.html",
   "display": "standalone",
