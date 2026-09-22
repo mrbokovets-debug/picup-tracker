@@ -428,15 +428,11 @@
   }
   #sideDrawer.show{transform:translateX(0);}
   .drawerHeader{
-    display:flex; align-items:center; justify-content:space-between;
+    display:flex; align-items:center;
     padding:calc(20px + env(safe-area-inset-top, 0px)) 20px 20px;
     font-size:19px; font-weight:800; color:#ffffff;
     background:linear-gradient(135deg, var(--signal), #00806a);
     margin-bottom:14px;
-  }
-  #drawerCloseBtn{
-    background:rgba(255,255,255,0.2); border:none; color:#ffffff; font-size:15px;
-    width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0;
   }
   .drawerGroup{
     background:var(--card); border-radius:16px; margin:0 14px 14px; overflow:hidden;
@@ -500,7 +496,6 @@
 <div id="sideDrawer">
   <div class="drawerHeader">
     <span>🛵 Меню</span>
-    <button id="drawerCloseBtn" onclick="closeDrawer()">✕</button>
   </div>
 
   <div class="drawerGroup">
@@ -1879,9 +1874,10 @@ function importData(event){
   reader.onload = (e) => {
     try{
       const parsed = JSON.parse(e.target.result);
-      // поддерживаем и старый формат (просто массив точек), и новый ({spots, visitsLog})
+      // поддерживаем и старый формат (просто массив точек), и новый ({spots, visitsLog, routeLog})
       const importedSpots = Array.isArray(parsed) ? parsed : (parsed.spots || []);
       const importedVisits = Array.isArray(parsed) ? [] : (parsed.visitsLog || []);
+      const importedRouteLog = Array.isArray(parsed) ? [] : (parsed.routeLog || []);
       const validSpots = importedSpots.filter(s => s && typeof s.lat === 'number' && typeof s.lng === 'number' && typeof s.name === 'string');
       if(validSpots.length === 0){ alert('В файле не найдено ни одной точки.'); return; }
 
@@ -1904,12 +1900,20 @@ function importData(event){
             visitsLog.push(v);
           }
         });
+        const existingRouteIds = new Set(routeLog.map(r => r.id));
+        importedRouteLog.forEach(r => {
+          if(!existingRouteIds.has(r.id)){
+            routeLog.push(r);
+          }
+        });
       } else {
         spots = validSpots;
         visitsLog = importedVisits;
+        routeLog = importedRouteLog;
       }
       persist();
       persistVisits();
+      persistRouteLog();
       renderAll();
       if(spots.length){
         const group = L.featureGroup(Object.values(markers));
