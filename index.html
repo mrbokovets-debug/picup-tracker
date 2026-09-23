@@ -422,36 +422,33 @@
   #drawerOverlay.show{opacity:1; pointer-events:auto;}
   #sideDrawer{
     position:fixed; top:0; left:0; bottom:0; width:82%; max-width:320px;
-    background:var(--asphalt); z-index:1600; box-shadow:2px 0 24px rgba(0,0,0,0.45);
+    background:var(--card); z-index:1600; box-shadow:2px 0 24px rgba(0,0,0,0.25);
     transform:translateX(-100%); transition:transform .25s ease;
-    display:flex; flex-direction:column; padding:0 0 16px; overflow-y:auto;
+    display:flex; flex-direction:column; padding:0 0 20px; overflow-y:auto;
   }
   #sideDrawer.show{transform:translateX(0);}
   .drawerHeader{
     display:flex; align-items:center;
-    padding:calc(20px + env(safe-area-inset-top, 0px)) 20px 20px;
-    font-size:19px; font-weight:800; color:#ffffff;
-    background:linear-gradient(135deg, var(--signal), #00806a);
-    margin-bottom:14px;
+    padding:calc(24px + env(safe-area-inset-top, 0px)) 20px 16px;
+    font-size:26px; font-weight:800; color:var(--text);
   }
   .drawerGroup{
-    background:var(--card); border-radius:16px; margin:0 14px 14px; overflow:hidden;
-    border:1px solid var(--line);
+    border-top:1px solid var(--line); padding-top:6px; margin-top:6px;
   }
+  .drawerGroup:first-of-type{border-top:none; padding-top:0; margin-top:0;}
   .drawerItem{
-    display:flex; align-items:center; gap:12px; padding:13px 14px; font-size:14px;
-    color:var(--text); cursor:pointer; font-weight:600;
-    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:14px; padding:14px 20px; font-size:15px;
+    color:var(--text); cursor:pointer; font-weight:700;
   }
-  .drawerItem:last-child{border-bottom:none;}
   .drawerItem:active{background:var(--asphalt-2);}
   .drawerIcon{
-    font-size:16px; width:34px; height:34px; border-radius:50%; flex-shrink:0;
-    background:var(--signal-dim); display:flex; align-items:center; justify-content:center;
+    width:24px; height:24px; flex-shrink:0; color:var(--text);
+    display:flex; align-items:center; justify-content:center;
   }
-  .drawerDanger .drawerIcon{background:var(--danger-dim);}
+  .drawerIcon svg{width:22px; height:22px;}
+  .drawerDanger .drawerIcon{color:var(--danger);}
   .drawerLabel{flex:1;}
-  .drawerChevron{color:var(--text-dim); font-size:16px; flex-shrink:0;}
+  .drawerChevron{color:var(--text-dim); font-size:18px; font-weight:400; flex-shrink:0;}
   .drawerBadge{
     background:var(--signal); color:#fff; font-size:11px; font-weight:800;
     border-radius:10px; padding:2px 7px; display:none; margin-right:2px;
@@ -495,27 +492,27 @@
 <div id="drawerOverlay" onclick="closeDrawer()"></div>
 <div id="sideDrawer">
   <div class="drawerHeader">
-    <span>🛵 Меню</span>
+    <span>Меню</span>
   </div>
 
   <div class="drawerGroup">
     <div class="drawerItem" onclick="closeDrawer(); openOrdersModal();">
-      <span class="drawerIcon">🧾</span>
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></span>
       <span class="drawerLabel">Мои заказы</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" onclick="closeDrawer(); openStatsModal();">
-      <span class="drawerIcon">📊</span>
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="9"/></svg></span>
       <span class="drawerLabel">Статистика</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" onclick="closeDrawer(); openHistoryModal();">
-      <span class="drawerIcon">🕓</span>
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg></span>
       <span class="drawerLabel">История</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" onclick="closeDrawer(); openRouteModal();">
-      <span class="drawerIcon">🛵</span>
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 18h4l2-6h4M12 12l3-4h2"/></svg></span>
       <span class="drawerLabel">Время в пути</span>
       <span id="routeBadge" class="drawerBadge"></span>
       <span class="drawerChevron">›</span>
@@ -524,17 +521,17 @@
 
   <div class="drawerGroup">
     <div class="drawerItem" onclick="closeDrawer(); openSettingsModal();">
-      <span class="drawerIcon">⚙️</span>
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.35a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.65 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.65 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.65a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.35 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.04Z"/></svg></span>
       <span class="drawerLabel">Настройки</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" onclick="closeDrawer(); exportData();">
-      <span class="drawerIcon">💾</span>
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span>
       <span class="drawerLabel">Сохранить копию</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" onclick="closeDrawer(); document.getElementById('importFile').click();">
-      <span class="drawerIcon">📂</span>
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2Z"/></svg></span>
       <span class="drawerLabel">Восстановить из файла</span>
       <span class="drawerChevron">›</span>
     </div>
@@ -542,7 +539,7 @@
 
   <div class="drawerGroup">
     <div class="drawerItem drawerDanger" onclick="closeDrawer(); resetAll();">
-      <span class="drawerIcon">🗑️</span>
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></span>
       <span class="drawerLabel">Очистить все данные</span>
       <span class="drawerChevron">›</span>
     </div>
