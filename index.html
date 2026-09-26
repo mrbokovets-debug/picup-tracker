@@ -313,30 +313,12 @@
   .historyName{flex:1; font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .historyWait{font-size:10.5px; color:var(--text-dim); flex-shrink:0;}
 
-  /* --- Время в пути --- */
-  #routeModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
-    align-items:flex-end; justify-content:center; z-index:1000;}
-  #routeModalBg.show{display:flex;}
-  #routeModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
-    padding:20px; border-top:1px solid var(--line); max-height:85vh; overflow-y:auto;}
-  #routeModal h3{margin:0 0 6px; font-size:16px;}
-  #routeModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 14px;}
-  #routePeriodTabs{display:flex; gap:6px; margin:14px 0 4px;}
-  .periodTab{
-    flex:1; padding:8px; border-radius:8px; border:1px solid var(--line); background:var(--asphalt-2);
-    color:var(--text-dim); font-size:12.5px; font-weight:600; cursor:pointer;
-  }
-  .periodTab.active{background:var(--signal); color:var(--signal-text); border-color:var(--signal);}
-  #routeAvg{font-size:12.5px; color:var(--text-dim); text-align:center; margin:10px 0 14px;}
-
   .periodTabsScroll{
     display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch;
     margin:8px 0 10px; padding-bottom:2px; scrollbar-width:none;
   }
   .periodTabsScroll::-webkit-scrollbar{display:none;}
   .periodTabsScroll .periodTab{flex:0 0 auto; padding:7px 12px; white-space:nowrap;}
-  #routeCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
-    font-weight:700; cursor:pointer; background:var(--line); color:var(--text);}
 
   /* --- Панель выбора периода в истории (открывает календарь) --- */
   #historyDateFilterBar{
@@ -452,13 +434,26 @@
   .drawerDanger{color:var(--danger);}
   .drawerDanger .drawerChevron{color:var(--danger); opacity:0.6;}
 
+  /* Два основных показателя в верхней панели: среднее время + старт/стоп.
+     Высота панели остаётся прежней, поэтому карта не уменьшается. */
+  #homeRouteStats{
+    flex:1; min-width:0; height:48px; padding:0 12px; border:0;
+    border-radius:16px; background:var(--signal); color:var(--signal-text);
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    text-align:center;
+  }
+  .homeRouteStatsTitle{font-size:12px; line-height:1.1; font-weight:800; white-space:nowrap;}
+  .homeRouteAvg{font-size:15px; line-height:1.1; font-weight:900; white-space:nowrap;}
+  .homeRouteCount,.homeRouteStatsSub{display:none;}
+
   #quickToggleBtn{
-    flex:1; padding:0 16px; border-radius:16px; border:none; font-size:15px; font-weight:700;
-    cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    flex:1; min-width:0; height:48px; padding:0 10px; border-radius:16px; border:none;
+    font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.15);
     background:var(--signal); color:var(--signal-text);
   }
   #quickToggleBtn.active{
-    background:var(--card); color:var(--signal); border:2px solid var(--signal);
+    background:var(--signal); color:var(--signal-text); border:0;
   }
 
   #toast{
@@ -506,12 +501,6 @@
       <span class="drawerLabel">История</span>
       <span class="drawerChevron">›</span>
     </div>
-    <div class="drawerItem" onclick="closeDrawer(); openRouteModal();">
-      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 18h4l2-6h4M12 12l3-4h2"/></svg></span>
-      <span class="drawerLabel">Время в пути</span>
-      <span id="routeBadge" class="drawerBadge"></span>
-      <span class="drawerChevron">›</span>
-    </div>
   </div>
 
   <div class="drawerGroup">
@@ -545,7 +534,14 @@
   <header>
     <div class="headerTop">
       <button id="menuBtn" onclick="openDrawer()">☰</button>
-      <button id="quickToggleBtn" onclick="handleQuickToggle()">🏍️ Принял заказ</button>
+
+      <div id="homeRouteStats" aria-label="Среднее время доставки">
+        <div class="homeRouteStatsTitle">⏱ Среднее время</div>
+        <div id="homeRouteAvg" class="homeRouteAvg">—</div>
+        <div id="homeRouteCount" class="homeRouteCount">Нет завершённых доставок</div>
+      </div>
+
+      <button id="quickToggleBtn" onclick="handleQuickToggle()">🏍️ Старт</button>
     </div>
   </header>
 
@@ -684,19 +680,6 @@
   </div>
 </div>
 
-<div id="routeModalBg">
-  <div id="routeModal">
-    <h3>Время в пути</h3>
-    <p class="coords">Отчёт по времени доезда до заведений. Управляется кнопкой на главном экране: "🏍️ Принял заказ" → "🏁 Прибыл".</p>
-    <div id="routePeriodTabs">
-      <button class="periodTab active" data-period="day" onclick="setRoutePeriod('day')">День</button>
-      <button class="periodTab" data-period="week" onclick="setRoutePeriod('week')">Неделя</button>
-      <button class="periodTab" data-period="month" onclick="setRoutePeriod('month')">Месяц</button>
-    </div>
-    <div id="routeAvg"></div>
-    <button id="routeCloseBtn" onclick="closeRouteModal()">Закрыть</button>
-  </div>
-</div>
 
 <script>
 const STORAGE_KEY = 'pickup-spots-geo';
@@ -858,8 +841,8 @@ function loadSpots(){
     const rawRouteLog = localStorage.getItem(ROUTE_LOG_KEY);
     routeLog = rawRouteLog ? JSON.parse(rawRouteLog) : [];
   }catch(e){ routeLog = []; }
-  updateRouteBadge();
   updateQuickButton();
+  updateHomeRouteStats();
   renderAll();
   if(spots.length){
     const group = L.featureGroup(Object.values(markers));
@@ -963,18 +946,12 @@ function closeDrawer(){
 }
 
 // --- История заборов с точечной отменой ---
-// --- Время от получения заказа до приезда в заведение (несколько параллельно) ---
+// --- Время от старта доставки до стопа (несколько параллельно) ---
 function persistRouteActive(){
   try{ localStorage.setItem(ROUTE_ACTIVE_KEY, JSON.stringify(routeActive)); }catch(e){}
 }
 function persistRouteLog(){
   try{ localStorage.setItem(ROUTE_LOG_KEY, JSON.stringify(routeLog)); }catch(e){}
-}
-
-function updateRouteBadge(){
-  const badge = document.getElementById('routeBadge');
-  if(!badge) return;
-  badge.textContent = routeActive.length > 0 ? String(routeActive.length) : '';
 }
 
 // --- Всплывающее уведомление (тост) ---
@@ -1023,13 +1000,13 @@ function updateQuickButton(){
   if(!btn) return;
   if(routeActive.length === 0){
     btn.classList.remove('active');
-    btn.textContent = '🏍️ Принял заказ';
+    btn.textContent = '🏍️ Старт';
   } else {
     btn.classList.add('active');
     const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
     const elapsed = Math.floor((Date.now() - oldest.startTs) / 1000);
     const suffix = routeActive.length > 1 ? ` (+${routeActive.length - 1})` : '';
-    btn.textContent = `🏁 Прибыл · ${formatTimer(elapsed)}${suffix}`;
+    btn.textContent = `⏹️ Стоп · ${formatTimer(elapsed)}${suffix}`;
   }
 }
 
@@ -1040,8 +1017,7 @@ quickBtnInterval = setInterval(updateQuickButton, 1000);
 function startNewRoute(){
   routeActive.push({ id: 'route_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), startTs: Date.now() });
   persistRouteActive();
-  updateRouteBadge();
-  renderRouteModal();
+  updateHomeRouteStats();
 }
 
 function markRouteArrived(routeId){
@@ -1053,8 +1029,7 @@ function markRouteArrived(routeId){
   routeLog.push({ id: route.id, startTs: route.startTs, endTs: Date.now(), durationSec });
   persistRouteActive();
   persistRouteLog();
-  updateRouteBadge();
-  renderRouteModal();
+  updateHomeRouteStats();
 }
 
 function dayKeyFromTs(ts){
@@ -1062,51 +1037,29 @@ function dayKeyFromTs(ts){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function openRouteModal(){
-  renderRouteModal();
-  document.getElementById('routeModalBg').classList.add('show');
-}
-function closeRouteModal(){
-  document.getElementById('routeModalBg').classList.remove('show');
-}
+function updateHomeRouteStats(){
+  const avgEl = document.getElementById('homeRouteAvg');
+  const countEl = document.getElementById('homeRouteCount');
+  if(!avgEl || !countEl) return;
 
-function renderRouteModal(){
-  renderRouteAvgForPeriod();
-}
-
-function setRoutePeriod(period){
-  currentRoutePeriod = period;
-  document.querySelectorAll('.periodTab').forEach(el => {
-    el.classList.toggle('active', el.dataset.period === period);
-  });
-  renderRouteAvgForPeriod();
-}
-
-function renderRouteAvgForPeriod(){
-  const now = Date.now();
-  let cutoff;
-  let label;
-  if(currentRoutePeriod === 'day'){
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    cutoff = d.getTime();
-    label = 'сегодня';
-  } else if(currentRoutePeriod === 'week'){
-    cutoff = now - 7 * 86400000;
-    label = 'за 7 дней';
-  } else {
-    cutoff = now - 30 * 86400000;
-    label = 'за 30 дней';
-  }
-
-  const entries = routeLog.filter(r => r.endTs >= cutoff);
-  const avgEl = document.getElementById('routeAvg');
+  const entries = routeLog.filter(r => Number.isFinite(r.durationSec) && r.durationSec > 0);
   if(entries.length === 0){
-    avgEl.textContent = `Нет завершённых доездов (${label}).`;
-  } else {
-    const avgSec = Math.round(entries.reduce((a, r) => a + r.durationSec, 0) / entries.length);
-    avgEl.textContent = `Среднее время доезда ${label}: ${formatDuration(avgSec)} (доездов: ${entries.length})`;
+    avgEl.textContent = '—';
+    countEl.textContent = 'Нет завершённых доставок';
+    return;
   }
+
+  const avgSec = Math.round(entries.reduce((sum, r) => sum + r.durationSec, 0) / entries.length);
+  avgEl.textContent = formatDurationShort(avgSec);
+  countEl.textContent = `${entries.length} ${entries.length === 1 ? 'завершённая доставка' : entries.length < 5 ? 'завершённые доставки' : 'завершённых доставок'}`;
+}
+
+function formatDurationShort(totalSec){
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  if(m === 0) return `${s} сек`;
+  if(s === 0) return `${m} мин`;
+  return `${m} мин ${s} сек`;
 }
 
 // --- Календарь для выбора даты/диапазона дат в истории ---
