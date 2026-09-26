@@ -126,8 +126,15 @@
   #searchInput:focus{border-color:var(--signal);}
   #searchInput::placeholder{color:var(--text-dim);}
   .listTitle{font-size:12px; color:var(--text-dim); margin:6px 2px 8px; display:flex; justify-content:space-between;}
+  .rowSwipeWrap{position:relative; border-radius:10px; overflow:hidden; margin-bottom:7px;}
+  .rowDeleteAction{
+    position:absolute; top:0; right:0; bottom:0; width:84px;
+    background:var(--danger); color:#fff; font-size:13px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
   .row{display:flex; flex-direction:column; gap:5px; background:var(--card);
-    border:1px solid var(--line); border-radius:10px; padding:9px 12px; margin-bottom:7px;}
+    border:1px solid var(--line); border-radius:10px; padding:9px 12px;
+    position:relative; touch-action:pan-y; user-select:none;}
   .rowTop{display:flex; align-items:center; gap:10px;}
   .row .dot{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
   .row .name{flex:1; font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
@@ -137,7 +144,6 @@
   .row button{background:var(--signal-dim); color:var(--signal); border:none; border-radius:8px;
     width:28px; height:28px; font-size:15px; font-weight:700; cursor:pointer; flex-shrink:0;}
   .row button.minus{background:var(--danger-dim); color:var(--danger);}
-  .row .del{background:transparent; color:var(--text-dim); font-size:13px; width:22px;}
   .empty{color:var(--text-dim); font-size:13px; text-align:center; padding:16px 10px;}
 
   #modalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
@@ -313,21 +319,11 @@
   .historyName{flex:1; font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .historyWait{font-size:10.5px; color:var(--text-dim); flex-shrink:0;}
 
-  /* --- Время в пути --- */
-  #routeModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
-    align-items:flex-end; justify-content:center; z-index:1000;}
-  #routeModalBg.show{display:flex;}
-  #routeModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
-    padding:20px; border-top:1px solid var(--line); max-height:85vh; overflow-y:auto;}
-  #routeModal h3{margin:0 0 6px; font-size:16px;}
-  #routeModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 14px;}
-  #routePeriodTabs{display:flex; gap:6px; margin:14px 0 4px;}
   .periodTab{
     flex:1; padding:8px; border-radius:8px; border:1px solid var(--line); background:var(--asphalt-2);
     color:var(--text-dim); font-size:12.5px; font-weight:600; cursor:pointer;
   }
   .periodTab.active{background:var(--signal); color:var(--signal-text); border-color:var(--signal);}
-  #routeAvg{font-size:12.5px; color:var(--text-dim); text-align:center; margin:10px 0 14px;}
 
   .periodTabsScroll{
     display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch;
@@ -335,9 +331,6 @@
   }
   .periodTabsScroll::-webkit-scrollbar{display:none;}
   .periodTabsScroll .periodTab{flex:0 0 auto; padding:7px 12px; white-space:nowrap;}
-  #routeCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
-    font-weight:700; cursor:pointer; background:var(--line); color:var(--text);}
-
   /* --- Панель выбора периода в истории (открывает календарь) --- */
   #historyDateFilterBar{
     display:flex; align-items:center; justify-content:space-between; cursor:pointer;
@@ -461,6 +454,13 @@
     background:var(--card); color:var(--signal); border:2px solid var(--signal);
   }
 
+  #deliveryAvgBar{
+    margin:8px 14px 0; padding:9px 12px; text-align:center; font-size:12.5px;
+    color:var(--text-dim); background:var(--card); border:1px solid var(--line);
+    border-radius:10px; flex-shrink:0;
+  }
+  #deliveryAvgBar b{color:var(--signal); font-weight:800;}
+
   #toast{
     position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px);
     background:#14171c; color:#ffffff; padding:11px 18px; border-radius:10px; font-size:13.5px;
@@ -506,12 +506,6 @@
       <span class="drawerLabel">История</span>
       <span class="drawerChevron">›</span>
     </div>
-    <div class="drawerItem" onclick="closeDrawer(); openRouteModal();">
-      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 18h4l2-6h4M12 12l3-4h2"/></svg></span>
-      <span class="drawerLabel">Время в пути</span>
-      <span id="routeBadge" class="drawerBadge"></span>
-      <span class="drawerChevron">›</span>
-    </div>
   </div>
 
   <div class="drawerGroup">
@@ -545,9 +539,11 @@
   <header>
     <div class="headerTop">
       <button id="menuBtn" onclick="openDrawer()">☰</button>
-      <button id="quickToggleBtn" onclick="handleQuickToggle()">🏍️ Принял заказ</button>
+      <button id="quickToggleBtn" onclick="handleQuickToggle()">▶ Старт</button>
     </div>
   </header>
+
+  <div id="deliveryAvgBar">📦 Среднее время доставки: <b id="deliveryAvgValue">—</b></div>
 
   <div id="toast"></div>
 
@@ -684,19 +680,6 @@
   </div>
 </div>
 
-<div id="routeModalBg">
-  <div id="routeModal">
-    <h3>Время в пути</h3>
-    <p class="coords">Отчёт по времени доезда до заведений. Управляется кнопкой на главном экране: "🏍️ Принял заказ" → "🏁 Прибыл".</p>
-    <div id="routePeriodTabs">
-      <button class="periodTab active" data-period="day" onclick="setRoutePeriod('day')">День</button>
-      <button class="periodTab" data-period="week" onclick="setRoutePeriod('week')">Неделя</button>
-      <button class="periodTab" data-period="month" onclick="setRoutePeriod('month')">Месяц</button>
-    </div>
-    <div id="routeAvg"></div>
-    <button id="routeCloseBtn" onclick="closeRouteModal()">Закрыть</button>
-  </div>
-</div>
 
 <script>
 const STORAGE_KEY = 'pickup-spots-geo';
@@ -717,7 +700,6 @@ const ROUTE_ACTIVE_KEY = 'pickup-route-active'; // [{ id, startTs }] - зака�
 const ROUTE_LOG_KEY = 'pickup-route-log'; // [{ id, startTs, endTs, durationSec }] - завершённые доезды
 let routeActive = [];
 let routeLog = [];
-let currentRoutePeriod = 'day'; // 'day' | 'week' | 'month'
 
 // Стартовая точка - примерное местоположение, потом попробуем уточнить через GPS браузера
 const DEFAULT_CENTER = [39.49061425228292, -0.34876301013819333];
@@ -858,7 +840,7 @@ function loadSpots(){
     const rawRouteLog = localStorage.getItem(ROUTE_LOG_KEY);
     routeLog = rawRouteLog ? JSON.parse(rawRouteLog) : [];
   }catch(e){ routeLog = []; }
-  updateRouteBadge();
+  renderDeliveryAvg();
   updateQuickButton();
   renderAll();
   if(spots.length){
@@ -876,6 +858,79 @@ function persistVisits(){
   try{ localStorage.setItem(VISITS_KEY, JSON.stringify(visitsLog)); }
   catch(e){ console.error('storage error', e); }
 }
+
+// --- Свайп влево на карточке точки открывает кнопку "Удалить" ---
+const SWIPE_REVEAL = 84;
+
+function closeAllSwipes(exceptWrap){
+  document.querySelectorAll('.rowSwipeWrap.swiped').forEach(wrap => {
+    if(wrap !== exceptWrap){
+      wrap.classList.remove('swiped');
+      wrap.querySelector('.row').style.transform = 'translateX(0)';
+    }
+  });
+}
+
+function attachAllSwipes(){
+  document.querySelectorAll('.rowSwipeWrap').forEach(wrap => {
+    const rowEl = wrap.querySelector('.row');
+    const deleteBtn = wrap.querySelector('.rowDeleteAction');
+    let startX = 0, startY = 0, currentX = 0, dragging = false, directionLocked = null;
+
+    rowEl.addEventListener('pointerdown', (e) => {
+      if(e.target.closest('button')) return; // не мешаем -1/+1
+      if(wrap.classList.contains('swiped')){
+        // тап по открытой карточке (не по кнопке удаления) - просто закрываем её
+        wrap.classList.remove('swiped');
+        rowEl.style.transform = 'translateX(0)';
+        return;
+      }
+      startX = e.clientX; startY = e.clientY; dragging = true; directionLocked = null;
+      rowEl.style.transition = 'none';
+    });
+    rowEl.addEventListener('pointermove', (e) => {
+      if(!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if(directionLocked === null){
+        if(Math.abs(dx) > 8 || Math.abs(dy) > 8){
+          directionLocked = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        }
+      }
+      if(directionLocked === 'y'){ dragging = false; return; }
+      if(directionLocked === 'x'){
+        currentX = Math.min(0, Math.max(-SWIPE_REVEAL - 24, dx));
+        rowEl.style.transform = `translateX(${currentX}px)`;
+      }
+    });
+    const endDrag = () => {
+      if(!dragging) return;
+      dragging = false;
+      rowEl.style.transition = '';
+      if(currentX < -SWIPE_REVEAL / 2){
+        rowEl.style.transform = `translateX(-${SWIPE_REVEAL}px)`;
+        wrap.classList.add('swiped');
+        closeAllSwipes(wrap);
+      } else {
+        rowEl.style.transform = 'translateX(0)';
+        wrap.classList.remove('swiped');
+      }
+      currentX = 0;
+    };
+    rowEl.addEventListener('pointerup', endDrag);
+    rowEl.addEventListener('pointercancel', endDrag);
+
+    deleteBtn.addEventListener('click', () => {
+      removeSpot(wrap.dataset.id);
+    });
+  });
+}
+
+document.addEventListener('pointerdown', (e) => {
+  if(!e.target.closest('.rowSwipeWrap')){
+    closeAllSwipes(null);
+  }
+});
 
 function renderAll(){
   Object.values(markers).forEach(m => map.removeLayer(m));
@@ -908,20 +963,23 @@ function renderAll(){
     rowsEl.innerHTML = filtered.map(s => {
       const avgWait = (s.waitCount > 0) ? formatDuration(Math.round(s.waitTotalSec / s.waitCount)) : null;
       return `
-      <div class="row">
-        <div class="rowTop">
-          <div class="dot" style="background:${colorForCount(s.count, max)}"></div>
-          <div class="name">${escapeHtml(s.name)}</div>
-          <div class="n">${formatZaboros(s.count)}</div>
-        </div>
-        ${avgWait ? `<div class="rowWait">⏱ в среднем ждёшь тут: ${avgWait}</div>` : ''}
-        <div class="rowBtns">
-          <button class="minus" onclick="unbump('${s.id}')">−1</button>
-          <button onclick="bump('${s.id}')">+1</button>
-          <button class="del" onclick="removeSpot('${s.id}')">✕</button>
+      <div class="rowSwipeWrap" data-id="${s.id}">
+        <div class="rowDeleteAction" data-id="${s.id}">Удалить</div>
+        <div class="row">
+          <div class="rowTop">
+            <div class="dot" style="background:${colorForCount(s.count, max)}"></div>
+            <div class="name">${escapeHtml(s.name)}</div>
+            <div class="n">${formatZaboros(s.count)}</div>
+          </div>
+          ${avgWait ? `<div class="rowWait">⏱ в среднем ждёшь тут: ${avgWait}</div>` : ''}
+          <div class="rowBtns">
+            <button class="minus" onclick="unbump('${s.id}')">−1</button>
+            <button onclick="bump('${s.id}')">+1</button>
+          </div>
         </div>
       </div>
     `}).join('');
+    attachAllSwipes();
   }
   const total = spots.reduce((a,s) => a + s.count, 0);
   document.getElementById('totalCount').textContent = total ? `всего заборов: ${total}` : '';
@@ -971,12 +1029,6 @@ function persistRouteLog(){
   try{ localStorage.setItem(ROUTE_LOG_KEY, JSON.stringify(routeLog)); }catch(e){}
 }
 
-function updateRouteBadge(){
-  const badge = document.getElementById('routeBadge');
-  if(!badge) return;
-  badge.textContent = routeActive.length > 0 ? String(routeActive.length) : '';
-}
-
 // --- Всплывающее уведомление (тост) ---
 let toastTimer = null;
 function showToast(text){
@@ -1001,21 +1053,22 @@ function handleQuickToggle(){
 function quickOrderReceived(){
   startNewRoute();
   const n = routeActive.length;
-  showToast(n > 1 ? `🏍️ Таймер запущен (в пути заказов: ${n})` : '🏍️ Таймер запущен');
+  showToast(n > 1 ? `▶ Старт (заказов в работе: ${n})` : '▶ Старт');
   updateQuickButton();
 }
 
 function quickArrived(){
   if(routeActive.length === 0){
-    showToast('Нет активных заказов в пути');
+    showToast('Нет активных доставок');
     return;
   }
   // закрываем самый старый из активных (тот, что приняли раньше всех)
   const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
   const durationSec = Math.max(1, Math.floor((Date.now() - oldest.startTs) / 1000));
   markRouteArrived(oldest.id);
-  showToast(`🏁 Доехал за ${formatDuration(durationSec)}`);
+  showToast(`✅ Доставлено за ${formatDuration(durationSec)}`);
   updateQuickButton();
+  renderDeliveryAvg();
 }
 
 function updateQuickButton(){
@@ -1023,14 +1076,26 @@ function updateQuickButton(){
   if(!btn) return;
   if(routeActive.length === 0){
     btn.classList.remove('active');
-    btn.textContent = '🏍️ Принял заказ';
+    btn.textContent = '▶ Старт';
   } else {
     btn.classList.add('active');
     const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
     const elapsed = Math.floor((Date.now() - oldest.startTs) / 1000);
     const suffix = routeActive.length > 1 ? ` (+${routeActive.length - 1})` : '';
-    btn.textContent = `🏁 Прибыл · ${formatTimer(elapsed)}${suffix}`;
+    btn.textContent = `⏹ Стоп · ${formatTimer(elapsed)}${suffix}`;
   }
+}
+
+// --- Среднее время доставки за всё время, показывается прямо над картой ---
+function renderDeliveryAvg(){
+  const el = document.getElementById('deliveryAvgValue');
+  if(!el) return;
+  if(routeLog.length === 0){
+    el.textContent = '—';
+    return;
+  }
+  const avgSec = Math.round(routeLog.reduce((a, r) => a + r.durationSec, 0) / routeLog.length);
+  el.textContent = `${formatDuration(avgSec)} (доставок: ${routeLog.length})`;
 }
 
 // тикаем каждую секунду, чтобы таймер на кнопке шёл в реальном времени
@@ -1040,8 +1105,6 @@ quickBtnInterval = setInterval(updateQuickButton, 1000);
 function startNewRoute(){
   routeActive.push({ id: 'route_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), startTs: Date.now() });
   persistRouteActive();
-  updateRouteBadge();
-  renderRouteModal();
 }
 
 function markRouteArrived(routeId){
@@ -1053,60 +1116,6 @@ function markRouteArrived(routeId){
   routeLog.push({ id: route.id, startTs: route.startTs, endTs: Date.now(), durationSec });
   persistRouteActive();
   persistRouteLog();
-  updateRouteBadge();
-  renderRouteModal();
-}
-
-function dayKeyFromTs(ts){
-  const d = new Date(ts);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function openRouteModal(){
-  renderRouteModal();
-  document.getElementById('routeModalBg').classList.add('show');
-}
-function closeRouteModal(){
-  document.getElementById('routeModalBg').classList.remove('show');
-}
-
-function renderRouteModal(){
-  renderRouteAvgForPeriod();
-}
-
-function setRoutePeriod(period){
-  currentRoutePeriod = period;
-  document.querySelectorAll('.periodTab').forEach(el => {
-    el.classList.toggle('active', el.dataset.period === period);
-  });
-  renderRouteAvgForPeriod();
-}
-
-function renderRouteAvgForPeriod(){
-  const now = Date.now();
-  let cutoff;
-  let label;
-  if(currentRoutePeriod === 'day'){
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    cutoff = d.getTime();
-    label = 'сегодня';
-  } else if(currentRoutePeriod === 'week'){
-    cutoff = now - 7 * 86400000;
-    label = 'за 7 дней';
-  } else {
-    cutoff = now - 30 * 86400000;
-    label = 'за 30 дней';
-  }
-
-  const entries = routeLog.filter(r => r.endTs >= cutoff);
-  const avgEl = document.getElementById('routeAvg');
-  if(entries.length === 0){
-    avgEl.textContent = `Нет завершённых доездов (${label}).`;
-  } else {
-    const avgSec = Math.round(entries.reduce((a, r) => a + r.durationSec, 0) / entries.length);
-    avgEl.textContent = `Среднее время доезда ${label}: ${formatDuration(avgSec)} (доездов: ${entries.length})`;
-  }
 }
 
 // --- Календарь для выбора даты/диапазона дат в истории ---
