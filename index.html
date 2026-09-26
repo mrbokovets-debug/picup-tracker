@@ -751,11 +751,17 @@
 
 
 <script>
-// ---------- Реальный прогресс загрузки для заставки (макс. 5 сек) ----------
+// ---------- Реальный прогресс загрузки для заставки ----------
+// Реальные шаги (карта/тайлы/данные) обычно готовы почти мгновенно,
+// поэтому держим заставку минимум SPLASH_MIN_MS, чтобы картинка успела
+// показаться, но никогда не дольше SPLASH_MAX_MS (жёсткий потолок).
+const SPLASH_START_TS = Date.now();
+const SPLASH_MIN_MS = 1800;
 const SPLASH_MAX_MS = 5000;
 const splashSteps = { dom:false, map:false, tiles:false, data:false };
 const splashWeights = { dom:15, map:20, tiles:35, data:30 };
 let splashFinished = false;
+let splashRealDone = false;
 
 function splashProgress(step){
   splashSteps[step] = true;
@@ -765,7 +771,21 @@ function splashProgress(step){
   const label = document.getElementById('splashPercent');
   if(fill) fill.style.width = pct + '%';
   if(label) label.textContent = pct + '%';
-  if(pct >= 100) finishSplash();
+  if(pct >= 100){
+    splashRealDone = true;
+    scheduleSplashFinish();
+  }
+}
+
+function scheduleSplashFinish(){
+  if(splashFinished) return;
+  const elapsed = Date.now() - SPLASH_START_TS;
+  const remain = SPLASH_MIN_MS - elapsed;
+  if(remain <= 0){
+    finishSplash();
+  } else {
+    setTimeout(finishSplash, remain);
+  }
 }
 
 function finishSplash(){
@@ -777,10 +797,8 @@ function finishSplash(){
   const label = document.getElementById('splashPercent');
   if(fill) fill.style.width = '100%';
   if(label) label.textContent = '100%';
-  setTimeout(() => {
-    el.classList.add('fadeOut');
-    setTimeout(() => { el.remove(); }, 500);
-  }, 150);
+  el.classList.add('fadeOut');
+  setTimeout(() => { el.remove(); }, 500);
 }
 
 // жёсткий потолок — если что-то грузится медленно (плохая сеть у курьера),
