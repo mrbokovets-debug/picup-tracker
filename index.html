@@ -441,13 +441,19 @@
   .drawerDanger .drawerChevron{color:var(--danger); opacity:0.6;}
 
   #quickToggleBtn{
-    flex:1; padding:0 16px; border-radius:16px; border:none; font-size:15px; font-weight:700;
+    flex:1; padding:15px 16px; border-radius:16px; border:none; font-size:15px; font-weight:700;
     cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.15);
     background:var(--signal); color:var(--signal-text);
   }
   #quickToggleBtn.active{
     background:var(--card); color:var(--signal); border:2px solid var(--signal);
   }
+
+  #menuBtn{
+    flex-shrink:0; width:48px; border-radius:16px; border:none; cursor:pointer;
+    background:var(--card); color:var(--text); display:flex; align-items:center; justify-content:center;
+  }
+  #menuBtn svg{width:22px; height:22px;}
 
   #edgeGrip{
     position:fixed; left:2px; top:50%; transform:translateY(-50%);
@@ -539,6 +545,9 @@
 <div id="app">
   <header>
     <div class="headerTop">
+      <button id="menuBtn" onclick="openDrawer()" aria-label="Меню">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
       <button id="quickToggleBtn" onclick="handleQuickToggle()">▶ Старт</button>
     </div>
   </header>
