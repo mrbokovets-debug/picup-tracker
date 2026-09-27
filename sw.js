@@ -1,48 +1,2165 @@
-const CACHE_NAME = 'pickup-tracker-v2';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'
-];
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PickupMap</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="PickupMap">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{
+    --asphalt: #f4f6f5;
+    --asphalt-2: #ffffff;
+    --card: #ffffff;
+    --line: #e2e6e4;
+    --text: #14171c;
+    --text-dim: #6b7280;
+    --signal: #00a97b;
+    --signal-dim: #e2f7ef;
+    --signal-text: #ffffff;
+    --cold: #2f8fd6;
+    --danger: #e5484d;
+    --danger-dim: #fde8e8;
+  }
+  body.app-dark{
+    --asphalt: #14171c;
+    --asphalt-2: #1c2028;
+    --card: #20242c;
+    --line: #2c313c;
+    --text: #eef0f3;
+    --text-dim: #8b93a1;
+    --signal: #00c98d;
+    --signal-dim: #123d30;
+    --signal-text: #0b0f0d;
+    --cold: #4fa8e6;
+    --danger: #ff6b6f;
+    --danger-dim: #3a1f20;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0;padding:0;height:100%;background:var(--asphalt);color:var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;}
+  #app{display:flex; flex-direction:column; height:100vh; max-width:520px; margin:0 auto;}
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {})
-  );
-  self.skipWaiting();
+  header{padding:14px 16px 6px; flex-shrink:0;}
+  .headerTop{display:flex; align-items:stretch; gap:10px;}
+  h1{font-size:20px; font-weight:800; letter-spacing:-0.02em; margin:0; text-align:center; flex:1;}
+  .sub{color:var(--text-dim); font-size:12.5px; margin:0; line-height:1.4;}
+
+  #mapOuter{position:relative; margin:10px 14px; flex:1 1 auto; min-height:260px;
+    border-radius:14px; overflow:hidden; border:1px solid var(--line);
+    transition:none;}
+  #map{width:100%; height:100%; background:var(--asphalt-2);}
+
+  #mapOuter.fullscreen{
+    position:fixed; inset:0; margin:0; border-radius:0; border:none;
+    z-index:2000; width:100vw; height:100vh;
+  }
+
+  #locateBtn{
+    position:absolute; right:10px; top:10px; z-index:400; background:var(--card);
+    border:1px solid var(--line); color:var(--text); border-radius:10px; padding:9px 10px;
+    font-size:16px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  #fullscreenBtn{
+    position:absolute; right:10px; top:56px; z-index:400; background:var(--card);
+    border:1px solid var(--line); color:var(--text); border-radius:10px; padding:9px 10px;
+    font-size:16px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  #modeBadge{
+    position:absolute; left:10px; top:10px; z-index:400; background:rgba(20,23,28,0.85);
+    color:#ffffff; font-size:11px; padding:6px 10px; border-radius:8px;
+    border:1px solid var(--line); pointer-events:none; display:none;
+  }
+  #modeBadge:not(:empty){display:block;}
+
+
+  .pinDiv{display:flex; align-items:center; justify-content:center; border-radius:50%;
+    font-weight:800; color:var(--signal-text); border:2px solid rgba(255,255,255,0.6);}
+
+  .pinDiv.longPressing, .bagBody.longPressing{
+    animation: longPressPulse var(--pressDur, 550ms) ease-in forwards;
+  }
+  @keyframes longPressPulse{
+    0%{ box-shadow:0 0 0 0 rgba(0,0,0,0); transform:scale(1); }
+    100%{ box-shadow:0 0 0 8px var(--cold); transform:scale(1.15); }
+  }
+
+  .leaflet-tooltip.spotLabel{
+    background:rgba(20,23,28,0.85); color:#ffffff; border:none; border-radius:6px;
+    padding:2px 7px; font-size:11px; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.3);
+    white-space:nowrap;
+  }
+  .leaflet-tooltip.spotLabel::before{ display:none; }
+
+  .myLocationDot{
+    width:16px; height:16px; border-radius:50%; background:var(--cold);
+    border:3px solid #ffffff; box-shadow:0 0 0 3px rgba(47,143,214,0.35);
+    position:relative;
+  }
+  .myLocationDot::after{
+    content:''; position:absolute; inset:-10px; border-radius:50%;
+    border:2px solid var(--cold); opacity:0.6;
+    animation: myLocPulse 1.8s ease-out infinite;
+  }
+  @keyframes myLocPulse{
+    from{transform:scale(0.5); opacity:0.7;}
+    to{transform:scale(1.8); opacity:0;}
+  }
+
+  #searchInput{
+    width:100%; padding:9px 12px; border-radius:9px; border:1px solid var(--line);
+    background:var(--card); color:var(--text); font-size:13.5px; outline:none;
+    margin:4px 0 8px; box-sizing:border-box;
+  }
+  #searchInput:focus{border-color:var(--signal);}
+  #searchInput::placeholder{color:var(--text-dim);}
+  .listTitle{font-size:12px; color:var(--text-dim); margin:6px 2px 8px; display:flex; justify-content:space-between;}
+  .rowSwipeWrap{position:relative; border-radius:10px; overflow:hidden; margin-bottom:7px;}
+  .rowDeleteAction{
+    position:absolute; top:0; right:0; bottom:0; width:84px;
+    background:var(--danger); color:#fff; font-size:13px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .row{display:flex; flex-direction:column; gap:5px; background:var(--card);
+    border:1px solid var(--line); border-radius:10px; padding:9px 12px;
+    position:relative; touch-action:pan-y; user-select:none;}
+  .rowTop{display:flex; align-items:center; gap:10px;}
+  .row .dot{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
+  .row .name{flex:1; font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .row .n{font-size:12.5px; color:var(--text-dim); min-width:60px; text-align:right;}
+  .rowWait{font-size:11px; color:var(--text-dim); margin-left:20px;}
+  .rowBtns{display:flex; align-items:center; gap:6px; justify-content:flex-end;}
+  .row button{background:var(--signal-dim); color:var(--signal); border:none; border-radius:8px;
+    width:28px; height:28px; font-size:15px; font-weight:700; cursor:pointer; flex-shrink:0;}
+  .row button.minus{background:var(--danger-dim); color:var(--danger);}
+  .empty{color:var(--text-dim); font-size:13px; text-align:center; padding:16px 10px;}
+
+  #modalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #modalBg.show{display:flex;}
+  #modal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line);}
+  #modal h3{margin:0 0 6px; font-size:15px;}
+  #modal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 12px;}
+  #modal input{width:100%; padding:12px; border-radius:10px; border:1px solid var(--line);
+    background:var(--asphalt-2); color:var(--text); font-size:15px; outline:none;}
+  #modal input:focus{border-color:var(--signal);}
+  #modalBtns{display:flex; gap:10px; margin-top:14px;}
+  #modalBtns button{flex:1; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
+  #cancelBtn{background:var(--line); color:var(--text);}
+  #saveBtn{background:var(--signal); color:var(--signal-text);}
+
+  #choiceModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #choiceModalBg.show{display:flex;}
+  #choiceModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line); max-height:80vh; overflow-y:auto;}
+  #choiceModal h3{margin:0 0 6px; font-size:15px;}
+  #choiceModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 12px;}
+  #choiceList{display:flex; flex-direction:column; gap:8px;}
+  .choiceRow{
+    display:flex; flex-direction:column; gap:6px;
+    background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; cursor:pointer;
+  }
+  .choiceRow:active{background:var(--signal-dim);}
+  .choiceMain{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .choiceName{font-size:14px; font-weight:600; color:var(--text);}
+  .choiceCount{font-size:12px; color:var(--text-dim); flex-shrink:0;}
+  .choiceWait{font-size:11px; color:var(--text-dim);}
+  .choiceArriveBtn{
+    align-self:flex-start; background:none; border:1.5px solid var(--signal); color:var(--signal);
+    border-radius:7px; padding:5px 10px; font-size:11.5px; font-weight:700; cursor:pointer; margin-top:2px;
+  }
+  #choiceBtns{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+  #choiceBtns button{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
+  #choiceNewBtn{background:var(--signal); color:var(--signal-text);}
+  #choiceCancelBtn{background:var(--line); color:var(--text);}
+
+  #statsModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #statsModalBg.show{display:flex;}
+  #statsModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    overflow:hidden;}
+  #statsModalScroll{padding:20px; max-height:85vh; overflow-y:auto;}
+  #statsModal h3{margin:0; font-size:16px;}
+  .statsRow{display:flex; gap:8px; margin-bottom:16px;}
+  .statsCard{
+    flex:1; background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px;
+    padding:12px 10px; text-align:center;
+  }
+  .statsCard .num{font-size:20px; font-weight:800; color:var(--signal);}
+  .statsCard .lbl{font-size:10.5px; color:var(--text-dim); margin-top:2px;}
+  .statsChartTitle{font-size:12px; color:var(--text-dim); margin:4px 0 8px;}
+  #statsChart{display:flex; align-items:flex-end; gap:6px; height:120px; margin-bottom:6px;}
+  .statsBarWrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;}
+  .statsBar{width:100%; max-width:28px; background:var(--cold); border-radius:4px 4px 0 0; min-height:2px; transition:height .3s ease;}
+  .statsBar.today{background:var(--signal);}
+  .statsBarNum{font-size:10px; color:var(--text-dim); margin-bottom:3px;}
+  .statsBarDay{font-size:9.5px; color:var(--text-dim); margin-top:5px;}
+  .statsEmpty{color:var(--text-dim); font-size:13px; text-align:center; padding:20px 10px;}
+  #waitRanking{display:flex; flex-direction:column; gap:6px;}
+  .waitRow{
+    display:flex; flex-direction:column; gap:2px;
+    background:var(--asphalt-2); border:1px solid var(--line); border-radius:9px; padding:9px 12px;
+  }
+  .waitRowMain{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .waitName{font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .waitTime{font-size:12.5px; font-weight:700; color:var(--signal); flex-shrink:0;}
+  .waitRowDate{font-size:10.5px; color:var(--text-dim);}
+
+  #hourPeriodTabs{display:flex; gap:6px; margin:8px 0 10px;}
+  #hourChart{
+    display:flex; align-items:flex-end; gap:2px; height:82px; margin-bottom:6px;
+    background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px; padding:8px 6px 4px;
+  }
+  .hourBarWrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;}
+  .hourBar{width:100%; max-width:10px; background:var(--cold); border-radius:2px 2px 0 0; min-height:2px;}
+  .hourBar.peak{background:var(--signal);}
+  .hourBar.now{box-shadow:0 0 0 1.5px var(--text) inset;}
+  .hourLabel{font-size:8px; color:var(--text-dim); margin-top:3px; height:10px;}
+  .hourSummary{font-size:12px; color:var(--text-dim); text-align:center; margin-bottom:4px;}
+  #hourTrendList{display:flex; flex-direction:column; gap:6px;}
+  .hourTrendRow{
+    display:flex; align-items:center; gap:8px; background:var(--asphalt-2);
+    border:1px solid var(--line); border-radius:9px; padding:8px 12px; font-size:12px;
+  }
+  .hourTrendDate{font-weight:700; color:var(--text); flex-shrink:0; width:56px;}
+  .hourTrendPeak{flex:1; color:var(--text-dim);}
+  .hourTrendCount{color:var(--signal); font-weight:700; flex-shrink:0; font-size:11px;}
+
+  #settingsModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #settingsModalBg.show{display:flex;}
+  #settingsModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line);}
+  #settingsModal h3{margin:0 0 6px; font-size:16px;}
+  #settingsModal .coords{color:var(--text-dim); font-size:12px; margin:0 0 16px;}
+  #markerStyleOptions{display:flex; gap:12px; margin-bottom:16px;}
+  .markerOption{
+    flex:1; background:var(--asphalt-2); border:2px solid var(--line); border-radius:12px;
+    padding:16px 8px; text-align:center; cursor:pointer; font-size:12.5px; color:var(--text);
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .markerOption.active{border-color:var(--signal);}
+  .markerPreview{height:44px; display:flex; align-items:center; justify-content:center;}
+  .previewCircle{
+    width:34px; height:34px; border-radius:50%; background:var(--signal); color:var(--signal-text);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;
+    border:2px solid rgba(255,255,255,0.35);
+  }
+  #mapThemeOptions{display:flex; gap:12px; margin-bottom:16px;}
+  .themeOption{
+    flex:1; background:var(--asphalt-2); border:2px solid var(--line); border-radius:12px;
+    padding:14px 8px; text-align:center; cursor:pointer; font-size:13px; color:var(--text); font-weight:600;
+  }
+  .themeOption.active{border-color:var(--signal);}
+
+  #settingsCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
+    font-weight:700; cursor:pointer; background:var(--signal); color:var(--signal-text);}
+
+  /* --- История --- */
+  #historyModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #historyModalBg.show{display:flex;}
+  #historyModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    overflow:hidden;}
+  #historyModalScroll{padding:20px; max-height:85vh; overflow-y:auto;}
+
+  #ordersModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #ordersModalBg.show{display:flex;}
+  #ordersModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    overflow:hidden;}
+  #ordersModalScroll{padding:20px; max-height:85vh; overflow-y:auto;}
+  #ordersModal h3{margin:0; font-size:16px;}
+  #historyModal h3{margin:0; font-size:16px;}
+  .stickyHeader{
+    position:sticky; top:0; z-index:50; background:var(--card);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 0 10px; margin:0 0 4px;
+    box-shadow:0 6px 8px -4px rgba(0,0,0,0.25);
+    -webkit-transform:translateZ(0); transform:translateZ(0);
+    isolation:isolate;
+  }
+  .modalXBtn{
+    background:var(--asphalt-2); border:1px solid var(--line); color:var(--text-dim);
+    width:30px; height:30px; border-radius:50%; font-size:14px; cursor:pointer; flex-shrink:0;
+  }
+  #historyModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 14px;}
+  .historyDayHeader{
+    font-size:11.5px; font-weight:700; color:var(--text-dim); margin:14px 0 6px; text-transform:uppercase;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .historyDayCount{color:var(--signal); font-weight:800;}
+  .historyDayHeader:first-child{margin-top:0;}
+  .historyRow{
+    display:flex; align-items:center; gap:10px; background:var(--asphalt-2);
+    border:1px solid var(--line); border-radius:9px; padding:9px 12px; margin-bottom:6px;
+  }
+  .historyRowRemove{opacity:0.75;}
+  .historyTime{font-size:12px; color:var(--text-dim); flex-shrink:0; width:42px;}
+  .historyBadge{
+    font-size:11px; font-weight:800; border-radius:6px; padding:2px 6px; flex-shrink:0;
+  }
+  .historyBadgePlus{background:var(--signal-dim); color:var(--signal);}
+  .historyBadgeMinus{background:var(--danger-dim); color:var(--danger);}
+  .historyName{flex:1; font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .historyWait{font-size:10.5px; color:var(--text-dim); flex-shrink:0;}
+
+  .periodTab{
+    flex:1; padding:8px; border-radius:8px; border:1px solid var(--line); background:var(--asphalt-2);
+    color:var(--text-dim); font-size:12.5px; font-weight:600; cursor:pointer;
+  }
+  .periodTab.active{background:var(--signal); color:var(--signal-text); border-color:var(--signal);}
+
+  .periodTabsScroll{
+    display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    margin:8px 0 10px; padding-bottom:2px; scrollbar-width:none;
+  }
+  .periodTabsScroll::-webkit-scrollbar{display:none;}
+  .periodTabsScroll .periodTab{flex:0 0 auto; padding:7px 12px; white-space:nowrap;}
+  /* --- Панель выбора периода в истории (открывает календарь) --- */
+  #historyDateFilterBar{
+    display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+    background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px;
+    padding:10px 14px; margin-bottom:14px; font-size:13px; font-weight:700; color:var(--signal);
+  }
+  .historyDateFilterArrow{color:var(--text-dim); font-size:16px;}
+
+  /* --- Модалка календаря --- */
+  #calendarModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
+    align-items:flex-end; justify-content:center; z-index:1100;}
+  #calendarModalBg.show{display:flex;}
+  #calendarModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line); max-height:88vh; overflow-y:auto;}
+  .calHeader{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .calHeader span{font-size:15px; font-weight:800; color:var(--text); text-transform:capitalize;}
+  .calNavBtn{
+    width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:var(--asphalt-2);
+    color:var(--text); font-size:18px; cursor:pointer;
+  }
+  #calTodayBtn{
+    background:none; border:none; color:var(--signal); font-size:12.5px; font-weight:700;
+    cursor:pointer; padding:0 0 10px; display:block; margin-left:auto;
+  }
+  .calWeekdays{
+    display:grid; grid-template-columns:repeat(7, 1fr); text-align:center;
+    font-size:11px; color:var(--text-dim); margin-bottom:4px;
+  }
+  #calGrid{display:grid; grid-template-columns:repeat(7, 1fr); gap:3px;}
+  .calDay{
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px;
+    font-size:13px; font-weight:600; color:var(--text); cursor:pointer; background:var(--asphalt-2);
+  }
+  .calDay.otherMonth{color:var(--text-dim); opacity:0.35; cursor:default;}
+  .calDay.today{border:1.5px solid var(--signal);}
+  .calDay.inRange{background:var(--signal-dim); color:var(--signal); border-radius:0;}
+  .calDay.rangeStart{background:var(--signal); color:var(--signal-text); border-radius:8px 0 0 8px;}
+  .calDay.rangeEnd{background:var(--signal); color:var(--signal-text); border-radius:0 8px 8px 0;}
+  .calDay.singleSelected{background:var(--signal); color:var(--signal-text);}
+  #calHint{font-size:11px; color:var(--text-dim); text-align:center; margin:12px 0 10px;}
+  #calBtns{display:flex; gap:10px;}
+  #calBtns button{flex:1; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
+  #calResetBtn{background:var(--line); color:var(--text);}
+  #calApplyBtn{background:var(--signal); color:var(--signal-text);}
+
+  /* значок-сумка курьера для точек на карте */
+  .bagPin{display:flex; flex-direction:column; align-items:center; position:relative;}
+  .bagStrap{
+    width:55%; aspect-ratio:2/1; border:3px solid; border-bottom:none;
+    border-radius:100% 100% 0 0 / 100% 100% 0 0; box-sizing:border-box; margin-bottom:-15%;
+  }
+  .bagBody{
+    width:100%; aspect-ratio:1/0.85; border-radius:7px; display:flex; align-items:center;
+    justify-content:center; font-weight:800; color:var(--signal-text); border:2px solid rgba(255,255,255,0.35);
+  }
+
+  #arrivalBar{
+    position:fixed; top:0; left:0; right:0; z-index:1800;
+    background:var(--signal); color:#ffffff; padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
+    display:none; flex-direction:column; align-items:center; gap:8px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.25);
+  }
+  #arrivalBar.show{display:flex;}
+  #arrivalText{font-size:14px; font-weight:700;}
+  #arrivalTime{font-size:22px; font-weight:800; letter-spacing:0.02em;}
+  .arrivalBtns{display:flex; gap:10px; width:100%; max-width:400px;}
+  .arrivalBtns button{
+    flex:1; padding:10px; border-radius:9px; border:none; font-size:13px; font-weight:700; cursor:pointer;
+  }
+  #arrivalDoneBtn{background:#ffffff; color:var(--signal);}
+  #arrivalCancelBtn{background:rgba(255,255,255,0.2); color:#ffffff;}
+
+  #drawerOverlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1500;
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  #drawerOverlay.show{opacity:1; pointer-events:auto;}
+  #sideDrawer{
+    position:fixed; top:0; left:0; bottom:0; width:82%; max-width:320px;
+    background:var(--card); z-index:1600; box-shadow:2px 0 24px rgba(0,0,0,0.25);
+    transform:translateX(-100%); transition:transform .25s ease;
+    display:flex; flex-direction:column; padding:0 0 20px; overflow-y:auto;
+  }
+  #sideDrawer.show{transform:translateX(0);}
+  .drawerHeader{
+    display:flex; align-items:center;
+    padding:calc(24px + env(safe-area-inset-top, 0px)) 20px 16px;
+    font-size:26px; font-weight:800; color:var(--text);
+  }
+  .drawerGroup{
+    border-top:1px solid var(--line); padding-top:6px; margin-top:6px;
+  }
+  .drawerGroup:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  .drawerItem{
+    display:flex; align-items:center; gap:14px; padding:14px 20px; font-size:15px;
+    color:var(--text); cursor:pointer; font-weight:700;
+  }
+  .drawerItem:active{background:var(--asphalt-2);}
+  .drawerIcon{
+    width:24px; height:24px; flex-shrink:0; color:var(--text);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .drawerIcon svg{width:22px; height:22px;}
+  .drawerDanger .drawerIcon{color:var(--danger);}
+  .drawerLabel{flex:1;}
+  .drawerChevron{color:var(--text-dim); font-size:18px; font-weight:400; flex-shrink:0;}
+  .drawerBadge{
+    background:var(--signal); color:#fff; font-size:11px; font-weight:800;
+    border-radius:10px; padding:2px 7px; display:none; margin-right:2px;
+  }
+  .drawerBadge:not(:empty){display:inline-block;}
+  .drawerDanger{color:var(--danger);}
+  .drawerDanger .drawerChevron{color:var(--danger); opacity:0.6;}
+
+  #quickToggleBtn{
+    flex:1; padding:0 16px; border-radius:16px; border:none; font-size:15px; font-weight:700;
+    cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    background:var(--signal); color:var(--signal-text);
+  }
+  #quickToggleBtn.active{
+    background:var(--card); color:var(--signal); border:2px solid var(--signal);
+  }
+
+  #edgeGrip{
+    position:fixed; left:2px; top:50%; transform:translateY(-50%);
+    width:5px; height:52px; border-radius:4px; background:var(--line);
+    z-index:900; opacity:0.7;
+  }
+
+  #deliveryAvgBar{
+    margin:8px 14px 0; padding:9px 12px; text-align:center; font-size:12.5px;
+    color:var(--text-dim); background:var(--card); border:1px solid var(--line);
+    border-radius:10px; flex-shrink:0;
+  }
+  #deliveryAvgBar b{color:var(--signal); font-weight:800;}
+
+  #toast{
+    position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px);
+    background:#14171c; color:#ffffff; padding:11px 18px; border-radius:10px; font-size:13.5px;
+    font-weight:600; z-index:2500; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease;
+    max-width:85vw; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.3);
+  }
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .leaflet-control-attribution{font-size:9px; background:rgba(20,23,28,0.7)!important; color:var(--text-dim)!important;}
+  .leaflet-control-attribution a{color:var(--text-dim)!important;}
+
+  /* ---------- Заставка при запуске ---------- */
+  #splashScreen{
+    position:fixed; inset:0; z-index:9999; background:#050708;
+    display:flex; flex-direction:column;
+    opacity:1; transition:opacity .45s ease;
+  }
+  #splashScreen.fadeOut{opacity:0; pointer-events:none;}
+  #splashImgWrap{
+    flex:1 1 auto; min-height:0; position:relative; overflow:hidden;
+    background-image:url('splash-bg.jpg');
+    background-size:cover; background-position:center top; background-repeat:no-repeat;
+  }
+  #splashImgWrap::after{
+    content:''; position:absolute; left:0; right:0; bottom:0; height:90px;
+    background:linear-gradient(to bottom, rgba(5,7,8,0), #050708 92%);
+  }
+  #splashBottom{
+    flex-shrink:0; background:#050708; padding:2px 24px 26px; max-width:520px;
+    width:100%; margin:0 auto; box-sizing:border-box;
+  }
+  #splashFooterNav{
+    display:flex; align-items:center; justify-content:space-around;
+    padding:6px 0 18px; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:18px;
+  }
+  #splashFooterNav .sItem{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    color:#c7ccd4; font-size:11.5px;
+  }
+  #splashFooterNav svg{width:22px; height:22px; stroke:#eef0f3;}
+  #splashLoadingLabel{
+    color:#8b93a1; font-size:11px; letter-spacing:0.14em; text-align:center;
+    margin-bottom:10px; font-weight:600;
+  }
+  #splashBarTrack{
+    width:100%; height:6px; border-radius:6px; background:rgba(255,255,255,0.14); overflow:hidden;
+  }
+  #splashBarFill{
+    height:100%; width:0%; border-radius:6px; background:linear-gradient(90deg, #14e0a1, #4fe8bc);
+    transition:width .25s ease;
+  }
+  #splashPercent{
+    text-align:center; margin-top:8px; font-size:11px; color:#5c6472; font-weight:600;
+  }
+</style>
+</head>
+<body>
+
+<div id="splashScreen">
+  <div id="splashImgWrap"></div>
+  <div id="splashBottom">
+    <div id="splashFooterNav">
+      <div class="sItem">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+        <span>Мои заказы</span>
+      </div>
+      <div class="sItem">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="9"/></svg>
+        <span>Статистика</span>
+      </div>
+      <div class="sItem">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>
+        <span>История</span>
+      </div>
+    </div>
+    <div id="splashLoadingLabel">ЗАГРУЗКА...</div>
+    <div id="splashBarTrack"><div id="splashBarFill"></div></div>
+    <div id="splashPercent">0%</div>
+  </div>
+</div>
+
+<div id="arrivalBar">
+  <div id="arrivalText">⏱ Ждём заказ: <span id="arrivalSpotName"></span></div>
+  <div id="arrivalTime">00:00</div>
+  <div class="arrivalBtns">
+    <button id="arrivalCancelBtn" onclick="cancelArrival()">Отмена</button>
+    <button id="arrivalDoneBtn" onclick="completeArrival()">✅ Забрал заказ</button>
+  </div>
+</div>
+
+<div id="drawerOverlay" onclick="closeDrawer()"></div>
+<div id="sideDrawer">
+  <div class="drawerHeader">
+    <span>Меню</span>
+  </div>
+
+  <div class="drawerGroup">
+    <div class="drawerItem" onclick="closeDrawer(); openOrdersModal();">
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></span>
+      <span class="drawerLabel">Мои заказы</span>
+      <span class="drawerChevron">›</span>
+    </div>
+    <div class="drawerItem" onclick="closeDrawer(); openStatsModal();">
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="9"/></svg></span>
+      <span class="drawerLabel">Статистика</span>
+      <span class="drawerChevron">›</span>
+    </div>
+    <div class="drawerItem" onclick="closeDrawer(); openHistoryModal();">
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg></span>
+      <span class="drawerLabel">История</span>
+      <span class="drawerChevron">›</span>
+    </div>
+  </div>
+
+  <div class="drawerGroup">
+    <div class="drawerItem" onclick="closeDrawer(); openSettingsModal();">
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.35a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.65 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.65 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.65a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.35 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.04Z"/></svg></span>
+      <span class="drawerLabel">Настройки</span>
+      <span class="drawerChevron">›</span>
+    </div>
+    <div class="drawerItem" onclick="closeDrawer(); exportData();">
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span>
+      <span class="drawerLabel">Сохранить копию</span>
+      <span class="drawerChevron">›</span>
+    </div>
+    <div class="drawerItem" onclick="closeDrawer(); document.getElementById('importFile').click();">
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2Z"/></svg></span>
+      <span class="drawerLabel">Восстановить из файла</span>
+      <span class="drawerChevron">›</span>
+    </div>
+  </div>
+
+  <div class="drawerGroup">
+    <div class="drawerItem drawerDanger" onclick="closeDrawer(); resetAll();">
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></span>
+      <span class="drawerLabel">Очистить все данные</span>
+      <span class="drawerChevron">›</span>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="headerTop">
+      <button id="quickToggleBtn" onclick="handleQuickToggle()">▶ Старт</button>
+    </div>
+  </header>
+
+  <div id="edgeGrip" onclick="openDrawer()"></div>
+
+  <div id="deliveryAvgBar">📦 Среднее время доставки: <b id="deliveryAvgValue">—</b></div>
+
+  <div id="toast"></div>
+
+  <div id="mapOuter">
+    <div id="map"></div>
+    <div id="modeBadge"></div>
+    <button id="fullscreenBtn" title="На весь экран" onclick="toggleMapFullscreen(event)">⛶</button>
+    <button id="locateBtn" title="Найти меня">📍</button>
+  </div>
+
+  <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+</div>
+
+<div id="ordersModalBg">
+  <div id="ordersModal">
+    <div id="ordersModalScroll">
+      <div class="stickyHeader">
+        <h3>Мои заказы</h3>
+        <button class="modalXBtn" onclick="closeOrdersModal()">✕</button>
+      </div>
+      <input id="searchInput" type="text" placeholder="Поиск среди своих точек..." oninput="renderAll()">
+      <div class="listTitle"><span>По частоте</span><span id="totalCount"></span></div>
+      <div id="rows"></div>
+    </div>
+  </div>
+</div>
+
+<div id="modalBg">
+  <div id="modal">
+    <h3>Как называется заведение?</h3>
+    <p class="coords" id="coordsText"></p>
+    <input id="nameInput" type="text" placeholder="Например: Сільпо, АТБ" maxlength="40">
+    <div id="modalBtns">
+      <button id="cancelBtn" onclick="closeModal()">Отмена</button>
+      <button id="saveBtn" onclick="saveNewSpot()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<div id="choiceModalBg">
+  <div id="choiceModal">
+    <h3>Какое заведение?</h3>
+    <p class="coords">Рядом уже есть точки — выбери, куда засчитать забор, или добавь новое</p>
+    <div id="choiceList"></div>
+    <div id="choiceBtns">
+      <button id="choiceNewBtn" onclick="choiceAddNew()">+ Это другое заведение</button>
+      <button id="choiceCancelBtn" onclick="closeChoiceModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<div id="statsModalBg">
+  <div id="statsModal">
+    <div id="statsModalScroll">
+      <div class="stickyHeader">
+        <h3>Статистика по дням</h3>
+        <button class="modalXBtn" onclick="closeStatsModal()">✕</button>
+      </div>
+      <div id="statsBody"></div>
+    </div>
+  </div>
+</div>
+
+<div id="settingsModalBg">
+  <div id="settingsModal">
+    <h3>Настройки</h3>
+    <p class="coords">Как отмечать точки на карте</p>
+    <div id="markerStyleOptions">
+      <div class="markerOption" data-style="circle" onclick="chooseMarkerStyle('circle')">
+        <div class="markerPreview"><div class="previewCircle">3</div></div>
+        <span>Кружок</span>
+      </div>
+      <div class="markerOption" data-style="bag" onclick="chooseMarkerStyle('bag')">
+        <div class="markerPreview">
+          <div class="bagPin" style="width:34px;">
+            <div class="bagStrap" style="border-color:var(--signal);"></div>
+            <div class="bagBody" style="background:var(--signal); box-shadow:none;">3</div>
+          </div>
+        </div>
+        <span>Сумка курьера</span>
+      </div>
+    </div>
+
+    <p class="coords">Оформление приложения</p>
+    <div id="appThemeOptions">
+      <div class="themeOption" data-theme="light" onclick="chooseAppTheme('light')">☀️ Светлая</div>
+      <div class="themeOption" data-theme="dark" onclick="chooseAppTheme('dark')">🌙 Тёмная</div>
+    </div>
+
+    <p class="coords">Оформление карты (можно отдельно от приложения)</p>
+    <div id="mapThemeOptions">
+      <div class="themeOption" data-theme="dark" onclick="chooseMapTheme('dark')">🌙 Тёмная</div>
+      <div class="themeOption" data-theme="light" onclick="chooseMapTheme('light')">☀️ Светлая</div>
+    </div>
+
+    <button id="settingsCloseBtn" onclick="closeSettingsModal()">Готово</button>
+  </div>
+</div>
+
+<div id="historyModalBg">
+  <div id="historyModal">
+    <div id="historyModalScroll">
+      <div class="stickyHeader">
+        <h3>История заборов</h3>
+        <button class="modalXBtn" onclick="closeHistoryModal()">✕</button>
+      </div>
+      <p class="coords">Полная хроника: и добавления (+1), и отмены (−1). Если что-то пошло не так — здесь видно, где именно был случайный тап.</p>
+      <div id="historyDateFilterBar" onclick="openCalendarModal()">
+        <span id="historyDateFilterLabel">📅 Поиск по дате</span>
+        <span class="historyDateFilterArrow">›</span>
+      </div>
+      <div id="historyBody"></div>
+    </div>
+  </div>
+</div>
+
+<div id="calendarModalBg">
+  <div id="calendarModal">
+    <div class="calHeader">
+      <button class="calNavBtn" onclick="changeCalendarMonth(-1)">‹</button>
+      <span id="calMonthLabel"></span>
+      <button class="calNavBtn" onclick="changeCalendarMonth(1)">›</button>
+    </div>
+    <button id="calTodayBtn" onclick="calendarPickToday()">Сегодня</button>
+    <div class="calWeekdays">
+      <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+    </div>
+    <div id="calGrid"></div>
+    <p id="calHint">Выбери один день, или два дня — для диапазона между ними</p>
+    <div id="calBtns">
+      <button id="calResetBtn" onclick="calendarReset()">Сбросить</button>
+      <button id="calApplyBtn" onclick="calendarApply()">Показать</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ---------- Реальный прогресс загрузки для заставки ----------
+// Реальные шаги (карта/тайлы/данные) обычно готовы почти мгновенно,
+// поэтому держим заставку минимум SPLASH_MIN_MS, чтобы картинка успела
+// показаться, но никогда не дольше SPLASH_MAX_MS (жёсткий потолок).
+const SPLASH_START_TS = Date.now();
+const SPLASH_MIN_MS = 1800;
+const SPLASH_MAX_MS = 5000;
+const splashSteps = { dom:false, map:false, tiles:false, data:false };
+const splashWeights = { dom:15, map:20, tiles:35, data:30 };
+let splashFinished = false;
+let splashRealDone = false;
+
+function splashProgress(step){
+  splashSteps[step] = true;
+  let pct = 0;
+  for(const k in splashSteps){ if(splashSteps[k]) pct += splashWeights[k]; }
+  const fill = document.getElementById('splashBarFill');
+  const label = document.getElementById('splashPercent');
+  if(fill) fill.style.width = pct + '%';
+  if(label) label.textContent = pct + '%';
+  if(pct >= 100){
+    splashRealDone = true;
+    scheduleSplashFinish();
+  }
+}
+
+function scheduleSplashFinish(){
+  if(splashFinished) return;
+  const elapsed = Date.now() - SPLASH_START_TS;
+  const remain = SPLASH_MIN_MS - elapsed;
+  if(remain <= 0){
+    finishSplash();
+  } else {
+    setTimeout(finishSplash, remain);
+  }
+}
+
+function finishSplash(){
+  if(splashFinished) return;
+  splashFinished = true;
+  const el = document.getElementById('splashScreen');
+  if(!el) return;
+  const fill = document.getElementById('splashBarFill');
+  const label = document.getElementById('splashPercent');
+  if(fill) fill.style.width = '100%';
+  if(label) label.textContent = '100%';
+  el.classList.add('fadeOut');
+  setTimeout(() => { el.remove(); }, 500);
+}
+
+// жёсткий потолок — если что-то грузится медленно (плохая сеть у курьера),
+// заставка всё равно закроется не позже, чем через 5 секунд
+setTimeout(finishSplash, SPLASH_MAX_MS);
+splashProgress('dom');
+
+const STORAGE_KEY = 'pickup-spots-geo';
+const VISITS_KEY = 'pickup-visits-log'; // журнал каждого отдельного забора с датой - для статистики по дням
+const MAP_THEME_KEY = 'pickup-map-theme';
+const APP_THEME_KEY = 'pickup-app-theme'; // тема всего приложения, независимо от темы карты
+const MARKER_STYLE_KEY = 'pickup-marker-style'; // 'circle' или 'bag'
+const CLUSTER_RADIUS_M = 40; // если тап ближе этого расстояния к точке - засчитываем ей же
+let spots = [];
+let visitsLog = []; // [{ spotId, ts }]
+let pendingLatLng = null;
+const ARRIVAL_TIMER_KEY = 'pickup-active-arrival';
+let activeArrival = null; // { spotId, spotName, startTs }
+let arrivalInterval = null;
+let markers = {}; // id -> leaflet marker
+
+const ROUTE_ACTIVE_KEY = 'pickup-route-active'; // [{ id, startTs }] - заказы в пути прямо сейчас
+const ROUTE_LOG_KEY = 'pickup-route-log'; // [{ id, startTs, endTs, durationSec }] - завершённые доезды
+let routeActive = [];
+let routeLog = [];
+
+// Стартовая точка - примерное местоположение, потом попробуем уточнить через GPS браузера
+const DEFAULT_CENTER = [39.49061425228292, -0.34876301013819333];
+
+const map = L.map('map', { zoomControl: true, attributionControl: true })
+  .setView(DEFAULT_CENTER, 14);
+splashProgress('map');
+
+// защищаем свои кнопки над картой (лежат вне слоя Leaflet) от того, чтобы тап по ним
+// хоть как-то воспринимался картой как тап по самой карте - иначе после быстрой смены
+// размера (полный экран) на телефоне может проскочить "призрачный" клик по карте
+['fullscreenBtn', 'locateBtn'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el){
+    L.DomEvent.disableClickPropagation(el);
+    L.DomEvent.disableScrollPropagation(el);
+  }
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+const splashTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+splashTileLayer.on('load', () => splashProgress('tiles'));
+// подстраховка: если тайлы не сообщат о загрузке (например, нет сети),
+// не держим заставку вечно
+setTimeout(() => splashProgress('tiles'), 3000);
+
+// подписи с названиями заведений видны только при достаточном приближении карты,
+// иначе при большом числе точек рядом они бы наезжали друг на друга
+const LABEL_ZOOM_THRESHOLD = 16;
+function updateLabelVisibility(){
+  const show = map.getZoom() >= LABEL_ZOOM_THRESHOLD;
+  Object.values(markers).forEach(m => {
+    if(show){
+      if(!m.isTooltipOpen()) m.openTooltip();
+    } else {
+      m.closeTooltip();
+    }
+  });
+}
+map.on('zoomend', updateLabelVisibility);
+
+// затемняем тайлы под тёмную тему интерфейса (по умолчанию), с возможностью переключить на светлую
+const DARK_FILTER = 'invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9)';
+
+function applyMapTheme(isDark){
+  document.getElementById('map').style.filter = isDark ? DARK_FILTER : 'none';
+}
+
+function chooseMapTheme(theme){
+  localStorage.setItem(MAP_THEME_KEY, theme);
+  applyMapTheme(theme === 'dark');
+  document.querySelectorAll('#mapThemeOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === theme);
+  });
+}
+
+applyMapTheme((localStorage.getItem(MAP_THEME_KEY) || 'light') === 'dark');
+
+function applyAppTheme(theme){
+  document.body.classList.toggle('app-dark', theme === 'dark');
+}
+
+function chooseAppTheme(theme){
+  localStorage.setItem(APP_THEME_KEY, theme);
+  applyAppTheme(theme);
+  document.querySelectorAll('#appThemeOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === theme);
+  });
+}
+
+applyAppTheme(localStorage.getItem(APP_THEME_KEY) || 'light');
+
+let suppressNextMapClick = false;
+
+function toggleMapFullscreen(event){
+  if(event){ event.preventDefault(); event.stopPropagation(); }
+  const mapOuter = document.getElementById('mapOuter');
+  const isFull = mapOuter.classList.toggle('fullscreen');
+  document.getElementById('fullscreenBtn').textContent = isFull ? '✕' : '⛶';
+  // при резкой смене размера карты браузер иногда "докидывает" тот же тап уже на саму карту -
+  // на время игнорируем случайный клик, чтобы не открывалось окно добавления точки
+  suppressNextMapClick = true;
+  setTimeout(() => { suppressNextMapClick = false; }, 900);
+  setTimeout(() => map.invalidateSize(), 250);
+}
+
+function distMeters(lat1, lng1, lat2, lng2){
+  const R = 6371000;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLng = (lng2-lng1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function colorForCount(count, max){
+  const t = max <= 1 ? 0 : Math.min(1, (count - 1) / (max - 1 || 1));
+  const c1 = [47, 143, 214], c2 = [0, 169, 123]; // --cold -> --signal
+  const r = Math.round(c1[0] + (c2[0]-c1[0])*t);
+  const g = Math.round(c1[1] + (c2[1]-c1[1])*t);
+  const b = Math.round(c1[2] + (c2[2]-c1[2])*t);
+  return `rgb(${r},${g},${b})`;
+}
+function sizeForCount(count, max){
+  const t = max <= 1 ? 0 : Math.min(1, (count - 1) / (max - 1 || 1));
+  return 24 + t * 28;
+}
+
+function makeIcon(spot, max){
+  const size = sizeForCount(spot.count, max);
+  const color = colorForCount(spot.count, max);
+  const style = localStorage.getItem(MARKER_STYLE_KEY) || 'circle';
+
+  if(style === 'bag'){
+    const w = size;
+    const h = Math.round(size * 1.2);
+    const html = `<div class="bagPin" style="width:${w}px;">
+      <div class="bagStrap" style="border-color:${color};"></div>
+      <div class="bagBody" style="background:${color}; box-shadow:0 0 ${size*0.4}px ${color}66; font-size:${size*0.38}px;">${spot.count}</div>
+    </div>`;
+    return L.divIcon({ html, className: '', iconSize: [w, h], iconAnchor: [w/2, h] });
+  }
+
+  const html = `<div class="pinDiv" style="width:${size}px;height:${size}px;background:${color};box-shadow:0 0 ${size*0.5}px ${color}66;font-size:${size*0.4}px;">${spot.count}</div>`;
+  return L.divIcon({ html, className: '', iconSize: [size, size], iconAnchor: [size/2, size/2] });
+}
+
+function loadSpots(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    spots = raw ? JSON.parse(raw) : [];
+  }catch(e){ spots = []; }
+  try{
+    const rawVisits = localStorage.getItem(VISITS_KEY);
+    visitsLog = rawVisits ? JSON.parse(rawVisits) : [];
+  }catch(e){ visitsLog = []; }
+  try{
+    const rawRouteActive = localStorage.getItem(ROUTE_ACTIVE_KEY);
+    routeActive = rawRouteActive ? JSON.parse(rawRouteActive) : [];
+  }catch(e){ routeActive = []; }
+  try{
+    const rawRouteLog = localStorage.getItem(ROUTE_LOG_KEY);
+    routeLog = rawRouteLog ? JSON.parse(rawRouteLog) : [];
+  }catch(e){ routeLog = []; }
+  renderDeliveryAvg();
+  updateQuickButton();
+  renderAll();
+  if(spots.length){
+    const group = L.featureGroup(Object.values(markers));
+    try{ map.fitBounds(group.getBounds().pad(0.3)); }catch(e){}
+  }
+  splashProgress('data');
+}
+
+function persist(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(spots)); }
+  catch(e){ console.error('storage error', e); }
+}
+
+function persistVisits(){
+  try{ localStorage.setItem(VISITS_KEY, JSON.stringify(visitsLog)); }
+  catch(e){ console.error('storage error', e); }
+}
+
+// --- Свайп влево на карточке точки открывает кнопку "Удалить" ---
+const SWIPE_REVEAL = 84;
+
+function closeAllSwipes(exceptWrap){
+  document.querySelectorAll('.rowSwipeWrap.swiped').forEach(wrap => {
+    if(wrap !== exceptWrap){
+      wrap.classList.remove('swiped');
+      wrap.querySelector('.row').style.transform = 'translateX(0)';
+    }
+  });
+}
+
+function attachAllSwipes(){
+  document.querySelectorAll('.rowSwipeWrap').forEach(wrap => {
+    const rowEl = wrap.querySelector('.row');
+    const deleteBtn = wrap.querySelector('.rowDeleteAction');
+    let startX = 0, startY = 0, currentX = 0, dragging = false, directionLocked = null;
+
+    rowEl.addEventListener('pointerdown', (e) => {
+      if(e.target.closest('button')) return; // не мешаем -1/+1
+      if(wrap.classList.contains('swiped')){
+        // тап по открытой карточке (не по кнопке удаления) - просто закрываем её
+        wrap.classList.remove('swiped');
+        rowEl.style.transform = 'translateX(0)';
+        return;
+      }
+      startX = e.clientX; startY = e.clientY; dragging = true; directionLocked = null;
+      rowEl.style.transition = 'none';
+    });
+    rowEl.addEventListener('pointermove', (e) => {
+      if(!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if(directionLocked === null){
+        if(Math.abs(dx) > 8 || Math.abs(dy) > 8){
+          directionLocked = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        }
+      }
+      if(directionLocked === 'y'){ dragging = false; return; }
+      if(directionLocked === 'x'){
+        currentX = Math.min(0, Math.max(-SWIPE_REVEAL - 24, dx));
+        rowEl.style.transform = `translateX(${currentX}px)`;
+      }
+    });
+    const endDrag = () => {
+      if(!dragging) return;
+      dragging = false;
+      rowEl.style.transition = '';
+      if(currentX < -SWIPE_REVEAL / 2){
+        rowEl.style.transform = `translateX(-${SWIPE_REVEAL}px)`;
+        wrap.classList.add('swiped');
+        closeAllSwipes(wrap);
+      } else {
+        rowEl.style.transform = 'translateX(0)';
+        wrap.classList.remove('swiped');
+      }
+      currentX = 0;
+    };
+    rowEl.addEventListener('pointerup', endDrag);
+    rowEl.addEventListener('pointercancel', endDrag);
+
+    deleteBtn.addEventListener('click', () => {
+      removeSpot(wrap.dataset.id);
+    });
+  });
+}
+
+document.addEventListener('pointerdown', (e) => {
+  if(!e.target.closest('.rowSwipeWrap')){
+    closeAllSwipes(null);
+  }
 });
 
-self.addEventListener('fetch', (event) => {
-  const isMapTile = event.request.url.includes('tile.openstreetmap.org');
-  if (isMapTile) {
-    // карту без сети всё равно не подгрузить, просто пробуем сеть и падаем тихо
-    event.respondWith(fetch(event.request).catch(() => new Response('', { status: 504 })));
+function renderAll(){
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  markers = {};
+  const max = spots.reduce((m,s) => Math.max(m, s.count), 1);
+
+  spots.forEach(s => {
+    const marker = L.marker([s.lat, s.lng], { icon: makeIcon(s, max) }).addTo(map);
+    marker.bindTooltip(s.name, { permanent: true, direction: 'top', offset: [0, -8], className: 'spotLabel' });
+    marker.on('click', (e) => {
+      L.DomEvent.stopPropagation(e);
+      if(marker._longPressFired){ marker._longPressFired = false; return; }
+      bump(s.id);
+    });
+    attachLongPress(marker, s.id);
+    markers[s.id] = marker;
+  });
+  updateLabelVisibility();
+
+  const sorted = [...spots].sort((a, b) => b.count - a.count);
+  const rowsEl = document.getElementById('rows');
+  const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+  const filtered = query ? sorted.filter(s => s.name.toLowerCase().includes(query)) : sorted;
+
+  if(sorted.length === 0){
+    rowsEl.innerHTML = '<div class="empty">Пока пусто. Тапни по карте, где обычно забираешь заказы.</div>';
+  } else if(filtered.length === 0){
+    rowsEl.innerHTML = '<div class="empty">Ничего не найдено по запросу «' + escapeHtml(query) + '»</div>';
+  } else {
+    rowsEl.innerHTML = filtered.map(s => {
+      const avgWait = (s.waitCount > 0) ? formatDuration(Math.round(s.waitTotalSec / s.waitCount)) : null;
+      return `
+      <div class="rowSwipeWrap" data-id="${s.id}">
+        <div class="rowDeleteAction" data-id="${s.id}">Удалить</div>
+        <div class="row">
+          <div class="rowTop">
+            <div class="dot" style="background:${colorForCount(s.count, max)}"></div>
+            <div class="name">${escapeHtml(s.name)}</div>
+            <div class="n">${formatZaboros(s.count)}</div>
+          </div>
+          ${avgWait ? `<div class="rowWait">⏱ в среднем ждёшь тут: ${avgWait}</div>` : ''}
+          <div class="rowBtns">
+            <button class="minus" onclick="unbump('${s.id}')">−1</button>
+            <button onclick="bump('${s.id}')">+1</button>
+          </div>
+        </div>
+      </div>
+    `}).join('');
+    attachAllSwipes();
+  }
+  const total = spots.reduce((a,s) => a + s.count, 0);
+  document.getElementById('totalCount').textContent = total ? `всего заборов: ${total}` : '';
+}
+
+function openSettingsModal(){
+  const current = localStorage.getItem(MARKER_STYLE_KEY) || 'circle';
+  document.querySelectorAll('.markerOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.style === current);
+  });
+  const currentAppTheme = localStorage.getItem(APP_THEME_KEY) || 'light';
+  document.querySelectorAll('#appThemeOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === currentAppTheme);
+  });
+  const currentMapTheme = localStorage.getItem(MAP_THEME_KEY) || 'light';
+  document.querySelectorAll('#mapThemeOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === currentMapTheme);
+  });
+  document.getElementById('settingsModalBg').classList.add('show');
+}
+function closeSettingsModal(){
+  document.getElementById('settingsModalBg').classList.remove('show');
+}
+function chooseMarkerStyle(style){
+  localStorage.setItem(MARKER_STYLE_KEY, style);
+  document.querySelectorAll('.markerOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.style === style);
+  });
+  renderAll();
+}
+
+function openDrawer(){
+  document.getElementById('sideDrawer').classList.add('show');
+  document.getElementById('drawerOverlay').classList.add('show');
+}
+function closeDrawer(){
+  document.getElementById('sideDrawer').classList.remove('show');
+  document.getElementById('drawerOverlay').classList.remove('show');
+}
+
+// --- Свайп от левого края экрана вправо открывает меню (вместо кнопки) ---
+(function setupEdgeSwipe(){
+  const EDGE_ZONE = 24;      // начинать жест можно только в этой полосе у самого края
+  const OPEN_THRESHOLD = 60; // на сколько нужно протянуть вправо, чтобы меню открылось
+  let startX = null, startY = null, tracking = false;
+
+  document.addEventListener('pointerdown', (e) => {
+    if(e.clientX <= EDGE_ZONE && !document.getElementById('sideDrawer').classList.contains('show')){
+      startX = e.clientX; startY = e.clientY; tracking = true;
+    } else {
+      tracking = false;
+    }
+  });
+  document.addEventListener('pointermove', (e) => {
+    if(!tracking) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if(Math.abs(dy) > Math.abs(dx) + 10){ tracking = false; return; } // это вертикальный скролл, не наш жест
+    if(dx > OPEN_THRESHOLD){
+      openDrawer();
+      tracking = false;
+    }
+  });
+  document.addEventListener('pointerup', () => { tracking = false; });
+  document.addEventListener('pointercancel', () => { tracking = false; });
+})();
+
+// --- История заборов с точечной отменой ---
+// --- Время от получения заказа до приезда в заведение (несколько параллельно) ---
+function persistRouteActive(){
+  try{ localStorage.setItem(ROUTE_ACTIVE_KEY, JSON.stringify(routeActive)); }catch(e){}
+}
+function persistRouteLog(){
+  try{ localStorage.setItem(ROUTE_LOG_KEY, JSON.stringify(routeLog)); }catch(e){}
+}
+
+// --- Всплывающее уведомление (тост) ---
+let toastTimer = null;
+function showToast(text){
+  const el = document.getElementById('toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// --- Единая кнопка на главном экране: минимум тапов ---
+let quickBtnInterval = null;
+
+function handleQuickToggle(){
+  if(routeActive.length === 0){
+    quickOrderReceived();
+  } else {
+    quickArrived();
+  }
+}
+
+function quickOrderReceived(){
+  startNewRoute();
+  const n = routeActive.length;
+  showToast(n > 1 ? `▶ Старт (заказов в работе: ${n})` : '▶ Старт');
+  updateQuickButton();
+}
+
+function quickArrived(){
+  if(routeActive.length === 0){
+    showToast('Нет активных доставок');
+    return;
+  }
+  // закрываем самый старый из активных (тот, что приняли раньше всех)
+  const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
+  const durationSec = Math.max(1, Math.floor((Date.now() - oldest.startTs) / 1000));
+  markRouteArrived(oldest.id);
+  showToast(`✅ Доставлено за ${formatDuration(durationSec)}`);
+  updateQuickButton();
+  renderDeliveryAvg();
+}
+
+function updateQuickButton(){
+  const btn = document.getElementById('quickToggleBtn');
+  if(!btn) return;
+  if(routeActive.length === 0){
+    btn.classList.remove('active');
+    btn.textContent = '▶ Старт';
+  } else {
+    btn.classList.add('active');
+    const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
+    const elapsed = Math.floor((Date.now() - oldest.startTs) / 1000);
+    const suffix = routeActive.length > 1 ? ` (+${routeActive.length - 1})` : '';
+    btn.textContent = `⏹ Стоп · ${formatTimer(elapsed)}${suffix}`;
+  }
+}
+
+// --- Среднее время доставки за всё время, показывается прямо над картой ---
+function renderDeliveryAvg(){
+  const el = document.getElementById('deliveryAvgValue');
+  if(!el) return;
+  if(routeLog.length === 0){
+    el.textContent = '—';
+    return;
+  }
+  const avgSec = Math.round(routeLog.reduce((a, r) => a + r.durationSec, 0) / routeLog.length);
+  el.textContent = `${formatDuration(avgSec)} (доставок: ${routeLog.length})`;
+}
+
+// тикаем каждую секунду, чтобы таймер на кнопке шёл в реальном времени
+clearInterval(quickBtnInterval);
+quickBtnInterval = setInterval(updateQuickButton, 1000);
+
+function startNewRoute(){
+  routeActive.push({ id: 'route_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), startTs: Date.now() });
+  persistRouteActive();
+}
+
+function markRouteArrived(routeId){
+  const idx = routeActive.findIndex(r => r.id === routeId);
+  if(idx === -1) return;
+  const route = routeActive[idx];
+  const durationSec = Math.max(1, Math.floor((Date.now() - route.startTs) / 1000));
+  routeActive.splice(idx, 1);
+  routeLog.push({ id: route.id, startTs: route.startTs, endTs: Date.now(), durationSec });
+  persistRouteActive();
+  persistRouteLog();
+}
+
+// --- Календарь для выбора даты/диапазона дат в истории ---
+let historyRangeStart = null; // ms, начало дня
+let historyRangeEnd = null;   // ms, конец дня
+let calPickStart = null;      // временный выбор внутри открытого календаря
+let calPickEnd = null;
+let calViewDate = new Date(); // какой месяц сейчас показан в календаре
+
+function startOfDay(d){ const x = new Date(d); x.setHours(0,0,0,0); return x.getTime(); }
+function endOfDay(d){ const x = new Date(d); x.setHours(23,59,59,999); return x.getTime(); }
+
+function openCalendarModal(){
+  calPickStart = historyRangeStart;
+  calPickEnd = historyRangeEnd;
+  calViewDate = historyRangeStart ? new Date(historyRangeStart) : new Date();
+  renderCalendar();
+  document.getElementById('calendarModalBg').classList.add('show');
+}
+function closeCalendarModal(){
+  document.getElementById('calendarModalBg').classList.remove('show');
+}
+
+function changeCalendarMonth(delta){
+  calViewDate.setMonth(calViewDate.getMonth() + delta);
+  renderCalendar();
+}
+
+function calendarPickToday(){
+  const today = startOfDay(new Date());
+  calPickStart = today;
+  calPickEnd = today;
+  calViewDate = new Date();
+  renderCalendar();
+}
+
+function onCalendarDayClick(ts){
+  if(calPickStart == null || (calPickStart != null && calPickEnd != null)){
+    // начинаем новый выбор с чистого листа
+    calPickStart = ts;
+    calPickEnd = null;
+  } else {
+    // второй тап - завершаем диапазон (меняем местами, если кликнули раньше начала)
+    if(ts < calPickStart){
+      calPickEnd = calPickStart;
+      calPickStart = ts;
+    } else {
+      calPickEnd = ts;
+    }
+  }
+  renderCalendar();
+}
+
+function calendarReset(){
+  historyRangeStart = null;
+  historyRangeEnd = null;
+  calPickStart = null;
+  calPickEnd = null;
+  document.getElementById('historyDateFilterLabel').textContent = '📅 Поиск по дате';
+  closeCalendarModal();
+  renderHistory();
+}
+
+function calendarApply(){
+  if(calPickStart == null){ closeCalendarModal(); return; }
+  historyRangeStart = startOfDay(calPickStart);
+  historyRangeEnd = endOfDay(calPickEnd != null ? calPickEnd : calPickStart);
+
+  const startLabel = new Date(historyRangeStart).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  if(calPickEnd != null && startOfDay(calPickEnd) !== startOfDay(calPickStart)){
+    const endLabel = new Date(historyRangeEnd).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    document.getElementById('historyDateFilterLabel').textContent = `📅 ${startLabel} — ${endLabel}`;
+  } else {
+    document.getElementById('historyDateFilterLabel').textContent = `📅 ${startLabel}`;
+  }
+  closeCalendarModal();
+  renderHistory();
+}
+
+function renderCalendar(){
+  const monthLabel = calViewDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+  document.getElementById('calMonthLabel').textContent = monthLabel;
+
+  const year = calViewDate.getFullYear();
+  const month = calViewDate.getMonth();
+  const firstOfMonth = new Date(year, month, 1);
+  // понедельник = 0 ... воскресенье = 6
+  const firstWeekday = (firstOfMonth.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  const todayTs = startOfDay(new Date());
+  const cells = [];
+
+  for(let i = firstWeekday - 1; i >= 0; i--){
+    cells.push({ day: daysInPrevMonth - i, other: true, ts: null });
+  }
+  for(let d = 1; d <= daysInMonth; d++){
+    cells.push({ day: d, other: false, ts: startOfDay(new Date(year, month, d)) });
+  }
+  while(cells.length % 7 !== 0){
+    const nextDay = cells.length - (firstWeekday + daysInMonth) + 1;
+    cells.push({ day: nextDay, other: true, ts: null });
+  }
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = cells.map(c => {
+    if(c.other){
+      return `<div class="calDay otherMonth">${c.day}</div>`;
+    }
+    let cls = 'calDay';
+    if(c.ts === todayTs) cls += ' today';
+    if(calPickStart != null && calPickEnd == null && c.ts === calPickStart) cls += ' singleSelected';
+    if(calPickStart != null && calPickEnd != null){
+      if(c.ts === calPickStart) cls += ' rangeStart';
+      else if(c.ts === calPickEnd) cls += ' rangeEnd';
+      else if(c.ts > calPickStart && c.ts < calPickEnd) cls += ' inRange';
+    }
+    return `<div class="${cls}" data-ts="${c.ts}">${c.day}</div>`;
+  }).join('');
+
+  grid.querySelectorAll('.calDay:not(.otherMonth)').forEach(el => {
+    el.addEventListener('click', () => onCalendarDayClick(Number(el.dataset.ts)));
+  });
+}
+
+function openOrdersModal(){
+  renderAll();
+  document.getElementById('ordersModalBg').classList.add('show');
+}
+function closeOrdersModal(){
+  document.getElementById('ordersModalBg').classList.remove('show');
+}
+
+function openHistoryModal(){
+  renderHistory();
+  document.getElementById('historyModalBg').classList.add('show');
+}
+function closeHistoryModal(){
+  document.getElementById('historyModalBg').classList.remove('show');
+}
+
+function renderHistory(){
+  const body = document.getElementById('historyBody');
+  if(visitsLog.length === 0){
+    body.innerHTML = '<div class="statsEmpty">Пока пусто. Здесь появится история всех +1 и −1 по точкам.</div>';
     return;
   }
 
-  // Network-first: всегда пытаемся взять свежую версию из сети,
-  // а кэш используем только как запасной вариант, если сети нет (офлайн).
-  event.respondWith(
-    fetch(event.request)
-      .then((resp) => {
-        const respClone = resp.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, respClone));
-        return resp;
-      })
-      .catch(() => caches.match(event.request))
-  );
+  const rangeStart = historyRangeStart != null ? historyRangeStart : -Infinity;
+  const rangeEnd = historyRangeEnd != null ? historyRangeEnd : Infinity;
+  const inRange = (v) => {
+    const t = new Date(v.ts).getTime();
+    return t >= rangeStart && t <= rangeEnd;
+  };
+  const rangedLog = visitsLog.filter(inRange);
+
+  if(rangedLog.length === 0){
+    body.innerHTML = '<div class="statsEmpty">За выбранный период записей нет.</div>';
+    return;
+  }
+
+  const sorted = [...rangedLog].sort((a, b) => new Date(b.ts) - new Date(a.ts)).slice(0, 300);
+  const spotById = {};
+  spots.forEach(s => spotById[s.id] = s);
+
+  // считаем чистое число заборов за каждый день (добавления минус отмены) в пределах выбранного периода
+  const dayNetCounts = {};
+  rangedLog.forEach(v => {
+    const label = new Date(v.ts).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    dayNetCounts[label] = (dayNetCounts[label] || 0) + (v.type === 'remove' ? -1 : 1);
+  });
+
+  let lastDayLabel = null;
+  let html = '';
+  sorted.forEach(v => {
+    const d = new Date(v.ts);
+    const dayLabel = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    if(dayLabel !== lastDayLabel){
+      const dayCount = Math.max(0, dayNetCounts[dayLabel] || 0);
+      html += `<div class="historyDayHeader"><span>${escapeHtml(dayLabel)}</span><span class="historyDayCount">${formatZaboros(dayCount)}</span></div>`;
+      lastDayLabel = dayLabel;
+    }
+    const timeStr = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    const spot = spotById[v.spotId];
+    const spotName = spot ? spot.name : '(точка удалена)';
+    const waitStr = v.waitSec != null ? `⏱ ${formatDuration(v.waitSec)}` : '';
+    const isRemove = v.type === 'remove';
+    const badge = isRemove
+      ? '<span class="historyBadge historyBadgeMinus">−1</span>'
+      : '<span class="historyBadge historyBadgePlus">+1</span>';
+    html += `
+      <div class="historyRow${isRemove ? ' historyRowRemove' : ''}">
+        <span class="historyTime">${timeStr}</span>
+        ${badge}
+        <span class="historyName">${escapeHtml(spotName)}</span>
+        <span class="historyWait">${waitStr}</span>
+      </div>
+    `;
+  });
+  body.innerHTML = html;
+}
+
+function openStatsModal(){
+  renderStats();
+  document.getElementById('statsModalBg').classList.add('show');
+}
+function closeStatsModal(){
+  document.getElementById('statsModalBg').classList.remove('show');
+}
+
+function dayKey(date){
+  // локальная дата в формате YYYY-MM-DD, без сдвига часовым поясом
+  const y = date.getFullYear(), m = String(date.getMonth()+1).padStart(2,'0'), d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function renderStats(){
+  const body = document.getElementById('statsBody');
+  if(visitsLog.length === 0){
+    body.innerHTML = '<div class="statsEmpty">Пока нет данных для статистики. Отмечай заборы — здесь появятся цифры по дням.</div>';
+    return;
+  }
+
+  const now = new Date();
+  const todayKey = dayKey(now);
+  const yesterday = new Date(now); yesterday.setDate(yesterday.getDate()-1);
+  const yesterdayKey = dayKey(yesterday);
+
+  // считаем количество заборов по дням за последние 7 дней (включая сегодня)
+  const days = [];
+  for(let i = 6; i >= 0; i--){
+    const d = new Date(now); d.setDate(d.getDate()-i);
+    days.push({ key: dayKey(d), label: d.toLocaleDateString('ru-RU', { weekday: 'short' }), count: 0 });
+  }
+  const dayMap = {};
+  days.forEach(d => dayMap[d.key] = d);
+
+  let todayCount = 0, yesterdayCount = 0, weekCount = 0, totalNet = 0;
+  visitsLog.forEach(v => {
+    const delta = v.type === 'remove' ? -1 : 1;
+    const k = dayKey(new Date(v.ts));
+    if(k === todayKey) todayCount += delta;
+    if(k === yesterdayKey) yesterdayCount += delta;
+    if(dayMap[k]){ dayMap[k].count += delta; weekCount += delta; }
+    totalNet += delta;
+  });
+  // не даём барам и карточкам уходить в минус визуально
+  todayCount = Math.max(0, todayCount);
+  yesterdayCount = Math.max(0, yesterdayCount);
+  weekCount = Math.max(0, weekCount);
+  totalNet = Math.max(0, totalNet);
+  days.forEach(d => { d.count = Math.max(0, d.count); });
+
+  const maxCount = Math.max(1, ...days.map(d => d.count));
+
+  const cardsHtml = `
+    <div class="statsRow">
+      <div class="statsCard"><div class="num">${todayCount}</div><div class="lbl">сегодня</div></div>
+      <div class="statsCard"><div class="num">${yesterdayCount}</div><div class="lbl">вчера</div></div>
+      <div class="statsCard"><div class="num">${weekCount}</div><div class="lbl">за 7 дней</div></div>
+      <div class="statsCard"><div class="num">${totalNet}</div><div class="lbl">всего</div></div>
+    </div>
+  `;
+
+  const chartHtml = `
+    <div class="statsChartTitle">Заборы по дням</div>
+    <div id="statsChart">
+      ${days.map(d => {
+        const h = Math.max(4, Math.round((d.count / maxCount) * 100));
+        const isToday = d.key === todayKey;
+        return `<div class="statsBarWrap">
+          <div class="statsBarNum">${d.count || ''}</div>
+          <div class="statsBar${isToday ? ' today' : ''}" style="height:${h}px"></div>
+          <div class="statsBarDay">${escapeHtml(d.label)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  const spotByIdForWait = {};
+  spots.forEach(s => spotByIdForWait[s.id] = s);
+
+  const longestWaits = visitsLog
+    .filter(v => v.waitSec != null && v.type !== 'remove' && !v.reversed)
+    .sort((a, b) => b.waitSec - a.waitSec)
+    .slice(0, 5);
+
+  const waitHtml = longestWaits.length > 0 ? `
+    <div class="statsChartTitle" style="margin-top:18px;">Дольше всего ждал</div>
+    <div id="waitRanking">
+      ${longestWaits.map(v => {
+        const spot = spotByIdForWait[v.spotId];
+        const spotName = spot ? spot.name : '(точка удалена)';
+        const d = new Date(v.ts);
+        const dateStr = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+        const timeStr = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        return `
+        <div class="waitRow">
+          <div class="waitRowMain">
+            <span class="waitName">${escapeHtml(spotName)}</span>
+            <span class="waitTime">${formatDuration(v.waitSec)}</span>
+          </div>
+          <div class="waitRowDate">${escapeHtml(dateStr)}, ${escapeHtml(timeStr)}</div>
+        </div>
+      `}).join('')}
+    </div>
+  ` : `
+    <div class="statsChartTitle" style="margin-top:18px;">Время ожидания</div>
+    <div class="statsEmpty" style="padding:10px 0;">Пока нет данных. Нажимай "⏱ Прибыл" при заказе, чтобы начать замерять.</div>
+  `;
+
+  const hourHtml = `
+    <div class="statsChartTitle" style="margin-top:18px; display:flex; justify-content:space-between; align-items:center;">
+      <span>🕐 Часы пик</span>
+    </div>
+    <div id="hourPeriodTabs">
+      <button class="periodTab${currentHourPeriod === 'day' ? ' active' : ''}" data-period="day" onclick="setHourPeriod('day')">Сегодня</button>
+      <button class="periodTab${currentHourPeriod === 'week' ? ' active' : ''}" data-period="week" onclick="setHourPeriod('week')">7 дней</button>
+      <button class="periodTab${currentHourPeriod === 'month' ? ' active' : ''}" data-period="month" onclick="setHourPeriod('month')">30 дней</button>
+    </div>
+    <div id="hourChartWrap"></div>
+    <div id="hourTrend"></div>
+  `;
+
+  body.innerHTML = cardsHtml + chartHtml + waitHtml + hourHtml;
+  renderHourChart();
+  renderHourTrend();
+}
+
+// --- Часы пик: в какое время суток чаще всего забираешь заказы ---
+let currentHourPeriod = 'day'; // 'day' | 'week' | 'month'
+
+function setHourPeriod(period){
+  currentHourPeriod = period;
+  document.querySelectorAll('#hourPeriodTabs .periodTab').forEach(el => {
+    el.classList.toggle('active', el.dataset.period === period);
+  });
+  renderHourChart();
+}
+
+function renderHourChart(){
+  const wrap = document.getElementById('hourChartWrap');
+  if(!wrap) return;
+
+  const now = Date.now();
+  let cutoff;
+  if(currentHourPeriod === 'day'){
+    const d = new Date(); d.setHours(0,0,0,0);
+    cutoff = d.getTime();
+  } else if(currentHourPeriod === 'week'){
+    cutoff = now - 7 * 86400000;
+  } else {
+    cutoff = now - 30 * 86400000;
+  }
+
+  const hours = Array.from({ length: 24 }, () => 0);
+  visitsLog.forEach(v => {
+    const ts = new Date(v.ts).getTime();
+    if(ts < cutoff) return;
+    const h = new Date(v.ts).getHours();
+    hours[h] += (v.type === 'remove' ? -1 : 1);
+  });
+  for(let i = 0; i < 24; i++) hours[i] = Math.max(0, hours[i]);
+
+  const maxH = Math.max(1, ...hours);
+  const currentHour = new Date().getHours();
+  const peakVal = Math.max(...hours);
+
+  const barsHtml = hours.map((count, h) => {
+    const height = Math.max(3, Math.round((count / maxH) * 70));
+    const isPeak = count === peakVal && peakVal > 0;
+    const isNow = currentHourPeriod === 'day' && h === currentHour;
+    const showLabel = h % 3 === 0;
+    return `<div class="hourBarWrap">
+      <div class="hourBar${isPeak ? ' peak' : ''}${isNow ? ' now' : ''}" style="height:${height}px"></div>
+      ${showLabel ? `<div class="hourLabel">${h}</div>` : '<div class="hourLabel"></div>'}
+    </div>`;
+  }).join('');
+
+  let summary = 'Пока нет данных за этот период.';
+  if(peakVal > 0){
+    const peakHours = hours.map((c, h) => ({ c, h })).filter(x => x.c === peakVal).map(x => x.h);
+    const peakStr = peakHours.map(h => `${h}:00`).join(', ');
+    summary = `Пик активности: ${peakStr} (${formatZaboros(peakVal)})`;
+  }
+
+  wrap.innerHTML = `<div id="hourChart">${barsHtml}</div><div class="hourSummary">${summary}</div>`;
+}
+
+function renderHourTrend(){
+  const trendEl = document.getElementById('hourTrend');
+  if(!trendEl) return;
+
+  const now = new Date();
+  const rows = [];
+  for(let i = 0; i < 7; i++){
+    const d = new Date(now); d.setDate(d.getDate() - i);
+    const key = dayKey(d);
+    const hours = Array.from({ length: 24 }, () => 0);
+    let hasData = false;
+    visitsLog.forEach(v => {
+      if(dayKey(new Date(v.ts)) !== key) return;
+      hasData = true;
+      hours[new Date(v.ts).getHours()] += (v.type === 'remove' ? -1 : 1);
+    });
+    if(!hasData) continue;
+    for(let h = 0; h < 24; h++) hours[h] = Math.max(0, hours[h]);
+    const max = Math.max(...hours);
+    if(max <= 0) continue;
+    const peakHours = hours.map((c, h) => ({ c, h })).filter(x => x.c === max).map(x => `${x.h}:00`);
+    rows.push({
+      label: d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+      peak: peakHours.join(', '),
+      count: max
+    });
+  }
+
+  if(rows.length === 0){
+    trendEl.innerHTML = '';
+    return;
+  }
+
+  trendEl.innerHTML = `
+    <div class="statsChartTitle" style="margin-top:14px;">Как менялся пик по дням</div>
+    <div id="hourTrendList">
+      ${rows.map(r => `
+        <div class="hourTrendRow">
+          <span class="hourTrendDate">${escapeHtml(r.label)}</span>
+          <span class="hourTrendPeak">пик в ${escapeHtml(r.peak)}</span>
+          <span class="hourTrendCount">${formatZaboros(r.count)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function plural(n){
+  const mod10 = n % 10, mod100 = n % 100;
+  if(mod10 === 1 && mod100 !== 11) return '';
+  if([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) return 'а';
+  return '';
+}
+
+function formatZaboros(n){
+  const mod10 = n % 10, mod100 = n % 100;
+  if(mod10 === 1 && mod100 !== 11) return `${n} забор`;
+  if([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) return `${n} забора`;
+  return `${n} заборов`;
+}
+function escapeHtml(str){
+  const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+}
+
+// --- Учёт времени ожидания у стойки: "⏱ Прибыл" -> "✅ Забрал заказ" (не путать с главной кнопкой) ---
+function formatDuration(totalSec){
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  if(m === 0) return `${s} сек`;
+  return `${m} мин ${s} сек`;
+}
+
+function formatTimer(totalSec){
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// --- Долгое нажатие на точку на карте запускает таймер "Прибыл" без похода в список ---
+const LONG_PRESS_MS = 550;
+
+function attachLongPress(marker, spotId){
+  const el = marker.getElement();
+  if(!el) return;
+  let pressTimer = null;
+
+  const cancelPress = () => {
+    clearTimeout(pressTimer);
+    const inner = el.querySelector('.pinDiv, .bagBody');
+    if(inner) inner.classList.remove('longPressing');
+  };
+
+  const startPress = (ev) => {
+    marker._longPressFired = false;
+    const inner = el.querySelector('.pinDiv, .bagBody');
+    if(inner){
+      inner.style.setProperty('--pressDur', LONG_PRESS_MS + 'ms');
+      inner.classList.add('longPressing');
+    }
+    pressTimer = setTimeout(() => {
+      marker._longPressFired = true;
+      cancelPress();
+      if(navigator.vibrate) navigator.vibrate(40);
+      startArrival(spotId);
+    }, LONG_PRESS_MS);
+  };
+
+  el.addEventListener('pointerdown', startPress);
+  el.addEventListener('pointerup', cancelPress);
+  el.addEventListener('pointerleave', cancelPress);
+  el.addEventListener('pointercancel', cancelPress);
+}
+
+function startArrival(spotId){
+  const s = spots.find(sp => sp.id === spotId);
+  if(!s) return;
+  if(activeArrival){
+    if(activeArrival.spotId === spotId) return; // уже идёт для этой же точки
+    if(!confirm(`Уже идёт отсчёт для «${activeArrival.spotName}». Начать заново для «${s.name}»? Прошлый отсчёт не будет засчитан.`)) return;
+  }
+  activeArrival = { spotId, spotName: s.name, startTs: Date.now() };
+  try{ localStorage.setItem(ARRIVAL_TIMER_KEY, JSON.stringify(activeArrival)); }catch(e){}
+  showArrivalBar();
+}
+
+function showArrivalBar(){
+  if(!activeArrival) return;
+  document.getElementById('arrivalSpotName').textContent = activeArrival.spotName;
+  document.getElementById('arrivalBar').classList.add('show');
+  updateArrivalTimerDisplay();
+  clearInterval(arrivalInterval);
+  arrivalInterval = setInterval(updateArrivalTimerDisplay, 1000);
+}
+
+function updateArrivalTimerDisplay(){
+  if(!activeArrival) return;
+  const elapsed = Math.floor((Date.now() - activeArrival.startTs) / 1000);
+  document.getElementById('arrivalTime').textContent = formatTimer(elapsed);
+}
+
+function hideArrivalBar(){
+  document.getElementById('arrivalBar').classList.remove('show');
+  clearInterval(arrivalInterval);
+  arrivalInterval = null;
+}
+
+function cancelArrival(){
+  activeArrival = null;
+  localStorage.removeItem(ARRIVAL_TIMER_KEY);
+  hideArrivalBar();
+}
+
+function completeArrival(){
+  if(!activeArrival) return;
+  const elapsedSec = Math.max(1, Math.floor((Date.now() - activeArrival.startTs) / 1000));
+  const s = spots.find(sp => sp.id === activeArrival.spotId);
+  const spotName = activeArrival.spotName;
+  localStorage.removeItem(ARRIVAL_TIMER_KEY);
+  hideArrivalBar();
+  activeArrival = null;
+
+  if(!s){ return; } // точку успели удалить, пока шёл отсчёт
+
+  s.waitTotalSec = (s.waitTotalSec || 0) + elapsedSec;
+  s.waitCount = (s.waitCount || 0) + 1;
+  const avgSec = Math.round(s.waitTotalSec / s.waitCount);
+
+  s.count += 1;
+  s.lastVisit = new Date().toISOString();
+  visitsLog.push({ id: makeVisitId(), spotId: s.id, ts: s.lastVisit, waitSec: elapsedSec, type: 'add' });
+  persist();
+  persistVisits();
+  renderAll();
+
+  alert(`⏱️ Ждал: ${formatDuration(elapsedSec)}\n\nСреднее ожидание в «${spotName}»: ${formatDuration(avgSec)}`);
+}
+
+// восстанавливаем незавершённый отсчёт, если приложение закрыли во время ожидания
+(function restoreArrival(){
+  try{
+    const raw = localStorage.getItem(ARRIVAL_TIMER_KEY);
+    if(raw){
+      activeArrival = JSON.parse(raw);
+      showArrivalBar();
+    }
+  }catch(e){}
+})();
+
+function makeVisitId(){
+  return 'visit_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+}
+
+function bump(id){
+  const s = spots.find(s => s.id === id);
+  if(!s) return;
+  s.count += 1;
+  s.lastVisit = new Date().toISOString();
+  visitsLog.push({ id: makeVisitId(), spotId: id, ts: s.lastVisit, type: 'add' });
+  persist();
+  persistVisits();
+  renderAll();
+}
+
+function unbump(id){
+  const s = spots.find(s => s.id === id);
+  if(!s) return;
+  if(s.count <= 1){
+    // если счётчик уже 1, спрашиваем удалить точку целиком
+    if(confirm('Это последний забор в этой точке. Удалить точку полностью?')){
+      removeSpot(id);
+    }
+    return;
+  }
+  s.count -= 1;
+  // ищем последнюю ещё не "погашенную" запись добавления для этой точки, чтобы откатить статистику ожидания,
+  // но саму запись из истории не удаляем - помечаем как использованную и добавляем отдельное событие "-1"
+  for(let i = visitsLog.length - 1; i >= 0; i--){
+    const v = visitsLog[i];
+    if(v.spotId === id && v.type !== 'remove' && !v.reversed){
+      if(v.waitSec != null && s.waitCount > 0){
+        s.waitTotalSec = Math.max(0, (s.waitTotalSec || 0) - v.waitSec);
+        s.waitCount -= 1;
+      }
+      v.reversed = true;
+      break;
+    }
+  }
+  visitsLog.push({ id: makeVisitId(), spotId: id, ts: new Date().toISOString(), type: 'remove' });
+  persist();
+  persistVisits();
+  renderAll();
+}
+
+function removeSpot(id){
+  spots = spots.filter(s => s.id !== id);
+  visitsLog = visitsLog.filter(v => v.spotId !== id);
+  persist();
+  persistVisits();
+  renderAll();
+}
+
+map.on('click', (e) => {
+  if(suppressNextMapClick){
+    suppressNextMapClick = false;
+    return;
+  }
+  const { lat, lng } = e.latlng;
+  handleMapTap(lat, lng);
 });
 
+function handleMapTap(lat, lng, prefillName){
+  // ищем все точки поблизости (в радиусе кластеризации), а не только одну ближайшую -
+  // в одном месте (фудкорт, ТЦ) может быть несколько разных заведений рядом
+  const nearby = spots
+    .map(s => ({ s, d: distMeters(lat, lng, s.lat, s.lng) }))
+    .filter(x => x.d <= CLUSTER_RADIUS_M)
+    .sort((a, b) => a.d - b.d)
+    .map(x => x.s);
+
+  if(nearby.length === 0){
+    pendingLatLng = { lat, lng };
+    openModal(lat, lng, prefillName);
+    return;
+  }
+  openChoiceModal(lat, lng, nearby, prefillName);
+}
+
+let pendingPrefillName = null;
+
+function openChoiceModal(lat, lng, nearby, prefillName){
+  pendingLatLng = { lat, lng };
+  pendingPrefillName = prefillName || null;
+  const box = document.getElementById('choiceList');
+  box.innerHTML = nearby.map(s => {
+    const avgWait = (s.waitCount > 0) ? formatDuration(Math.round(s.waitTotalSec / s.waitCount)) : null;
+    return `
+    <div class="choiceRow" data-id="${s.id}">
+      <div class="choiceMain">
+        <span class="choiceName">${escapeHtml(s.name)}</span>
+        <span class="choiceCount">${formatZaboros(s.count)}</span>
+      </div>
+      ${avgWait ? `<div class="choiceWait">⏱ в среднем: ${avgWait}</div>` : ''}
+      <button class="choiceArriveBtn" data-arrive-id="${s.id}">⏱ Отметить прибытие</button>
+    </div>
+  `}).join('');
+  box.querySelectorAll('.choiceRow').forEach(el => {
+    el.addEventListener('click', () => {
+      bump(el.dataset.id);
+      closeChoiceModal();
+    });
+  });
+  box.querySelectorAll('.choiceArriveBtn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      startArrival(btn.dataset.arriveId);
+      closeChoiceModal();
+    });
+  });
+  document.getElementById('choiceModalBg').classList.add('show');
+}
+
+function closeChoiceModal(){
+  document.getElementById('choiceModalBg').classList.remove('show');
+}
+
+function choiceAddNew(){
+  const { lat, lng } = pendingLatLng;
+  const prefillName = pendingPrefillName;
+  closeChoiceModal();
+  openModal(lat, lng, prefillName);
+}
+
+function openModal(lat, lng, prefillName){
+  document.getElementById('nameInput').value = prefillName || '';
+  document.getElementById('coordsText').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  document.getElementById('modalBg').classList.add('show');
+  setTimeout(() => {
+    const input = document.getElementById('nameInput');
+    input.focus();
+    if(prefillName) input.select();
+  }, 50);
+}
+function closeModal(){
+  document.getElementById('modalBg').classList.remove('show');
+  pendingLatLng = null;
+}
+function saveNewSpot(){
+  const name = document.getElementById('nameInput').value.trim();
+  if(!name || !pendingLatLng){ closeModal(); return; }
+  const newId = 'spot_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  const nowIso = new Date().toISOString();
+  spots.push({
+    id: newId,
+    name,
+    lat: pendingLatLng.lat,
+    lng: pendingLatLng.lng,
+    count: 1,
+    lastVisit: nowIso
+  });
+  visitsLog.push({ id: makeVisitId(), spotId: newId, ts: nowIso, type: 'add' });
+  persist();
+  persistVisits();
+  closeModal();
+  renderAll();
+}
+
+function exportData(){
+  if(spots.length === 0){ alert('Пока нечего сохранять - список точек пуст.'); return; }
+  const payload = { spots, visitsLog, routeLog };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `pickup-spots-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      const parsed = JSON.parse(e.target.result);
+      // поддерживаем и старый формат (просто массив точек), и новый ({spots, visitsLog, routeLog})
+      const importedSpots = Array.isArray(parsed) ? parsed : (parsed.spots || []);
+      const importedVisits = Array.isArray(parsed) ? [] : (parsed.visitsLog || []);
+      const importedRouteLog = Array.isArray(parsed) ? [] : (parsed.routeLog || []);
+      const validSpots = importedSpots.filter(s => s && typeof s.lat === 'number' && typeof s.lng === 'number' && typeof s.name === 'string');
+      if(validSpots.length === 0){ alert('В файле не найдено ни одной точки.'); return; }
+
+      const action = spots.length > 0
+        ? confirm(`Найдено ${validSpots.length} точек в файле.\nОК - добавить к текущим (${spots.length})\nОтмена - заменить текущие полностью`)
+        : true;
+
+      if(action){
+        // добавляем, избегая дублей по id
+        const existingIds = new Set(spots.map(s => s.id));
+        validSpots.forEach(s => {
+          if(!existingIds.has(s.id)){
+            spots.push(s);
+          }
+        });
+        const existingVisitKeys = new Set(visitsLog.map(v => v.spotId + '|' + v.ts));
+        importedVisits.forEach(v => {
+          const key = v.spotId + '|' + v.ts;
+          if(!existingVisitKeys.has(key)){
+            visitsLog.push(v);
+          }
+        });
+        const existingRouteIds = new Set(routeLog.map(r => r.id));
+        importedRouteLog.forEach(r => {
+          if(!existingRouteIds.has(r.id)){
+            routeLog.push(r);
+          }
+        });
+      } else {
+        spots = validSpots;
+        visitsLog = importedVisits;
+        routeLog = importedRouteLog;
+      }
+      persist();
+      persistVisits();
+      persistRouteLog();
+      renderAll();
+      if(spots.length){
+        const group = L.featureGroup(Object.values(markers));
+        try{ map.fitBounds(group.getBounds().pad(0.3)); }catch(err){}
+      }
+      alert('Готово! Точки восстановлены.');
+    }catch(err){
+      alert('Не получилось прочитать файл - убедись, что это файл резервной копии из этого приложения.');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function resetAll(){
+  if(!confirm('Удалить все отметки?')) return;
+  spots = [];
+  persist();
+  renderAll();
+}
+
+// регистрируем service worker для офлайн-работы (сработает только когда сайт открыт по HTTPS)
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+document.getElementById('nameInput')?.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') saveNewSpot();
+});
+
+let myLocationMarker = null;
+
+function showMyLocationMarker(lat, lng){
+  const icon = L.divIcon({
+    html: '<div class="myLocationDot"></div>',
+    className: '',
+    iconSize: [16, 16],
+    iconAnchor: [8, 8]
+  });
+  if(myLocationMarker){
+    myLocationMarker.setLatLng([lat, lng]);
+  } else {
+    myLocationMarker = L.marker([lat, lng], { icon, interactive: false, zIndexOffset: 1000 }).addTo(map);
+  }
+}
+
+let geoWatchId = null;
+let lastKnownCoords = null;
+
+function startGeoWatch(){
+  if(geoWatchId != null || !navigator.geolocation) return; // уже следим
+  geoWatchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      lastKnownCoords = [pos.coords.latitude, pos.coords.longitude];
+      showMyLocationMarker(pos.coords.latitude, pos.coords.longitude);
+    },
+    () => { /* тихо игнорируем сбои слежения, не спамим предупреждениями */ },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+  );
+}
+
+document.getElementById('locateBtn').addEventListener('click', () => {
+  if(!navigator.geolocation){ alert('Геолокация недоступна в этом браузере'); return; }
+  document.getElementById('modeBadge').textContent = 'Ищу тебя...';
+  startGeoWatch();
+
+  const finishCentering = (lat, lng) => {
+    map.setView([lat, lng], 16);
+    document.getElementById('modeBadge').textContent = 'Твоё местоположение';
+    setTimeout(() => document.getElementById('modeBadge').textContent = '', 2000);
+  };
+
+  if(lastKnownCoords){
+    finishCentering(lastKnownCoords[0], lastKnownCoords[1]);
+  } else {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => finishCentering(pos.coords.latitude, pos.coords.longitude),
+      () => {
+        document.getElementById('modeBadge').textContent = 'Доступ к GPS не дан';
+        setTimeout(() => document.getElementById('modeBadge').textContent = '', 2000);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+});
+
+loadSpots();
+</script>
+</body>
+</html>
