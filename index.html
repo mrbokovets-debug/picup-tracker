@@ -1057,14 +1057,20 @@ function renderAll(){
   });
   updateLabelVisibility();
 
-  const sorted = [...spots].sort((a, b) => sortMode === 'earned' ? (b.earned || 0) - (a.earned || 0) : b.count - a.count);
+  const earningsOn = isPieceRate();
+  const effectiveSortMode = earningsOn ? sortMode : 'count';
+  const sorted = [...spots].sort((a, b) => effectiveSortMode === 'earned' ? (b.earned || 0) - (a.earned || 0) : b.count - a.count);
   const rowsEl = document.getElementById('rows');
   const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
   const filtered = query ? sorted.filter(s => s.name.toLowerCase().includes(query)) : sorted;
-  const topEarnerId = (sortMode === 'earned' && filtered.length && filtered[0].earned > 0) ? filtered[0].id : null;
+  const topEarnerId = (earningsOn && effectiveSortMode === 'earned' && filtered.length && filtered[0].earned > 0) ? filtered[0].id : null;
 
   const sortLabelEl = document.getElementById('sortModeLabel');
-  if(sortLabelEl) sortLabelEl.textContent = sortMode === 'earned' ? 'По сумме ▾' : 'По частоте ▾';
+  if(sortLabelEl){
+    sortLabelEl.textContent = effectiveSortMode === 'earned' ? 'По сумме ▾' : 'По частоте ▾';
+    sortLabelEl.style.cursor = earningsOn ? 'pointer' : 'default';
+    sortLabelEl.style.textDecoration = earningsOn ? 'underline dotted' : 'none';
+  }
 
   if(sorted.length === 0){
     rowsEl.innerHTML = '<div class="empty">Пока пусто. Тапни по карте, где обычно забираешь заказы.</div>';
@@ -1084,10 +1090,11 @@ function renderAll(){
             <div class="n">${formatZaboros(s.count)}</div>
           </div>
           ${avgWait ? `<div class="rowWait">⏱ в среднем ждёшь тут: ${avgWait}</div>` : ''}
+          ${earningsOn ? `
           <div class="rowEarned">
             <span>💰 Заработано: ${earned > 0 ? formatMoney(earned) : '—'}</span>
             <button class="rowEarnedBtn" onclick="openAmountModal('${s.id}')">+ сумма за заказ</button>
-          </div>
+          </div>` : ''}
           <div class="rowBtns">
             <button class="minus" onclick="unbump('${s.id}')">−1</button>
             <button onclick="bump('${s.id}')">+1</button>
@@ -1101,7 +1108,12 @@ function renderAll(){
   document.getElementById('totalCount').textContent = total ? `всего заборов: ${total}` : '';
 }
 
+function isPieceRate(){
+  return (localStorage.getItem(PAY_TYPE_KEY) || 'hourly') === 'piece';
+}
+
 function toggleSortMode(){
+  if(!isPieceRate()) return;
   sortMode = sortMode === 'earned' ? 'count' : 'earned';
   localStorage.setItem(SORT_MODE_KEY, sortMode);
   renderAll();
@@ -1141,6 +1153,7 @@ function choosePayType(type){
     el.classList.toggle('active', el.dataset.paytype === type);
   });
   closeOnboardModal();
+  renderAll();
 }
 
 function chooseCurrency(symbol){
