@@ -472,9 +472,76 @@
 
   .leaflet-control-attribution{font-size:9px; background:rgba(20,23,28,0.7)!important; color:var(--text-dim)!important;}
   .leaflet-control-attribution a{color:var(--text-dim)!important;}
+
+  /* ---------- Заставка при запуске ---------- */
+  #splashScreen{
+    position:fixed; inset:0; z-index:9999; background:#050708;
+    display:flex; flex-direction:column;
+    opacity:1; transition:opacity .45s ease;
+  }
+  #splashScreen.fadeOut{opacity:0; pointer-events:none;}
+  #splashImgWrap{
+    flex:1 1 auto; min-height:0; position:relative; overflow:hidden;
+    background-image:url('splash-bg.jpg');
+    background-size:cover; background-position:center top; background-repeat:no-repeat;
+  }
+  #splashImgWrap::after{
+    content:''; position:absolute; left:0; right:0; bottom:0; height:90px;
+    background:linear-gradient(to bottom, rgba(5,7,8,0), #050708 92%);
+  }
+  #splashBottom{
+    flex-shrink:0; background:#050708; padding:2px 24px 26px; max-width:520px;
+    width:100%; margin:0 auto; box-sizing:border-box;
+  }
+  #splashFooterNav{
+    display:flex; align-items:center; justify-content:space-around;
+    padding:6px 0 18px; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:18px;
+  }
+  #splashFooterNav .sItem{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    color:#c7ccd4; font-size:11.5px;
+  }
+  #splashFooterNav svg{width:22px; height:22px; stroke:#eef0f3;}
+  #splashLoadingLabel{
+    color:#8b93a1; font-size:11px; letter-spacing:0.14em; text-align:center;
+    margin-bottom:10px; font-weight:600;
+  }
+  #splashBarTrack{
+    width:100%; height:6px; border-radius:6px; background:rgba(255,255,255,0.14); overflow:hidden;
+  }
+  #splashBarFill{
+    height:100%; width:0%; border-radius:6px; background:linear-gradient(90deg, #14e0a1, #4fe8bc);
+    transition:width .25s ease;
+  }
+  #splashPercent{
+    text-align:center; margin-top:8px; font-size:11px; color:#5c6472; font-weight:600;
+  }
 </style>
 </head>
 <body>
+
+<div id="splashScreen">
+  <div id="splashImgWrap"></div>
+  <div id="splashBottom">
+    <div id="splashFooterNav">
+      <div class="sItem">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+        <span>Мои заказы</span>
+      </div>
+      <div class="sItem">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="9"/></svg>
+        <span>Статистика</span>
+      </div>
+      <div class="sItem">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>
+        <span>История</span>
+      </div>
+    </div>
+    <div id="splashLoadingLabel">ЗАГРУЗКА...</div>
+    <div id="splashBarTrack"><div id="splashBarFill"></div></div>
+    <div id="splashPercent">0%</div>
+  </div>
+</div>
 
 <div id="arrivalBar">
   <div id="arrivalText">⏱ Ждём заказ: <span id="arrivalSpotName"></span></div>
@@ -684,6 +751,61 @@
 
 
 <script>
+// ---------- Реальный прогресс загрузки для заставки ----------
+// Реальные шаги (карта/тайлы/данные) обычно готовы почти мгновенно,
+// поэтому держим заставку минимум SPLASH_MIN_MS, чтобы картинка успела
+// показаться, но никогда не дольше SPLASH_MAX_MS (жёсткий потолок).
+const SPLASH_START_TS = Date.now();
+const SPLASH_MIN_MS = 1800;
+const SPLASH_MAX_MS = 5000;
+const splashSteps = { dom:false, map:false, tiles:false, data:false };
+const splashWeights = { dom:15, map:20, tiles:35, data:30 };
+let splashFinished = false;
+let splashRealDone = false;
+
+function splashProgress(step){
+  splashSteps[step] = true;
+  let pct = 0;
+  for(const k in splashSteps){ if(splashSteps[k]) pct += splashWeights[k]; }
+  const fill = document.getElementById('splashBarFill');
+  const label = document.getElementById('splashPercent');
+  if(fill) fill.style.width = pct + '%';
+  if(label) label.textContent = pct + '%';
+  if(pct >= 100){
+    splashRealDone = true;
+    scheduleSplashFinish();
+  }
+}
+
+function scheduleSplashFinish(){
+  if(splashFinished) return;
+  const elapsed = Date.now() - SPLASH_START_TS;
+  const remain = SPLASH_MIN_MS - elapsed;
+  if(remain <= 0){
+    finishSplash();
+  } else {
+    setTimeout(finishSplash, remain);
+  }
+}
+
+function finishSplash(){
+  if(splashFinished) return;
+  splashFinished = true;
+  const el = document.getElementById('splashScreen');
+  if(!el) return;
+  const fill = document.getElementById('splashBarFill');
+  const label = document.getElementById('splashPercent');
+  if(fill) fill.style.width = '100%';
+  if(label) label.textContent = '100%';
+  el.classList.add('fadeOut');
+  setTimeout(() => { el.remove(); }, 500);
+}
+
+// жёсткий потолок — если что-то грузится медленно (плохая сеть у курьера),
+// заставка всё равно закроется не позже, чем через 5 секунд
+setTimeout(finishSplash, SPLASH_MAX_MS);
+splashProgress('dom');
+
 const STORAGE_KEY = 'pickup-spots-geo';
 const VISITS_KEY = 'pickup-visits-log'; // журнал каждого отдельного забора с датой - для статистики по дням
 const MAP_THEME_KEY = 'pickup-map-theme';
@@ -708,6 +830,7 @@ const DEFAULT_CENTER = [39.49061425228292, -0.34876301013819333];
 
 const map = L.map('map', { zoomControl: true, attributionControl: true })
   .setView(DEFAULT_CENTER, 14);
+splashProgress('map');
 
 // защищаем свои кнопки над картой (лежат вне слоя Leaflet) от того, чтобы тап по ним
 // хоть как-то воспринимался картой как тап по самой карте - иначе после быстрой смены
@@ -720,10 +843,14 @@ const map = L.map('map', { zoomControl: true, attributionControl: true })
   }
 });
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const splashTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© OpenStreetMap'
 }).addTo(map);
+splashTileLayer.on('load', () => splashProgress('tiles'));
+// подстраховка: если тайлы не сообщат о загрузке (например, нет сети),
+// не держим заставку вечно
+setTimeout(() => splashProgress('tiles'), 3000);
 
 // подписи с названиями заведений видны только при достаточном приближении карты,
 // иначе при большом числе точек рядом они бы наезжали друг на друга
@@ -849,6 +976,7 @@ function loadSpots(){
     const group = L.featureGroup(Object.values(markers));
     try{ map.fitBounds(group.getBounds().pad(0.3)); }catch(e){}
   }
+  splashProgress('data');
 }
 
 function persist(){
@@ -1124,7 +1252,7 @@ function renderDeliveryAvg(){
     return;
   }
   const avgSec = Math.round(routeLog.reduce((a, r) => a + r.durationSec, 0) / routeLog.length);
-  el.textContent = formatDuration(avgSec);
+  el.textContent = `${formatDuration(avgSec)} (доставок: ${routeLog.length})`;
 }
 
 // тикаем каждую секунду, чтобы таймер на кнопке шёл в реальном времени
