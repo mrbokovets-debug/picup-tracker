@@ -135,6 +135,10 @@
   .row .name{flex:1; font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .row .n{font-size:12.5px; color:var(--text-dim); min-width:60px; text-align:right;}
   .rowWait{font-size:11px; color:var(--text-dim); margin-left:20px;}
+  .rowEarned{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-left:20px;
+    font-size:11.5px; color:var(--text-dim);}
+  .row button.rowEarnedBtn{background:none; border:1px solid var(--line); color:var(--signal); border-radius:8px;
+    padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0; width:auto; height:auto; white-space:nowrap;}
   .rowBtns{display:flex; align-items:center; gap:6px; justify-content:flex-end;}
   .row button{background:var(--signal-dim); color:var(--signal); border:none; border-radius:8px;
     width:28px; height:28px; font-size:15px; font-weight:700; cursor:pointer; flex-shrink:0;}
@@ -155,6 +159,31 @@
   #modalBtns button{flex:1; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
   #cancelBtn{background:var(--line); color:var(--text);}
   #saveBtn{background:var(--signal); color:var(--signal-text);}
+
+  #amountModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1200;}
+  #amountModalBg.show{display:flex;}
+  #amountModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:20px; border-top:1px solid var(--line);}
+  #amountModal h3{margin:0 0 6px; font-size:15px;}
+  #amountModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 12px;}
+  #amountModal input{width:100%; padding:12px; border-radius:10px; border:1px solid var(--line);
+    background:var(--asphalt-2); color:var(--text); font-size:16px; outline:none; box-sizing:border-box;}
+  #amountModal input:focus{border-color:var(--signal);}
+  #amountModalBtns{display:flex; gap:10px; margin-top:14px;}
+  #amountModalBtns button{flex:1; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer;}
+  #amountCancelBtn{background:var(--line); color:var(--text);}
+  #amountSaveBtn{background:var(--signal); color:var(--signal-text);}
+
+  #onboardModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.85); display:none;
+    align-items:center; justify-content:center; z-index:2000; padding:20px;}
+  #onboardModalBg.show{display:flex;}
+  #onboardModal{background:var(--card); width:100%; max-width:440px; border-radius:16px;
+    padding:22px; border:1px solid var(--line);}
+  #onboardModal h3{margin:0 0 6px; font-size:16px;}
+  #onboardModal .coords{color:var(--text-dim); font-size:12px; margin:0 0 16px;}
+  #onboardOptions{display:flex; flex-direction:column; gap:10px;}
+  #onboardOptions .themeOption{text-align:left; padding:14px 16px; font-size:14px;}
 
   #choiceModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
     align-items:flex-end; justify-content:center; z-index:1000;}
@@ -255,7 +284,7 @@
     display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;
     border:2px solid rgba(255,255,255,0.35);
   }
-  #mapThemeOptions{display:flex; gap:12px; margin-bottom:16px;}
+  #mapThemeOptions, #appThemeOptions, #payTypeOptions, #currencyOptions{display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;}
   .themeOption{
     flex:1; background:var(--asphalt-2); border:2px solid var(--line); border-radius:12px;
     padding:14px 8px; text-align:center; cursor:pointer; font-size:13px; color:var(--text); font-weight:600;
@@ -576,7 +605,7 @@
         <button class="modalXBtn" onclick="closeOrdersModal()">✕</button>
       </div>
       <input id="searchInput" type="text" placeholder="Поиск среди своих точек..." oninput="renderAll()">
-      <div class="listTitle"><span>По частоте</span><span id="totalCount"></span></div>
+      <div class="listTitle"><span id="sortModeLabel" onclick="toggleSortMode()" style="cursor:pointer; text-decoration:underline dotted;">По частоте ▾</span><span id="totalCount"></span></div>
       <div id="rows"></div>
     </div>
   </div>
@@ -602,6 +631,29 @@
     <div id="choiceBtns">
       <button id="choiceNewBtn" onclick="choiceAddNew()">+ Это другое заведение</button>
       <button id="choiceCancelBtn" onclick="closeChoiceModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<div id="amountModalBg">
+  <div id="amountModal">
+    <h3>Сколько заплатили за этот заказ?</h3>
+    <p class="coords" id="amountModalSpotName"></p>
+    <input id="amountInput" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Например: 4.5">
+    <div id="amountModalBtns">
+      <button id="amountCancelBtn" onclick="closeAmountModal()">Отмена</button>
+      <button id="amountSaveBtn" onclick="saveAmount()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<div id="onboardModalBg">
+  <div id="onboardModal">
+    <h3>Как тебе платят за заказы?</h3>
+    <p class="coords">Это можно потом изменить в Настройках</p>
+    <div id="onboardOptions">
+      <div class="themeOption" onclick="choosePayType('hourly')">⏱ Почасовая + премия за скорость</div>
+      <div class="themeOption" onclick="choosePayType('piece')">💰 Сдельная — фиксированная сумма за заказ</div>
     </div>
   </div>
 </div>
@@ -636,6 +688,20 @@
         </div>
         <span>Сумка курьера</span>
       </div>
+    </div>
+
+    <p class="coords">Тип оплаты</p>
+    <div id="payTypeOptions">
+      <div class="themeOption" data-paytype="hourly" onclick="choosePayType('hourly')">⏱ Почасовая + премия</div>
+      <div class="themeOption" data-paytype="piece" onclick="choosePayType('piece')">💰 Сдельная за заказ</div>
+    </div>
+
+    <p class="coords">Валюта</p>
+    <div id="currencyOptions">
+      <div class="themeOption" data-currency="€" onclick="chooseCurrency('€')">€</div>
+      <div class="themeOption" data-currency="₴" onclick="chooseCurrency('₴')">₴</div>
+      <div class="themeOption" data-currency="$" onclick="chooseCurrency('$')">$</div>
+      <div class="themeOption" data-currency="zł" onclick="chooseCurrency('zł')">zł</div>
     </div>
 
     <p class="coords">Оформление приложения</p>
@@ -710,6 +776,15 @@ let markers = {}; // id -> leaflet marker
 const ROUTE_ACTIVE_KEY = 'pickup-route-active'; // [{ id, startTs }] - заказы в пути прямо сейчас
 const ROUTE_LOG_KEY = 'pickup-route-log'; // [{ id, startTs, endTs, durationSec }] - завершённые доезды
 let routeActive = [];
+
+const PAY_TYPE_KEY = 'pickup-pay-type'; // 'hourly' (почасовая + премия) или 'piece' (сдельная за заказ)
+const CURRENCY_KEY = 'pickup-currency'; // символ валюты, по умолчанию €
+const ONBOARDED_KEY = 'pickup-onboarded';
+const SORT_MODE_KEY = 'pickup-sort-mode'; // 'count' или 'earned'
+const EARNINGS_LOG_KEY = 'pickup-earnings-log'; // [{ id, spotId, amount, ts }] - когда и сколько заплатили за заказ с этой точки
+let earningsLog = [];
+let sortMode = localStorage.getItem(SORT_MODE_KEY) || 'count';
+let pendingAmountSpotId = null;
 let routeLog = [];
 
 // Стартовая точка - примерное местоположение, потом попробуем уточнить через GPS браузера
@@ -839,6 +914,8 @@ function loadSpots(){
     const raw = localStorage.getItem(STORAGE_KEY);
     spots = raw ? JSON.parse(raw) : [];
   }catch(e){ spots = []; }
+  // на старых точках может не быть поля earned - подставляем 0
+  spots.forEach(s => { if(typeof s.earned !== 'number') s.earned = 0; });
   try{
     const rawVisits = localStorage.getItem(VISITS_KEY);
     visitsLog = rawVisits ? JSON.parse(rawVisits) : [];
@@ -851,6 +928,10 @@ function loadSpots(){
     const rawRouteLog = localStorage.getItem(ROUTE_LOG_KEY);
     routeLog = rawRouteLog ? JSON.parse(rawRouteLog) : [];
   }catch(e){ routeLog = []; }
+  try{
+    const rawEarnings = localStorage.getItem(EARNINGS_LOG_KEY);
+    earningsLog = rawEarnings ? JSON.parse(rawEarnings) : [];
+  }catch(e){ earningsLog = []; }
   renderDeliveryAvg();
   updateQuickButton();
   renderAll();
@@ -858,6 +939,7 @@ function loadSpots(){
     const group = L.featureGroup(Object.values(markers));
     try{ map.fitBounds(group.getBounds().pad(0.3)); }catch(e){}
   }
+  maybeShowOnboarding();
 }
 
 function persist(){
@@ -868,6 +950,20 @@ function persist(){
 function persistVisits(){
   try{ localStorage.setItem(VISITS_KEY, JSON.stringify(visitsLog)); }
   catch(e){ console.error('storage error', e); }
+}
+
+function persistEarnings(){
+  try{ localStorage.setItem(EARNINGS_LOG_KEY, JSON.stringify(earningsLog)); }
+  catch(e){ console.error('storage error', e); }
+}
+
+function getCurrency(){
+  return localStorage.getItem(CURRENCY_KEY) || '€';
+}
+
+function formatMoney(amount){
+  const n = Math.round(amount * 100) / 100;
+  return `${n} ${getCurrency()}`;
 }
 
 // --- Свайп влево на карточке точки открывает кнопку "Удалить" ---
@@ -961,10 +1057,14 @@ function renderAll(){
   });
   updateLabelVisibility();
 
-  const sorted = [...spots].sort((a, b) => b.count - a.count);
+  const sorted = [...spots].sort((a, b) => sortMode === 'earned' ? (b.earned || 0) - (a.earned || 0) : b.count - a.count);
   const rowsEl = document.getElementById('rows');
   const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
   const filtered = query ? sorted.filter(s => s.name.toLowerCase().includes(query)) : sorted;
+  const topEarnerId = (sortMode === 'earned' && filtered.length && filtered[0].earned > 0) ? filtered[0].id : null;
+
+  const sortLabelEl = document.getElementById('sortModeLabel');
+  if(sortLabelEl) sortLabelEl.textContent = sortMode === 'earned' ? 'По сумме ▾' : 'По частоте ▾';
 
   if(sorted.length === 0){
     rowsEl.innerHTML = '<div class="empty">Пока пусто. Тапни по карте, где обычно забираешь заказы.</div>';
@@ -973,16 +1073,21 @@ function renderAll(){
   } else {
     rowsEl.innerHTML = filtered.map(s => {
       const avgWait = (s.waitCount > 0) ? formatDuration(Math.round(s.waitTotalSec / s.waitCount)) : null;
+      const earned = s.earned || 0;
       return `
       <div class="rowSwipeWrap" data-id="${s.id}">
         <div class="rowDeleteAction" data-id="${s.id}">Удалить</div>
         <div class="row">
           <div class="rowTop">
             <div class="dot" style="background:${colorForCount(s.count, max)}"></div>
-            <div class="name">${escapeHtml(s.name)}</div>
+            <div class="name">${escapeHtml(s.name)}${s.id === topEarnerId ? ' 🏆' : ''}</div>
             <div class="n">${formatZaboros(s.count)}</div>
           </div>
           ${avgWait ? `<div class="rowWait">⏱ в среднем ждёшь тут: ${avgWait}</div>` : ''}
+          <div class="rowEarned">
+            <span>💰 Заработано: ${earned > 0 ? formatMoney(earned) : '—'}</span>
+            <button class="rowEarnedBtn" onclick="openAmountModal('${s.id}')">+ сумма за заказ</button>
+          </div>
           <div class="rowBtns">
             <button class="minus" onclick="unbump('${s.id}')">−1</button>
             <button onclick="bump('${s.id}')">+1</button>
@@ -994,6 +1099,12 @@ function renderAll(){
   }
   const total = spots.reduce((a,s) => a + s.count, 0);
   document.getElementById('totalCount').textContent = total ? `всего заборов: ${total}` : '';
+}
+
+function toggleSortMode(){
+  sortMode = sortMode === 'earned' ? 'count' : 'earned';
+  localStorage.setItem(SORT_MODE_KEY, sortMode);
+  renderAll();
 }
 
 function openSettingsModal(){
@@ -1009,10 +1120,73 @@ function openSettingsModal(){
   document.querySelectorAll('#mapThemeOptions .themeOption').forEach(el => {
     el.classList.toggle('active', el.dataset.theme === currentMapTheme);
   });
+  const currentPayType = localStorage.getItem(PAY_TYPE_KEY) || 'hourly';
+  document.querySelectorAll('#payTypeOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.paytype === currentPayType);
+  });
+  const currentCurrency = getCurrency();
+  document.querySelectorAll('#currencyOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.currency === currentCurrency);
+  });
   document.getElementById('settingsModalBg').classList.add('show');
 }
 function closeSettingsModal(){
   document.getElementById('settingsModalBg').classList.remove('show');
+}
+
+function choosePayType(type){
+  localStorage.setItem(PAY_TYPE_KEY, type);
+  localStorage.setItem(ONBOARDED_KEY, '1');
+  document.querySelectorAll('#payTypeOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.paytype === type);
+  });
+  closeOnboardModal();
+}
+
+function chooseCurrency(symbol){
+  localStorage.setItem(CURRENCY_KEY, symbol);
+  document.querySelectorAll('#currencyOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.currency === symbol);
+  });
+  renderAll();
+}
+
+function maybeShowOnboarding(){
+  if(localStorage.getItem(ONBOARDED_KEY)) return;
+  document.getElementById('onboardModalBg').classList.add('show');
+}
+function closeOnboardModal(){
+  document.getElementById('onboardModalBg').classList.remove('show');
+}
+
+function openAmountModal(spotId){
+  const s = spots.find(sp => sp.id === spotId);
+  if(!s) return;
+  pendingAmountSpotId = spotId;
+  document.getElementById('amountModalSpotName').textContent = s.name;
+  document.getElementById('amountInput').value = '';
+  document.getElementById('amountModalBg').classList.add('show');
+  setTimeout(() => document.getElementById('amountInput').focus(), 50);
+}
+function closeAmountModal(){
+  document.getElementById('amountModalBg').classList.remove('show');
+  pendingAmountSpotId = null;
+}
+function saveAmount(){
+  const raw = document.getElementById('amountInput').value.replace(',', '.').trim();
+  const amount = parseFloat(raw);
+  if(!pendingAmountSpotId || isNaN(amount) || amount <= 0){
+    alert('Введи сумму больше нуля.');
+    return;
+  }
+  const s = spots.find(sp => sp.id === pendingAmountSpotId);
+  if(!s){ closeAmountModal(); return; }
+  s.earned = (s.earned || 0) + amount;
+  earningsLog.push({ id: makeVisitId(), spotId: s.id, amount, ts: new Date().toISOString() });
+  persist();
+  persistEarnings();
+  closeAmountModal();
+  renderAll();
 }
 function chooseMarkerStyle(style){
   localStorage.setItem(MARKER_STYLE_KEY, style);
@@ -1881,7 +2055,8 @@ function saveNewSpot(){
     lat: pendingLatLng.lat,
     lng: pendingLatLng.lng,
     count: 1,
-    lastVisit: nowIso
+    lastVisit: nowIso,
+    earned: 0
   });
   visitsLog.push({ id: makeVisitId(), spotId: newId, ts: nowIso, type: 'add' });
   persist();
@@ -1892,7 +2067,7 @@ function saveNewSpot(){
 
 function exportData(){
   if(spots.length === 0){ alert('Пока нечего сохранять - список точек пуст.'); return; }
-  const payload = { spots, visitsLog, routeLog };
+  const payload = { spots, visitsLog, routeLog, earningsLog };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1916,7 +2091,9 @@ function importData(event){
       const importedSpots = Array.isArray(parsed) ? parsed : (parsed.spots || []);
       const importedVisits = Array.isArray(parsed) ? [] : (parsed.visitsLog || []);
       const importedRouteLog = Array.isArray(parsed) ? [] : (parsed.routeLog || []);
+      const importedEarnings = Array.isArray(parsed) ? [] : (parsed.earningsLog || []);
       const validSpots = importedSpots.filter(s => s && typeof s.lat === 'number' && typeof s.lng === 'number' && typeof s.name === 'string');
+      validSpots.forEach(s => { if(typeof s.earned !== 'number') s.earned = 0; });
       if(validSpots.length === 0){ alert('В файле не найдено ни одной точки.'); return; }
 
       const action = spots.length > 0
@@ -1944,14 +2121,22 @@ function importData(event){
             routeLog.push(r);
           }
         });
+        const existingEarningsIds = new Set(earningsLog.map(e => e.id));
+        importedEarnings.forEach(e => {
+          if(!existingEarningsIds.has(e.id)){
+            earningsLog.push(e);
+          }
+        });
       } else {
         spots = validSpots;
         visitsLog = importedVisits;
         routeLog = importedRouteLog;
+        earningsLog = importedEarnings;
       }
       persist();
       persistVisits();
       persistRouteLog();
+      persistEarnings();
       renderAll();
       if(spots.length){
         const group = L.featureGroup(Object.values(markers));
@@ -1982,6 +2167,9 @@ if('serviceWorker' in navigator){
 
 document.getElementById('nameInput')?.addEventListener('keydown', (e) => {
   if(e.key === 'Enter') saveNewSpot();
+});
+document.getElementById('amountInput')?.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') saveAmount();
 });
 
 let myLocationMarker = null;
