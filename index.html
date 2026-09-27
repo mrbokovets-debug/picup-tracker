@@ -178,12 +178,14 @@
   #onboardModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.85); display:none;
     align-items:center; justify-content:center; z-index:2000; padding:20px;}
   #onboardModalBg.show{display:flex;}
-  #onboardModal{background:var(--card); width:100%; max-width:440px; border-radius:16px;
-    padding:22px; border:1px solid var(--line);}
-  #onboardModal h3{margin:0 0 6px; font-size:16px;}
-  #onboardModal .coords{color:var(--text-dim); font-size:12px; margin:0 0 16px;}
-  #onboardOptions{display:flex; flex-direction:column; gap:10px;}
-  #onboardOptions .themeOption{text-align:left; padding:14px 16px; font-size:14px;}
+  #onboardModal{background:var(--card); width:100%; max-width:420px; border-radius:20px;
+    padding:6px 0 10px; border:1px solid var(--line); overflow:hidden;}
+  .onboardHeader{padding:26px 22px 16px; text-align:center;}
+  .onboardEmoji{font-size:32px; margin-bottom:8px;}
+  .onboardHeader h3{margin:0 0 8px; font-size:18px; font-weight:800; color:var(--text);}
+  .onboardHeader .coords{margin:0; font-size:12.5px; color:var(--text-dim); line-height:1.4;}
+  .onboardSub{font-size:11.5px; color:var(--text-dim); font-weight:500; margin-top:2px;}
+  #onboardModal .drawerItem{padding:14px 22px;}
 
   #choiceModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
     align-items:flex-end; justify-content:center; z-index:1000;}
@@ -649,11 +651,28 @@
 
 <div id="onboardModalBg">
   <div id="onboardModal">
-    <h3>Как тебе платят за заказы?</h3>
-    <p class="coords">Это можно потом изменить в Настройках</p>
-    <div id="onboardOptions">
-      <div class="themeOption" onclick="choosePayType('hourly')">⏱ Почасовая + премия за скорость</div>
-      <div class="themeOption" onclick="choosePayType('piece')">💰 Сдельная — фиксированная сумма за заказ</div>
+    <div class="onboardHeader">
+      <div class="onboardEmoji">👋</div>
+      <h3>Как тебе платят за заказы?</h3>
+      <p class="coords">Выбери свою схему — потом можно сменить в Настройках</p>
+    </div>
+    <div class="drawerGroup" style="border-top:none; margin-top:0; padding-top:0;">
+      <div class="drawerItem" onclick="choosePayType('hourly')">
+        <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg></span>
+        <span class="drawerLabel">
+          <div>Почасовая + премия</div>
+          <div class="onboardSub">Платят за время + бонус за скорость и количество</div>
+        </span>
+        <span class="drawerChevron">›</span>
+      </div>
+      <div class="drawerItem" onclick="choosePayType('piece')">
+        <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 6v.01M18 17.99V18"/></svg></span>
+        <span class="drawerLabel">
+          <div>Сдельная за заказ</div>
+          <div class="onboardSub">Фиксированная сумма за каждый заказ + подача</div>
+        </span>
+        <span class="drawerChevron">›</span>
+      </div>
     </div>
   </div>
 </div>
