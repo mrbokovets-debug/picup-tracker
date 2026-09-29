@@ -139,6 +139,8 @@
   .rowWait{font-size:11px; color:var(--text-dim); margin-left:20px;}
   .rowEarned{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-left:20px;
     font-size:11.5px; color:var(--text-dim);}
+  .rowEarnedEditBtn{background:none; border:none; color:var(--text-dim); font-size:11px; cursor:pointer;
+    padding:2px 4px; text-decoration:underline; flex-shrink:0;}
   .row button.rowEarnedBtn{background:var(--cold-dim); border:none; color:var(--cold); border-radius:8px;
     width:28px; height:28px; font-size:13px; font-weight:700; cursor:pointer; flex-shrink:0; padding:0;}
   .rowBtns{display:flex; align-items:center; gap:6px; justify-content:flex-end;}
@@ -641,7 +643,7 @@
 
 <div id="amountModalBg">
   <div id="amountModal">
-    <h3>Сколько заплатили за этот заказ?</h3>
+    <h3 id="amountModalTitle">Сколько заплатили за этот заказ?</h3>
     <p class="coords" id="amountModalSpotName"></p>
     <input id="amountInput" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Например: 4.5">
     <div id="amountModalBtns">
@@ -806,6 +808,7 @@ const EARNINGS_LOG_KEY = 'pickup-earnings-log'; // [{ id, spotId, amount, ts }] 
 let earningsLog = [];
 let sortMode = localStorage.getItem(SORT_MODE_KEY) || 'count';
 let pendingAmountSpotId = null;
+let amountMode = 'add';
 let routeLog = [];
 
 // Стартовая точка - примерное местоположение, потом попробуем уточнить через GPS браузера
@@ -1114,6 +1117,7 @@ function renderAll(){
           ${earningsOn ? `
           <div class="rowEarned">
             <span>💰 Заработано: ${earned > 0 ? formatMoney(earned) : '—'}</span>
+            <button class="rowEarnedEditBtn" onclick="openAmountModal('${s.id}','edit')">✎ исправить</button>
           </div>` : ''}
           <div class="rowBtns">
             ${earningsOn ? `<button class="rowEarnedBtn" onclick="openAmountModal('${s.id}')">${escapeHtml(getCurrency())}</button>` : ''}
@@ -1193,32 +1197,50 @@ function closeOnboardModal(){
   document.getElementById('onboardModalBg').classList.remove('show');
 }
 
-function openAmountModal(spotId){
+function openAmountModal(spotId, mode){
   const s = spots.find(sp => sp.id === spotId);
   if(!s) return;
   pendingAmountSpotId = spotId;
+  amountMode = mode === 'edit' ? 'edit' : 'add';
   document.getElementById('amountModalSpotName').textContent = s.name;
-  document.getElementById('amountInput').value = '';
+  const titleEl = document.getElementById('amountModalTitle');
+  const saveBtn = document.getElementById('amountSaveBtn');
+  const input = document.getElementById('amountInput');
+  if(amountMode === 'edit'){
+    titleEl.textContent = 'Исправить итоговую сумму';
+    saveBtn.textContent = 'Сохранить';
+    input.value = s.earned ? s.earned : '';
+  } else {
+    titleEl.textContent = 'Сколько заплатили за этот заказ?';
+    saveBtn.textContent = 'Добавить';
+    input.value = '';
+  }
   document.getElementById('amountModalBg').classList.add('show');
-  setTimeout(() => document.getElementById('amountInput').focus(), 50);
+  setTimeout(() => { input.focus(); input.select(); }, 50);
 }
 function closeAmountModal(){
   document.getElementById('amountModalBg').classList.remove('show');
   pendingAmountSpotId = null;
+  amountMode = 'add';
 }
 function saveAmount(){
   const raw = document.getElementById('amountInput').value.replace(',', '.').trim();
   const amount = parseFloat(raw);
-  if(!pendingAmountSpotId || isNaN(amount) || amount <= 0){
-    alert('Введи сумму больше нуля.');
+  const isEdit = amountMode === 'edit';
+  if(!pendingAmountSpotId || isNaN(amount) || amount < 0 || (!isEdit && amount === 0)){
+    alert(isEdit ? 'Введи сумму 0 или больше.' : 'Введи сумму больше нуля.');
     return;
   }
   const s = spots.find(sp => sp.id === pendingAmountSpotId);
   if(!s){ closeAmountModal(); return; }
-  s.earned = (s.earned || 0) + amount;
-  earningsLog.push({ id: makeVisitId(), spotId: s.id, amount, ts: new Date().toISOString() });
+  if(isEdit){
+    s.earned = amount;
+  } else {
+    s.earned = (s.earned || 0) + amount;
+    earningsLog.push({ id: makeVisitId(), spotId: s.id, amount, ts: new Date().toISOString() });
+    persistEarnings();
+  }
   persist();
-  persistEarnings();
   closeAmountModal();
   renderAll();
 }
