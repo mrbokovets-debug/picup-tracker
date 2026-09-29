@@ -114,6 +114,11 @@
     from{transform:scale(0.5); opacity:0.7;}
     to{transform:scale(1.8); opacity:0;}
   }
+  .markerPulse{animation: markerPulseAnim 0.6s ease-in-out 3; z-index:1000 !important;}
+  @keyframes markerPulseAnim{
+    0%, 100%{transform:scale(1);}
+    50%{transform:scale(1.35);}
+  }
 
   #searchInput{
     width:100%; padding:9px 12px; border-radius:9px; border:1px solid var(--line);
@@ -1036,10 +1041,17 @@ function attachAllSwipes(){
         // тап по открытой карточке (не по кнопке удаления) - просто закрываем её
         wrap.classList.remove('swiped');
         rowEl.style.transform = 'translateX(0)';
+        wrap.dataset.suppressTap = '1';
         return;
       }
       startX = e.clientX; startY = e.clientY; dragging = true; directionLocked = null;
       rowEl.style.transition = 'none';
+    });
+    rowEl.addEventListener('click', (e) => {
+      if(e.target.closest('button')) return;
+      if(wrap.dataset.suppressTap){ delete wrap.dataset.suppressTap; return; }
+      if(directionLocked === 'x') return; // это был свайп, а не тап
+      goToSpotOnMap(wrap.dataset.id);
     });
     rowEl.addEventListener('pointermove', (e) => {
       if(!dragging) return;
@@ -1586,6 +1598,22 @@ function openOrdersModal(){
 }
 function closeOrdersModal(){
   document.getElementById('ordersModalBg').classList.remove('show');
+}
+
+function goToSpotOnMap(spotId){
+  const s = spots.find(sp => sp.id === spotId);
+  if(!s) return;
+  closeOrdersModal();
+  setTimeout(() => {
+    map.setView([s.lat, s.lng], Math.max(map.getZoom(), 16), { animate: true });
+    const marker = markers[s.id];
+    const wrapEl = marker && marker.getElement();
+    const innerEl = wrapEl && wrapEl.querySelector('.pinDiv, .bagPin');
+    if(innerEl){
+      innerEl.classList.add('markerPulse');
+      setTimeout(() => innerEl.classList.remove('markerPulse'), 1800);
+    }
+  }, 320);
 }
 
 function openHistoryModal(){
