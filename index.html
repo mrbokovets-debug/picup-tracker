@@ -1791,7 +1791,14 @@ function updatePeakHourBadge(){
   const isPeakNow = peak.some(p => p.h === currentHour);
   badge.classList.toggle('show', isPeakNow);
 }
-setInterval(updatePeakHourBadge, 60000);
+setInterval(updatePeakHourBadge, 30000);
+// на телефоне таймеры замораживаются, пока экран заблокирован или приложение свёрнуто -
+// досчитываем актуальный час сразу, как только снова открыли/разблокировали приложение
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible') updatePeakHourBadge();
+});
+window.addEventListener('focus', updatePeakHourBadge);
+window.addEventListener('pageshow', updatePeakHourBadge);
 
 function updateDrawerVisibility(){
   const recoItem = document.getElementById('recoDrawerItem');
