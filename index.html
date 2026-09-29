@@ -210,7 +210,7 @@
     align-items:flex-end; justify-content:center; z-index:1000;}
   #choiceModalBg.show{display:flex;}
   #choiceModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
-    padding:20px; border-top:1px solid var(--line); max-height:80vh; overflow-y:auto;}
+    padding:20px; border-top:1px solid var(--line); max-height:80vh; overflow-y:auto; overscroll-behavior:contain;}
   #choiceModal h3{margin:0 0 6px; font-size:15px;}
   #choiceModal .coords{color:var(--text-dim); font-size:11.5px; margin:0 0 12px;}
   #choiceList{display:flex; flex-direction:column; gap:8px;}
@@ -238,7 +238,7 @@
   #statsModalBg.show{display:flex;}
   #statsModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
     overflow:hidden;}
-  #statsModalScroll{padding:20px; max-height:85vh; overflow-y:auto;}
+  #statsModalScroll{padding:20px; max-height:85vh; overflow-y:auto; overscroll-behavior:contain;}
   #statsModal h3{margin:0; font-size:16px;}
   .statsRow{display:flex; gap:8px; margin-bottom:16px;}
   .statsCard{
@@ -321,14 +321,14 @@
   #historyModalBg.show{display:flex;}
   #historyModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
     overflow:hidden;}
-  #historyModalScroll{padding:20px; max-height:85vh; overflow-y:auto;}
+  #historyModalScroll{padding:20px; max-height:85vh; overflow-y:auto; overscroll-behavior:contain;}
 
   #ordersModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
     align-items:flex-end; justify-content:center; z-index:1000;}
   #ordersModalBg.show{display:flex;}
   #ordersModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
     overflow:hidden;}
-  #ordersModalScroll{padding:20px; max-height:85vh; overflow-y:auto;}
+  #ordersModalScroll{padding:20px; max-height:85vh; overflow-y:auto; overscroll-behavior:contain;}
   #ordersModal h3{margin:0; font-size:16px;}
   #historyModal h3{margin:0; font-size:16px;}
   .stickyHeader{
@@ -389,7 +389,7 @@
     align-items:flex-end; justify-content:center; z-index:1100;}
   #calendarModalBg.show{display:flex;}
   #calendarModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
-    padding:20px; border-top:1px solid var(--line); max-height:88vh; overflow-y:auto;}
+    padding:20px; border-top:1px solid var(--line); max-height:88vh; overflow-y:auto; overscroll-behavior:contain;}
   .calHeader{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
   .calHeader span{font-size:15px; font-weight:800; color:var(--text); text-transform:capitalize;}
   .calNavBtn{
@@ -712,7 +712,7 @@
   <div id="statsModal">
     <div id="statsModalScroll">
       <div class="stickyHeader">
-        <h3>Статистика по дням</h3>
+        <h3>Статистика</h3>
         <button class="modalXBtn" onclick="closeStatsModal()">✕</button>
       </div>
       <div id="statsBody"></div>
@@ -1688,9 +1688,19 @@ function renderHistory(){
 function openStatsModal(){
   renderStats();
   document.getElementById('statsModalBg').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  if(map.dragging) map.dragging.disable();
+  if(map.touchZoom) map.touchZoom.disable();
+  if(map.scrollWheelZoom) map.scrollWheelZoom.disable();
+  if(map.doubleClickZoom) map.doubleClickZoom.disable();
 }
 function closeStatsModal(){
   document.getElementById('statsModalBg').classList.remove('show');
+  document.body.style.overflow = '';
+  if(map.dragging) map.dragging.enable();
+  if(map.touchZoom) map.touchZoom.enable();
+  if(map.scrollWheelZoom) map.scrollWheelZoom.enable();
+  if(map.doubleClickZoom) map.doubleClickZoom.enable();
 }
 
 function dayKey(date){
@@ -1711,10 +1721,14 @@ function renderStats(){
   const yesterday = new Date(now); yesterday.setDate(yesterday.getDate()-1);
   const yesterdayKey = dayKey(yesterday);
 
-  // считаем количество заборов по дням за последние 7 дней (включая сегодня)
+  // неделя считается календарно: понедельник -> воскресенье, а не последние 7 дней
+  const dow = now.getDay(); // 0 = воскресенье, 1 = понедельник, ...
+  const diffToMonday = (dow === 0) ? 6 : dow - 1;
+  const monday = new Date(now); monday.setDate(monday.getDate() - diffToMonday); monday.setHours(0,0,0,0);
+
   const days = [];
-  for(let i = 6; i >= 0; i--){
-    const d = new Date(now); d.setDate(d.getDate()-i);
+  for(let i = 0; i <= 6; i++){
+    const d = new Date(monday); d.setDate(d.getDate()+i);
     days.push({ key: dayKey(d), label: d.toLocaleDateString('ru-RU', { weekday: 'short' }), count: 0 });
   }
   const dayMap = {};
@@ -1742,13 +1756,12 @@ function renderStats(){
     <div class="statsRow">
       <div class="statsCard"><div class="num">${todayCount}</div><div class="lbl">сегодня</div></div>
       <div class="statsCard"><div class="num">${yesterdayCount}</div><div class="lbl">вчера</div></div>
-      <div class="statsCard"><div class="num">${weekCount}</div><div class="lbl">за 7 дней</div></div>
+      <div class="statsCard"><div class="num">${weekCount}</div><div class="lbl">на этой неделе</div></div>
       <div class="statsCard"><div class="num">${totalNet}</div><div class="lbl">всего</div></div>
     </div>
   `;
 
   const chartHtml = `
-    <div class="statsChartTitle">Заборы по дням</div>
     <div id="statsChart">
       ${days.map(d => {
         const h = Math.max(4, Math.round((d.count / maxCount) * 100));
@@ -1798,11 +1811,6 @@ function renderStats(){
     <div class="statsChartTitle" style="margin-top:18px; display:flex; justify-content:space-between; align-items:center;">
       <span>🕐 Часы пик</span>
     </div>
-    <div id="hourPeriodTabs">
-      <button class="periodTab${currentHourPeriod === 'day' ? ' active' : ''}" data-period="day" onclick="setHourPeriod('day')">Сегодня</button>
-      <button class="periodTab${currentHourPeriod === 'week' ? ' active' : ''}" data-period="week" onclick="setHourPeriod('week')">7 дней</button>
-      <button class="periodTab${currentHourPeriod === 'month' ? ' active' : ''}" data-period="month" onclick="setHourPeriod('month')">30 дней</button>
-    </div>
     <div id="hourChartWrap"></div>
     <div id="hourTrend"></div>
   `;
@@ -1813,35 +1821,13 @@ function renderStats(){
 }
 
 // --- Часы пик: в какое время суток чаще всего забираешь заказы ---
-let currentHourPeriod = 'day'; // 'day' | 'week' | 'month'
-
-function setHourPeriod(period){
-  currentHourPeriod = period;
-  document.querySelectorAll('#hourPeriodTabs .periodTab').forEach(el => {
-    el.classList.toggle('active', el.dataset.period === period);
-  });
-  renderHourChart();
-}
-
 function renderHourChart(){
   const wrap = document.getElementById('hourChartWrap');
   if(!wrap) return;
 
-  const now = Date.now();
-  let cutoff;
-  if(currentHourPeriod === 'day'){
-    const d = new Date(); d.setHours(0,0,0,0);
-    cutoff = d.getTime();
-  } else if(currentHourPeriod === 'week'){
-    cutoff = now - 7 * 86400000;
-  } else {
-    cutoff = now - 30 * 86400000;
-  }
-
+  // считаем часы пик по всей истории, без разбивки по периодам
   const hours = Array.from({ length: 24 }, () => 0);
   visitsLog.forEach(v => {
-    const ts = new Date(v.ts).getTime();
-    if(ts < cutoff) return;
     const h = new Date(v.ts).getHours();
     hours[h] += (v.type === 'remove' ? -1 : 1);
   });
@@ -1854,7 +1840,7 @@ function renderHourChart(){
   const barsHtml = hours.map((count, h) => {
     const height = Math.max(3, Math.round((count / maxH) * 70));
     const isPeak = count === peakVal && peakVal > 0;
-    const isNow = currentHourPeriod === 'day' && h === currentHour;
+    const isNow = h === currentHour;
     const showLabel = h % 3 === 0;
     return `<div class="hourBarWrap">
       <div class="hourBar${isPeak ? ' peak' : ''}${isNow ? ' now' : ''}" style="height:${height}px"></div>
