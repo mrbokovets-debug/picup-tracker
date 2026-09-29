@@ -81,6 +81,18 @@
   }
   #modeBadge:not(:empty){display:block;}
 
+  #peakHourBadge{
+    position:absolute; left:10px; top:56px; z-index:400; background:var(--signal);
+    color:var(--signal-text); font-size:11.5px; font-weight:800; padding:7px 11px;
+    border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.4); display:none;
+    align-items:center; gap:5px; animation: peakGlow 1.6s ease-in-out infinite;
+  }
+  #peakHourBadge.show{display:flex;}
+  @keyframes peakGlow{
+    0%, 100%{box-shadow:0 0 6px 0 var(--signal);}
+    50%{box-shadow:0 0 16px 4px var(--signal);}
+  }
+
 
   .pinDiv{display:flex; align-items:center; justify-content:center; border-radius:50%;
     font-weight:800; color:var(--signal-text); border:2px solid rgba(255,255,255,0.6);}
@@ -240,6 +252,18 @@
     overflow:hidden;}
   #statsModalScroll{padding:20px; max-height:85vh; overflow-y:auto; overscroll-behavior:contain;}
   #statsModal h3{margin:0; font-size:16px;}
+
+  #recoModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #recoModalBg.show{display:flex;}
+  #recoModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    overflow:hidden;}
+  #recoModalScroll{padding:20px; max-height:85vh; overflow-y:auto; overscroll-behavior:contain;}
+  #recoModal h3{margin:0; font-size:16px;}
+  #recoModal .coords{color:var(--text-dim); font-size:11.5px; margin:10px 0 14px;}
+  .recoHint{font-size:13.5px; line-height:1.5; color:var(--text); background:var(--asphalt-2);
+    border:1px solid var(--line); border-radius:12px; padding:14px;}
+  .recoHint b{color:var(--signal);}
   .statsRow{display:flex; gap:8px; margin-bottom:16px;}
   .statsCard{
     flex:1; background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px;
@@ -563,6 +587,11 @@
       <span class="drawerLabel">История</span>
       <span class="drawerChevron">›</span>
     </div>
+    <div class="drawerItem" id="recoDrawerItem" style="display:none;" onclick="closeDrawer(); openRecoModal();">
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg></span>
+      <span class="drawerLabel">Рекомендации</span>
+      <span class="drawerChevron">›</span>
+    </div>
   </div>
 
   <div class="drawerGroup">
@@ -611,6 +640,7 @@
   <div id="mapOuter">
     <div id="map"></div>
     <div id="modeBadge"></div>
+    <div id="peakHourBadge">🚩 Пиковый час</div>
     <button id="fullscreenBtn" title="На весь экран" onclick="toggleMapFullscreen(event)">⛶</button>
     <button id="locateBtn" title="Найти меня">📍</button>
   </div>
@@ -716,6 +746,19 @@
         <button class="modalXBtn" onclick="closeStatsModal()">✕</button>
       </div>
       <div id="statsBody"></div>
+    </div>
+  </div>
+</div>
+
+<div id="recoModalBg">
+  <div id="recoModal">
+    <div id="recoModalScroll">
+      <div class="stickyHeader">
+        <h3>Рекомендации</h3>
+        <button class="modalXBtn" onclick="closeRecoModal()">✕</button>
+      </div>
+      <p class="coords">Советы на основе твоей статистики: когда выгоднее бронировать слоты и где ты зарабатываешь больше всего.</p>
+      <div id="recoBody"></div>
     </div>
   </div>
 </div>
@@ -1098,6 +1141,8 @@ document.addEventListener('pointerdown', (e) => {
 });
 
 function renderAll(){
+  updateDrawerVisibility();
+  updatePeakHourBadge();
   Object.values(markers).forEach(m => map.removeLayer(m));
   markers = {};
   const max = spots.reduce((m,s) => Math.max(m, s.count), 1);
@@ -1707,6 +1752,115 @@ function dayKey(date){
   // локальная дата в формате YYYY-MM-DD, без сдвига часовым поясом
   const y = date.getFullYear(), m = String(date.getMonth()+1).padStart(2,'0'), d = String(date.getDate()).padStart(2,'0');
   return `${y}-${m}-${d}`;
+}
+
+// --- Топ-3 часа пик за всю историю (используется и для бейджа на карте, и для рекомендаций) ---
+function computePeakHoursTop3(){
+  const hours = Array.from({ length: 24 }, () => 0);
+  visitsLog.forEach(v => {
+    hours[new Date(v.ts).getHours()] += (v.type === 'remove' ? -1 : 1);
+  });
+  for(let i = 0; i < 24; i++) hours[i] = Math.max(0, hours[i]);
+  return hours
+    .map((c, h) => ({ h, c }))
+    .filter(x => x.c > 0)
+    .sort((a, b) => b.c - a.c)
+    .slice(0, 3);
+}
+
+// --- Топ-3 дня недели за всю историю (для раздела "Рекомендации") ---
+function computePeakDaysTop3(){
+  const dayNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']; // индекс = Date.getDay()
+  const counts = Array.from({ length: 7 }, () => 0);
+  visitsLog.forEach(v => {
+    counts[new Date(v.ts).getDay()] += (v.type === 'remove' ? -1 : 1);
+  });
+  for(let i = 0; i < 7; i++) counts[i] = Math.max(0, counts[i]);
+  return counts
+    .map((c, i) => ({ i, c, label: dayNames[i] }))
+    .filter(x => x.c > 0)
+    .sort((a, b) => b.c - a.c)
+    .slice(0, 3);
+}
+
+function updatePeakHourBadge(){
+  const badge = document.getElementById('peakHourBadge');
+  if(!badge) return;
+  const peak = computePeakHoursTop3();
+  const currentHour = new Date().getHours();
+  const isPeakNow = peak.some(p => p.h === currentHour);
+  badge.classList.toggle('show', isPeakNow);
+}
+setInterval(updatePeakHourBadge, 60000);
+
+function updateDrawerVisibility(){
+  const recoItem = document.getElementById('recoDrawerItem');
+  if(recoItem) recoItem.style.display = isPieceRate() ? 'flex' : 'none';
+}
+
+function openRecoModal(){
+  renderRecommendations();
+  document.getElementById('recoModalBg').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  if(map.dragging) map.dragging.disable();
+  if(map.touchZoom) map.touchZoom.disable();
+  if(map.scrollWheelZoom) map.scrollWheelZoom.disable();
+  if(map.doubleClickZoom) map.doubleClickZoom.disable();
+}
+function closeRecoModal(){
+  document.getElementById('recoModalBg').classList.remove('show');
+  document.body.style.overflow = '';
+  if(map.dragging) map.dragging.enable();
+  if(map.touchZoom) map.touchZoom.enable();
+  if(map.scrollWheelZoom) map.scrollWheelZoom.enable();
+  if(map.doubleClickZoom) map.doubleClickZoom.enable();
+}
+
+function renderRecommendations(){
+  const body = document.getElementById('recoBody');
+  if(!body) return;
+
+  const peak = computePeakHoursTop3();
+  let hoursHtml;
+  if(peak.length === 0){
+    hoursHtml = '<div class="statsEmpty">Пока мало данных. Отмечай заборы — здесь появится совет по часам.</div>';
+  } else {
+    const hourList = peak.map(p => `${String(p.h).padStart(2,'0')}:00`).join(', ');
+    hoursHtml = `
+      <div class="statsChartTitle">🕐 Лучшие часы для слотов</div>
+      <div class="recoHint">По твоей истории заборов чаще всего заказы идут в: <b>${hourList}</b>. Стоит бронировать слоты именно на это время.</div>
+    `;
+  }
+
+  const peakDays = computePeakDaysTop3();
+  let daysHtml = '';
+  if(peakDays.length > 0){
+    const dayList = peakDays.map(p => p.label).join(', ');
+    daysHtml = `
+      <div class="statsChartTitle" style="margin-top:18px;">📅 Лучшие дни недели</div>
+      <div class="recoHint">Больше всего заказов обычно бывает в: <b>${dayList}</b>. Старайся планировать смены на эти дни.</div>
+    `;
+  }
+
+  const topSpots = [...spots].filter(s => (s.earned || 0) > 0).sort((a, b) => b.earned - a.earned).slice(0, 3);
+  const spotsHtml = `
+    <div class="statsChartTitle" style="margin-top:18px;">💰 Самые прибыльные точки</div>
+    ${topSpots.length ? `
+    <div id="recoTopSpots">
+      ${topSpots.map((s, i) => `
+        <div class="waitRow">
+          <div class="waitRowMain">
+            <span class="waitName">${i === 0 ? '🏆 ' : ''}${escapeHtml(s.name)}</span>
+            <span class="waitTime">${formatMoney(s.earned)}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>` : `
+    <div class="statsEmpty" style="padding:10px 0;">Пока нет данных о заработке — добавляй суммы за заказы в «Мои заказы».</div>
+    `}
+  `;
+
+  body.innerHTML = hoursHtml + daysHtml + spotsHtml;
 }
 
 function renderStats(){
