@@ -137,8 +137,8 @@
   .rowWait{font-size:11px; color:var(--text-dim); margin-left:20px;}
   .rowEarned{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-left:20px;
     font-size:11.5px; color:var(--text-dim);}
-  .row button.rowEarnedBtn{background:none; border:1px solid var(--line); color:var(--signal); border-radius:8px;
-    padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0; width:auto; height:auto; white-space:nowrap;}
+  .row button.rowEarnedBtn{background:var(--gold-dim, rgba(240,180,40,.16)); border:none; color:var(--gold, #f0b428); border-radius:8px;
+    width:28px; height:28px; font-size:13px; font-weight:700; cursor:pointer; flex-shrink:0; padding:0;}
   .rowBtns{display:flex; align-items:center; gap:6px; justify-content:flex-end;}
   .row button{background:var(--signal-dim); color:var(--signal); border:none; border-radius:8px;
     width:28px; height:28px; font-size:15px; font-weight:700; cursor:pointer; flex-shrink:0;}
@@ -1112,9 +1112,9 @@ function renderAll(){
           ${earningsOn ? `
           <div class="rowEarned">
             <span>💰 Заработано: ${earned > 0 ? formatMoney(earned) : '—'}</span>
-            <button class="rowEarnedBtn" onclick="openAmountModal('${s.id}')">+ сумма за заказ</button>
           </div>` : ''}
           <div class="rowBtns">
+            ${earningsOn ? `<button class="rowEarnedBtn" onclick="openAmountModal('${s.id}')">${escapeHtml(getCurrency())}</button>` : ''}
             <button class="minus" onclick="unbump('${s.id}')">−1</button>
             <button onclick="bump('${s.id}')">+1</button>
           </div>
