@@ -902,6 +902,28 @@ let activeArrival = null; // { spotId, spotName, startTs }
 let arrivalInterval = null;
 let markers = {}; // id -> leaflet marker
 
+// счётчик "блокировок" карты - несколько модалок (Статистика, Рекомендации) могут быть
+// технически открыты одновременно (например, если их открыли друг поверх друга через свайп меню);
+// карту разблокируем, только когда закрылась самая последняя из них, а не первая попавшаяся
+let mapLockCount = 0;
+function lockMapInteractions(){
+  mapLockCount++;
+  document.body.style.overflow = 'hidden';
+  if(map.dragging) map.dragging.disable();
+  if(map.touchZoom) map.touchZoom.disable();
+  if(map.scrollWheelZoom) map.scrollWheelZoom.disable();
+  if(map.doubleClickZoom) map.doubleClickZoom.disable();
+}
+function unlockMapInteractions(){
+  mapLockCount = Math.max(0, mapLockCount - 1);
+  if(mapLockCount > 0) return; // ещё есть открытый экран, которому нужна блокировка - не трогаем карту
+  document.body.style.overflow = '';
+  if(map.dragging) map.dragging.enable();
+  if(map.touchZoom) map.touchZoom.enable();
+  if(map.scrollWheelZoom) map.scrollWheelZoom.enable();
+  if(map.doubleClickZoom) map.doubleClickZoom.enable();
+}
+
 const ROUTE_ACTIVE_KEY = 'pickup-route-active'; // [{ id, startTs }] - заказы в пути прямо сейчас
 const ROUTE_LOG_KEY = 'pickup-route-log'; // [{ id, startTs, endTs, durationSec }] - завершённые доезды
 let routeActive = [];
@@ -1350,8 +1372,7 @@ function closeAllTourScreens(){
 }
 
 // каждая из этих функций ПЕРВЫМ делом закрывает вообще всё, а потом открывает ровно то, что нужно шагу -
-// это важно, потому что фон во время тура кликабельный по-настоящему (см. #tourOverlay), и человек мог
-// уже сам открыть/закрыть любой экран вручную до того, как нажал «Далее»
+// это просто подстраховка на случай повторного запуска/прыжка между шагами, чтобы экраны не накладывались
 function tourShowMenu(){ closeAllTourScreens(); openDrawer(); }
 function tourShowOrders(){ closeAllTourScreens(); openOrdersModal(); }
 function tourShowStats(){ closeAllTourScreens(); openStatsModal(); }
@@ -1565,7 +1586,9 @@ window.addEventListener('resize', () => {
 
 // полностью обнуляет рабочие данные после автоматического тура - чтобы демонстрационные тапы
 // во время обучения не попали в настоящую статистику, и новый курьер стартовал с чистого листа
-function wipeDataToZeroAfterTour(){
+// полностью обнуляет АБСОЛЮТНО все рабочие данные (точки, заборы, суммы, время ожидания/доезда) -
+// используется и после автоматического тура, и вручную через «Очистить все данные» в меню
+function wipeAllData(){
   try{ cancelArrival(); }catch(e){}
   spots = [];
   visitsLog = [];
@@ -1589,7 +1612,7 @@ function endTour(){
   // данные стираем только после автоматического (первого) прохождения тура,
   // ручной повтор через «Как пользоваться» никогда не трогает реальные данные
   if(wasAuto){
-    wipeDataToZeroAfterTour();
+    wipeAllData();
   }
 }
 
@@ -1796,6 +1819,16 @@ function closeDrawer(){
   document.getElementById('drawerOverlay').classList.remove('show');
 }
 
+// любой экран поверх главного (меню, модалки, тур) сейчас открыт?
+function anyOverlayOpen(){
+  const ids = ['sideDrawer', 'ordersModalBg', 'modalBg', 'choiceModalBg', 'amountModalBg', 'rowActionModalBg',
+    'onboardModalBg', 'statsModalBg', 'recoModalBg', 'settingsModalBg', 'historyModalBg', 'calendarModalBg', 'tourOverlay'];
+  return ids.some(id => {
+    const el = document.getElementById(id);
+    return el && el.classList.contains('show');
+  });
+}
+
 // --- Свайп от левого края экрана вправо открывает меню (вместо кнопки) ---
 (function setupEdgeSwipe(){
   const EDGE_ZONE = 24;      // начинать жест можно только в этой полосе у самого края
@@ -1803,7 +1836,7 @@ function closeDrawer(){
   let startX = null, startY = null, tracking = false;
 
   document.addEventListener('pointerdown', (e) => {
-    if(e.clientX <= EDGE_ZONE && !document.getElementById('sideDrawer').classList.contains('show')){
+    if(e.clientX <= EDGE_ZONE && !anyOverlayOpen()){
       startX = e.clientX; startY = e.clientY; tracking = true;
     } else {
       tracking = false;
@@ -2141,19 +2174,12 @@ function renderHistory(){
 function openStatsModal(){
   renderStats();
   document.getElementById('statsModalBg').classList.add('show');
-  document.body.style.overflow = 'hidden';
-  if(map.dragging) map.dragging.disable();
-  if(map.touchZoom) map.touchZoom.disable();
-  if(map.scrollWheelZoom) map.scrollWheelZoom.disable();
-  if(map.doubleClickZoom) map.doubleClickZoom.disable();
+  lockMapInteractions();
 }
 function closeStatsModal(){
+  if(!document.getElementById('statsModalBg').classList.contains('show')) return; // уже закрыта - не трогаем счётчик
   document.getElementById('statsModalBg').classList.remove('show');
-  document.body.style.overflow = '';
-  if(map.dragging) map.dragging.enable();
-  if(map.touchZoom) map.touchZoom.enable();
-  if(map.scrollWheelZoom) map.scrollWheelZoom.enable();
-  if(map.doubleClickZoom) map.doubleClickZoom.enable();
+  unlockMapInteractions();
 }
 
 function dayKey(date){
@@ -2216,19 +2242,12 @@ function updateDrawerVisibility(){
 function openRecoModal(){
   renderRecommendations();
   document.getElementById('recoModalBg').classList.add('show');
-  document.body.style.overflow = 'hidden';
-  if(map.dragging) map.dragging.disable();
-  if(map.touchZoom) map.touchZoom.disable();
-  if(map.scrollWheelZoom) map.scrollWheelZoom.disable();
-  if(map.doubleClickZoom) map.doubleClickZoom.disable();
+  lockMapInteractions();
 }
 function closeRecoModal(){
+  if(!document.getElementById('recoModalBg').classList.contains('show')) return; // уже закрыта - не трогаем счётчик
   document.getElementById('recoModalBg').classList.remove('show');
-  document.body.style.overflow = '';
-  if(map.dragging) map.dragging.enable();
-  if(map.touchZoom) map.touchZoom.enable();
-  if(map.scrollWheelZoom) map.scrollWheelZoom.enable();
-  if(map.doubleClickZoom) map.doubleClickZoom.enable();
+  unlockMapInteractions();
 }
 
 function renderRecommendations(){
@@ -2508,10 +2527,13 @@ function formatTimer(totalSec){
 // --- Долгое нажатие на точку на карте запускает таймер "Прибыл" без похода в список ---
 const LONG_PRESS_MS = 550;
 
+const LONG_PRESS_MOVE_TOLERANCE_PX = 12; // если палец уехал дальше - это попытка подвинуть карту, а не удержание
+
 function attachLongPress(marker, spotId){
   const el = marker.getElement();
   if(!el) return;
   let pressTimer = null;
+  let startX = 0, startY = 0;
 
   const cancelPress = () => {
     clearTimeout(pressTimer);
@@ -2521,6 +2543,8 @@ function attachLongPress(marker, spotId){
 
   const startPress = (ev) => {
     marker._longPressFired = false;
+    startX = ev.clientX;
+    startY = ev.clientY;
     const inner = el.querySelector('.pinDiv, .bagBody');
     if(inner){
       inner.style.setProperty('--pressDur', LONG_PRESS_MS + 'ms');
@@ -2534,7 +2558,16 @@ function attachLongPress(marker, spotId){
     }, LONG_PRESS_MS);
   };
 
+  // если во время удержания палец сдвинулся - скорее всего человек пытается подвинуть карту, а не ждать -
+  // отменяем отсчёт, чтобы случайно не запустить таймер прибытия вместо панорамирования
+  const movePress = (ev) => {
+    if(pressTimer == null) return;
+    const dx = ev.clientX - startX, dy = ev.clientY - startY;
+    if(Math.sqrt(dx * dx + dy * dy) > LONG_PRESS_MOVE_TOLERANCE_PX) cancelPress();
+  };
+
   el.addEventListener('pointerdown', startPress);
+  el.addEventListener('pointermove', movePress);
   el.addEventListener('pointerup', cancelPress);
   el.addEventListener('pointerleave', cancelPress);
   el.addEventListener('pointercancel', cancelPress);
@@ -2588,7 +2621,11 @@ function completeArrival(){
   hideArrivalBar();
   activeArrival = null;
 
-  if(!s){ return; } // точку успели удалить, пока шёл отсчёт
+  if(!s){
+    // точку успели удалить, пока шёл отсчёт - честно говорим об этом, а не молча проглатываем нажатие
+    alert(`Точка «${spotName}» была удалена, пока шёл отсчёт ожидания (${formatDuration(elapsedSec)}) - этот заказ не засчитан.`);
+    return;
+  }
 
   s.waitTotalSec = (s.waitTotalSec || 0) + elapsedSec;
   s.waitCount = (s.waitCount || 0) + 1;
@@ -2643,6 +2680,7 @@ function unbump(id){
   s.count -= 1;
   // ищем последнюю ещё не "погашенную" запись добавления для этой точки, чтобы откатить статистику ожидания,
   // но саму запись из истории не удаляем - помечаем как использованную и добавляем отдельное событие "-1"
+  let reversedTs = null;
   for(let i = visitsLog.length - 1; i >= 0; i--){
     const v = visitsLog[i];
     if(v.spotId === id && v.type !== 'remove' && !v.reversed){
@@ -2651,10 +2689,14 @@ function unbump(id){
         s.waitCount -= 1;
       }
       v.reversed = true;
+      reversedTs = v.ts;
       break;
     }
   }
-  visitsLog.push({ id: makeVisitId(), spotId: id, ts: new Date().toISOString(), type: 'remove' });
+  // компенсирующую запись ставим ТЕМ ЖЕ временем, что и отменяемый забор (а не "сейчас") -
+  // иначе если отмена происходит в другой день/час, статистика по дням и часам пик съезжает:
+  // "забор" задним числом остаётся висеть в своём часе, а "−1" гасит совсем другой час/день
+  visitsLog.push({ id: makeVisitId(), spotId: id, ts: reversedTs || new Date().toISOString(), type: 'remove' });
   persist();
   persistVisits();
   renderAll();
@@ -2663,8 +2705,10 @@ function unbump(id){
 function removeSpot(id){
   spots = spots.filter(s => s.id !== id);
   visitsLog = visitsLog.filter(v => v.spotId !== id);
+  earningsLog = earningsLog.filter(e => e.spotId !== id); // иначе суммы за удалённую точку зависают в бэкапе навсегда
   persist();
   persistVisits();
+  persistEarnings();
   renderAll();
 }
 
@@ -2775,7 +2819,10 @@ function saveNewSpot(){
 }
 
 function exportData(){
-  if(spots.length === 0){ alert('Пока нечего сохранять - список точек пуст.'); return; }
+  if(spots.length === 0 && visitsLog.length === 0 && earningsLog.length === 0 && routeLog.length === 0){
+    alert('Пока нечего сохранять - данных пока нет.');
+    return;
+  }
   const payload = { spots, visitsLog, routeLog, earningsLog };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -2805,6 +2852,18 @@ function importData(event){
       validSpots.forEach(s => { if(typeof s.earned !== 'number') s.earned = 0; });
       if(validSpots.length === 0){ alert('В файле не найдено ни одной точки.'); return; }
 
+      // отбрасываем записи с битой/отсутствующей формой (например, из повреждённого или чужого файла) -
+      // иначе NaN-даты из них тихо портят статистику по часам/дням на годы вперёд
+      const isValidTs = (ts) => typeof ts === 'string' && !isNaN(new Date(ts).getTime());
+      const validImportedVisits = importedVisits.filter(v => v && typeof v.spotId === 'string' && isValidTs(v.ts));
+      const validImportedRouteLog = importedRouteLog.filter(r => r && typeof r.id === 'string'
+        && typeof r.startTs === 'number' && typeof r.endTs === 'number' && typeof r.durationSec === 'number');
+      const validImportedEarnings = importedEarnings.filter(e => e && typeof e.spotId === 'string'
+        && typeof e.amount === 'number' && isValidTs(e.ts));
+      const droppedCount = (importedVisits.length - validImportedVisits.length)
+        + (importedRouteLog.length - validImportedRouteLog.length)
+        + (importedEarnings.length - validImportedEarnings.length);
+
       const action = spots.length > 0
         ? confirm(`Найдено ${validSpots.length} точек в файле.\nОК - добавить к текущим (${spots.length})\nОтмена - заменить текущие полностью`)
         : true;
@@ -2818,29 +2877,29 @@ function importData(event){
           }
         });
         const existingVisitKeys = new Set(visitsLog.map(v => v.spotId + '|' + v.ts));
-        importedVisits.forEach(v => {
+        validImportedVisits.forEach(v => {
           const key = v.spotId + '|' + v.ts;
           if(!existingVisitKeys.has(key)){
             visitsLog.push(v);
           }
         });
         const existingRouteIds = new Set(routeLog.map(r => r.id));
-        importedRouteLog.forEach(r => {
+        validImportedRouteLog.forEach(r => {
           if(!existingRouteIds.has(r.id)){
             routeLog.push(r);
           }
         });
         const existingEarningsIds = new Set(earningsLog.map(e => e.id));
-        importedEarnings.forEach(e => {
+        validImportedEarnings.forEach(e => {
           if(!existingEarningsIds.has(e.id)){
             earningsLog.push(e);
           }
         });
       } else {
         spots = validSpots;
-        visitsLog = importedVisits;
-        routeLog = importedRouteLog;
-        earningsLog = importedEarnings;
+        visitsLog = validImportedVisits;
+        routeLog = validImportedRouteLog;
+        earningsLog = validImportedEarnings;
       }
       persist();
       persistVisits();
@@ -2851,7 +2910,7 @@ function importData(event){
         const group = L.featureGroup(Object.values(markers));
         try{ map.fitBounds(group.getBounds().pad(0.3)); }catch(err){}
       }
-      alert('Готово! Точки восстановлены.');
+      alert('Готово! Точки восстановлены.' + (droppedCount > 0 ? `\n\n(${droppedCount} повреждённых записей из истории пропущено.)` : ''));
     }catch(err){
       alert('Не получилось прочитать файл - убедись, что это файл резервной копии из этого приложения.');
     }
@@ -2861,10 +2920,8 @@ function importData(event){
 }
 
 function resetAll(){
-  if(!confirm('Удалить все отметки?')) return;
-  spots = [];
-  persist();
-  renderAll();
+  if(!confirm('Удалить вообще все данные приложения: все точки, заборы, суммы и историю? Это нельзя отменить.')) return;
+  wipeAllData();
 }
 
 // регистрируем service worker для офлайн-работы (сработает только когда сайт открыт по HTTPS)
