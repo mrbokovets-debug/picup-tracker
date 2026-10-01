@@ -196,6 +196,24 @@
   #amountCancelBtn{background:var(--line); color:var(--text);}
   #amountSaveBtn{background:var(--signal); color:var(--signal-text);}
 
+  #tourOverlay{position:fixed; inset:0; z-index:3000; display:none;}
+  #tourOverlay.show{display:block;}
+  #tourHighlight{position:fixed; border-radius:16px; pointer-events:none;
+    box-shadow:0 0 0 9999px rgba(8,10,14,0.82);
+    transition:left .3s ease, top .3s ease, width .3s ease, height .3s ease;}
+  #tourTooltip{position:fixed; width:min(280px, calc(100vw - 32px)); max-height:min(420px, calc(100vh - 24px));
+    overflow-y:auto; background:var(--card); color:var(--text);
+    border-radius:16px; padding:18px; box-shadow:0 12px 32px rgba(0,0,0,0.5); z-index:3001;
+    transition:left .3s ease, top .3s ease, bottom .3s ease;}
+  #tourStepLabel{font-size:11px; color:var(--text-dim); font-weight:800; letter-spacing:.02em; margin-bottom:6px;}
+  #tourTitle{font-size:16px; font-weight:800; margin:0 0 6px;}
+  #tourText{font-size:13.5px; line-height:1.45; color:var(--text); margin:0 0 14px;}
+  #tourBtns{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  #tourSkipBtn{background:none; border:none; color:var(--text-dim); font-size:13px; cursor:pointer;
+    padding:8px 2px; text-decoration:underline;}
+  #tourNextBtn{background:var(--signal); color:var(--signal-text); border:none; border-radius:10px;
+    padding:10px 18px; font-size:14px; font-weight:800; cursor:pointer;}
+
   #rowActionModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
     align-items:flex-end; justify-content:center; z-index:1200;}
   #rowActionModalBg.show{display:flex;}
@@ -572,17 +590,17 @@
   </div>
 
   <div class="drawerGroup">
-    <div class="drawerItem" onclick="closeDrawer(); openOrdersModal();">
+    <div class="drawerItem" id="drawerItemOrders" onclick="closeDrawer(); openOrdersModal();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></span>
       <span class="drawerLabel">Мои заказы</span>
       <span class="drawerChevron">›</span>
     </div>
-    <div class="drawerItem" onclick="closeDrawer(); openStatsModal();">
+    <div class="drawerItem" id="drawerItemStats" onclick="closeDrawer(); openStatsModal();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="9"/></svg></span>
       <span class="drawerLabel">Статистика</span>
       <span class="drawerChevron">›</span>
     </div>
-    <div class="drawerItem" onclick="closeDrawer(); openHistoryModal();">
+    <div class="drawerItem" id="drawerItemHistory" onclick="closeDrawer(); openHistoryModal();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg></span>
       <span class="drawerLabel">История</span>
       <span class="drawerChevron">›</span>
@@ -595,9 +613,14 @@
   </div>
 
   <div class="drawerGroup">
-    <div class="drawerItem" onclick="closeDrawer(); openSettingsModal();">
+    <div class="drawerItem" id="drawerItemSettings" onclick="closeDrawer(); openSettingsModal();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.35a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.65 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.65 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.65a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.35 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.04Z"/></svg></span>
       <span class="drawerLabel">Настройки</span>
+      <span class="drawerChevron">›</span>
+    </div>
+    <div class="drawerItem" onclick="closeDrawer(); startTour();">
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 1.9-2.4 3.7"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+      <span class="drawerLabel">Как пользоваться</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" onclick="closeDrawer(); exportData();">
@@ -738,6 +761,19 @@
   </div>
 </div>
 
+<div id="tourOverlay">
+  <div id="tourHighlight"></div>
+  <div id="tourTooltip">
+    <div id="tourStepLabel"></div>
+    <h4 id="tourTitle"></h4>
+    <p id="tourText"></p>
+    <div id="tourBtns">
+      <button id="tourSkipBtn" onclick="skipTour()">Пропустить</button>
+      <button id="tourNextBtn" onclick="nextTourStep()">Далее</button>
+    </div>
+  </div>
+</div>
+
 <div id="statsModalBg">
   <div id="statsModal">
     <div id="statsModalScroll">
@@ -873,6 +909,10 @@ let routeActive = [];
 const PAY_TYPE_KEY = 'pickup-pay-type'; // 'hourly' (почасовая + премия) или 'piece' (сдельная за заказ)
 const CURRENCY_KEY = 'pickup-currency'; // символ валюты, по умолчанию €
 const ONBOARDED_KEY = 'pickup-onboarded';
+const TOUR_DONE_KEY = 'pickup-tour-done';
+let tourPendingAfterOnboarding = false;
+let tourSteps = [];
+let tourIndex = 0;
 const SORT_MODE_KEY = 'pickup-sort-mode'; // 'count' или 'earned'
 const EARNINGS_LOG_KEY = 'pickup-earnings-log'; // [{ id, spotId, amount, ts }] - когда и сколько заплатили за заказ с этой точки
 let earningsLog = [];
@@ -1258,6 +1298,10 @@ function choosePayType(type){
   });
   closeOnboardModal();
   renderAll();
+  if(tourPendingAfterOnboarding){
+    tourPendingAfterOnboarding = false;
+    setTimeout(maybeStartTour, 350);
+  }
 }
 
 function chooseCurrency(symbol){
@@ -1269,11 +1313,375 @@ function chooseCurrency(symbol){
 }
 
 function maybeShowOnboarding(){
-  if(localStorage.getItem(ONBOARDED_KEY)) return;
+  if(localStorage.getItem(ONBOARDED_KEY)){
+    // тип оплаты уже выбран раньше - показываем визуальный тур отдельно, если его ещё не проходили
+    maybeStartTour();
+    return;
+  }
+  tourPendingAfterOnboarding = true;
   document.getElementById('onboardModalBg').classList.add('show');
 }
 function closeOnboardModal(){
   document.getElementById('onboardModalBg').classList.remove('show');
+}
+
+// --- Интерактивный тур по интерфейсу (показывается один раз) ---
+let tourIsAutoRun = false; // true - тур запущен автоматически (после онбординга/первого входа), false - вручную из меню
+
+function maybeStartTour(){
+  if(localStorage.getItem(TOUR_DONE_KEY)) return;
+  beginTour(true);
+}
+
+// ручной повторный запуск тура из меню «Как пользоваться» - никогда не стирает данные
+function startTour(){
+  beginTour(false);
+}
+
+// закрываем все экраны поверх главного, чтобы каждый шаг тура стартовал с чистого состояния
+function closeAllTourScreens(){
+  closeDrawer();
+  try{ closeOrdersModal(); }catch(e){}
+  try{ closeStatsModal(); }catch(e){}
+  try{ closeHistoryModal(); }catch(e){}
+  try{ closeSettingsModal(); }catch(e){}
+  try{ closeRecoModal(); }catch(e){}
+  try{ closeCalendarModal(); }catch(e){}
+}
+
+// каждая из этих функций ПЕРВЫМ делом закрывает вообще всё, а потом открывает ровно то, что нужно шагу -
+// это важно, потому что фон во время тура кликабельный по-настоящему (см. #tourOverlay), и человек мог
+// уже сам открыть/закрыть любой экран вручную до того, как нажал «Далее»
+function tourShowMenu(){ closeAllTourScreens(); openDrawer(); }
+function tourShowOrders(){ closeAllTourScreens(); openOrdersModal(); }
+function tourShowStats(){ closeAllTourScreens(); openStatsModal(); }
+function tourShowHistory(){ closeAllTourScreens(); openHistoryModal(); }
+function tourShowReco(){ closeAllTourScreens(); openRecoModal(); }
+function tourShowSettings(){ closeAllTourScreens(); openSettingsModal(); }
+function tourShowNothing(){ closeAllTourScreens(); }
+
+function buildTourSteps(){
+  const steps = [];
+
+  steps.push({
+    sel: '#menuBtn',
+    title: 'Главное меню',
+    text: 'Нажимай сюда в любой момент — откроется меню со всеми разделами приложения. Сейчас пройдёмся по каждому из них.',
+    before: tourShowNothing
+  });
+
+  // --- Мои заказы ---
+  steps.push({
+    sel: '#drawerItemOrders',
+    title: 'Мои заказы',
+    text: 'Список всех точек, где ты когда-либо забирал заказы. Открой — покажу, что там внутри.',
+    before: tourShowMenu
+  });
+  steps.push({
+    sel: '#searchInput',
+    title: 'Поиск точки',
+    text: 'Когда точек накопится много, начинай печатать название заведения — список отфильтруется на лету.',
+    before: tourShowOrders
+  });
+  steps.push({
+    sel: '#sortModeLabel',
+    title: 'Сортировка списка',
+    text: 'Нажми, чтобы переключить порядок: по частоте заборов (самые «ходовые» точки сверху) или по алфавиту.',
+    before: tourShowOrders
+  });
+  steps.push({
+    sel: '#rows',
+    title: 'Список точек',
+    text: 'Как только отметишь первую точку на карте, она появится здесь. У каждой строки слева — кнопка с валютой (добавить сумму за заказ) и зелёный карандаш — меню «+1 забор / −1 забор / исправить итоговую сумму». Тап по самой строке переносит на карту прямо к этой точке.',
+    before: tourShowOrders
+  });
+
+  // --- Статистика ---
+  steps.push({
+    sel: '#drawerItemStats',
+    title: 'Статистика',
+    text: 'Вся твоя работа в цифрах — открой, покажу подробнее.',
+    before: tourShowMenu
+  });
+  steps.push({
+    sel: '#statsModalScroll',
+    title: 'Цифры по работе',
+    text: 'Сверху — сколько заборов сегодня, вчера, на этой неделе (считается с понедельника по воскресенье) и всего. Ниже — график по дням недели, время ожидания на точках и часы пик: в какое время суток у тебя обычно больше всего заказов за всю историю.',
+    before: tourShowStats
+  });
+
+  // --- История заказов ---
+  steps.push({
+    sel: '#drawerItemHistory',
+    title: 'История заказов',
+    text: 'Полная хроника каждого забора — открой, покажу.',
+    before: tourShowMenu
+  });
+  steps.push({
+    sel: '#historyDateFilterBar',
+    title: 'Поиск по дате',
+    text: 'Нажми, чтобы открыть календарь и посмотреть заказы только за конкретный день.',
+    before: tourShowHistory
+  });
+  steps.push({
+    sel: '#historyModalScroll',
+    title: 'Полная хроника',
+    text: 'Ниже — список всех заказов по дням и времени: где забрал, сколько ждал, и отдельно отмечены случайные отмены (−1), если промахнулся мимо нужной точки.',
+    before: tourShowHistory
+  });
+
+  // --- Рекомендации (только для сдельной оплаты) ---
+  const reco = document.getElementById('recoDrawerItem');
+  if(reco && reco.style.display !== 'none'){
+    steps.push({
+      sel: '#recoDrawerItem',
+      title: 'Рекомендации',
+      text: 'Отдельный раздел для сдельной оплаты — открой, покажу.',
+      before: tourShowMenu
+    });
+    steps.push({
+      sel: '#recoModalScroll',
+      title: 'Советы по слотам',
+      text: 'Здесь приложение само подсказывает, в какие часы и дни недели у тебя обычно больше всего заказов — удобно бронировать слоты именно на это время. Ниже — твои самые прибыльные точки.',
+      before: tourShowReco
+    });
+  }
+
+  // --- Настройки ---
+  steps.push({
+    sel: '#drawerItemSettings',
+    title: 'Настройки',
+    text: 'Здесь всё можно перенастроить под себя в любой момент — открой, покажу по порядку.',
+    before: tourShowMenu
+  });
+  steps.push({
+    sel: '#payTypeOptions',
+    title: 'Тип оплаты',
+    text: 'Переключай между почасовой с премией и сдельной за заказ — от этого зависит, какие разделы видны в меню.',
+    before: tourShowSettings
+  });
+  steps.push({
+    sel: '#currencyOptions',
+    title: 'Валюта',
+    text: 'Выбери валюту, в которой тебе платят — она сразу появится на кнопке суммы в разделе «Мои заказы».',
+    before: tourShowSettings
+  });
+  steps.push({
+    sel: '#markerStyleOptions',
+    title: 'Вид точек на карте',
+    text: 'Кружок с цифрой или значок сумки курьера — выбери, что удобнее видеть на карте во время работы.',
+    before: tourShowSettings
+  });
+  steps.push({
+    sel: '#appThemeOptions',
+    title: 'Оформление приложения',
+    text: 'Светлая или тёмная тема для всего приложения — переключается мгновенно.',
+    before: tourShowSettings
+  });
+  steps.push({
+    sel: '#mapThemeOptions',
+    title: 'Оформление карты',
+    text: 'А тема самой карты настраивается отдельно от темы приложения — удобно, например, оставить карту светлой даже ночью.',
+    before: tourShowSettings
+  });
+
+  // --- Главный экран ---
+  steps.push({
+    sel: '#quickToggleBtn',
+    title: 'Старт / Стоп',
+    text: 'Нажимай, когда едешь забирать заказ — запустится таймер доставки. Повторный тап его остановит и запишет время в статистику.',
+    before: tourShowNothing
+  });
+  steps.push({
+    sel: '#deliveryAvgBar',
+    title: 'Среднее время доставки',
+    text: 'Тут всегда видно, сколько в среднем занимает доставка по всем твоим заказам — удобно прикидывать, сколько слотов успеешь взять.',
+    before: tourShowNothing
+  });
+
+  // --- Карта, подробно по каждому действию (можно реально попробовать прямо во время тура) ---
+  steps.push({
+    sel: '#mapOuter',
+    title: 'Карта: новая точка',
+    text: 'Тапни по пустому месту карты там, где забираешь заказ, — откроется окно, впиши туда название заведения и сохрани.',
+    before: tourShowNothing
+  });
+  steps.push({
+    sel: '#mapOuter',
+    title: 'Карта: забор заказа (+1)',
+    text: 'Короткий тап прямо по уже существующей точке на карте сразу засчитывает туда ещё один забор — никаких доп. окон. Если точка не совсем под пальцем, откроется список рядом стоящих — выбери нужную.',
+    before: tourShowNothing
+  });
+  steps.push({
+    sel: '#mapOuter',
+    title: 'Карта: время ожидания',
+    text: 'А если на той же точке подержать палец примерно полсекунды не отпуская — точка завибрирует, и запустится отсчёт времени ожидания. Когда получишь заказ, нажми «✅ Забрал заказ» на зелёной полоске внизу экрана — и среднее время ожидания на этой точке посчитается само.',
+    before: tourShowNothing
+  });
+  steps.push({
+    sel: '#locateBtn',
+    title: 'Моё местоположение',
+    text: 'Нажми — карта сама найдёт тебя по GPS и приблизится к твоей текущей точке. Полезно, когда нужно быстро понять, где ты сейчас относительно отмеченных точек.',
+    before: tourShowNothing
+  });
+  steps.push({
+    sel: '#fullscreenBtn',
+    title: 'Полный экран',
+    text: 'Разворачивает карту на весь экран без шапки и кнопок — удобно, когда нужно точнее прицелиться в нужную точку перед тапом.',
+    before: tourShowNothing
+  });
+  steps.push({
+    selOptions: ['.leaflet-control-zoom', '#mapOuter'],
+    title: 'Масштаб карты',
+    text: 'Плюс и минус увеличивают и уменьшают масштаб. На телефоне то же самое делает щипок двумя пальцами или двойной тап по карте.',
+    before: tourShowNothing
+  });
+
+  steps.push({
+    sel: null,
+    title: 'Готово!',
+    text: 'Это полный обзор приложения. Всё, что показали, всегда можно найти заново в этом же меню (☰ → «Как пользоваться»). Удачной работы! 🚀',
+    before: tourShowNothing
+  });
+
+  return steps;
+}
+
+function beginTour(auto){
+  tourIsAutoRun = auto;
+  closeAllTourScreens();
+  tourSteps = buildTourSteps();
+  tourIndex = 0;
+  document.getElementById('tourOverlay').classList.add('show');
+  showTourStep(0);
+}
+
+// если размер экрана поменялся (поворот телефона, появление клавиатуры) - пересчитываем подсветку текущего шага
+window.addEventListener('resize', () => {
+  if(document.getElementById('tourOverlay').classList.contains('show')){
+    positionTourStep(tourSteps[tourIndex], tourIndex);
+  }
+});
+
+// полностью обнуляет рабочие данные после автоматического тура - чтобы демонстрационные тапы
+// во время обучения не попали в настоящую статистику, и новый курьер стартовал с чистого листа
+function wipeDataToZeroAfterTour(){
+  try{ cancelArrival(); }catch(e){}
+  spots = [];
+  visitsLog = [];
+  earningsLog = [];
+  routeActive = [];
+  routeLog = [];
+  try{ persist(); }catch(e){}
+  try{ persistVisits(); }catch(e){}
+  try{ persistEarnings(); }catch(e){}
+  try{ persistRouteActive(); }catch(e){}
+  try{ persistRouteLog(); }catch(e){}
+  renderAll();
+}
+
+function endTour(){
+  const wasAuto = tourIsAutoRun;
+  tourIsAutoRun = false;
+  localStorage.setItem(TOUR_DONE_KEY, '1');
+  document.getElementById('tourOverlay').classList.remove('show');
+  closeAllTourScreens();
+  // данные стираем только после автоматического (первого) прохождения тура,
+  // ручной повтор через «Как пользоваться» никогда не трогает реальные данные
+  if(wasAuto){
+    wipeDataToZeroAfterTour();
+  }
+}
+
+function skipTour(){
+  endTour();
+}
+
+function nextTourStep(){
+  tourIndex++;
+  if(tourIndex >= tourSteps.length){ endTour(); return; }
+  showTourStep(tourIndex);
+}
+
+function showTourStep(i){
+  const step = tourSteps[i];
+  if(typeof step.before === 'function') step.before();
+  // ждём, пока откроется/закроется боковое меню или модалка (CSS-анимация), прежде чем замерять позицию элемента
+  setTimeout(() => positionTourStep(step, i), 280);
+}
+
+function findTourTarget(step){
+  const sels = step.selOptions || (step.sel ? [step.sel] : []);
+  for(const s of sels){
+    const el = document.querySelector(s);
+    if(el) return el;
+  }
+  return null;
+}
+
+function positionTourStep(step, i){
+  const highlight = document.getElementById('tourHighlight');
+  const tooltip = document.getElementById('tourTooltip');
+  const titleEl = document.getElementById('tourTitle');
+  const textEl = document.getElementById('tourText');
+  const stepLabel = document.getElementById('tourStepLabel');
+  const nextBtn = document.getElementById('tourNextBtn');
+
+  titleEl.textContent = step.title;
+  textEl.textContent = step.text;
+  stepLabel.textContent = `Шаг ${i + 1} из ${tourSteps.length}`;
+  nextBtn.textContent = (i === tourSteps.length - 1) ? 'Готово' : 'Далее';
+
+  const target = findTourTarget(step);
+  const tooltipWidth = Math.min(280, window.innerWidth - 32);
+  tooltip.style.width = tooltipWidth + 'px';
+
+  if(!target){
+    highlight.style.display = 'none';
+    tooltip.style.transform = 'none';
+    tooltip.style.bottom = 'auto';
+    tooltip.style.left = Math.max(16, (window.innerWidth - tooltipWidth) / 2) + 'px';
+    const th = tooltip.offsetHeight || 220;
+    tooltip.style.top = Math.max(12, (window.innerHeight - th) / 2) + 'px';
+    return;
+  }
+
+  // если нужный элемент спрятан прокруткой внутри модалки - подкручиваем к нему
+  const scrollParent = target.closest('[id$="ModalScroll"]');
+  if(scrollParent && typeof target.scrollIntoView === 'function'){
+    target.scrollIntoView({ block: 'center' });
+  }
+
+  tooltip.style.transform = 'none';
+  const rect = target.getBoundingClientRect();
+  const pad = 8;
+  highlight.style.display = 'block';
+  highlight.style.left = Math.max(4, rect.left - pad) + 'px';
+  highlight.style.top = Math.max(4, rect.top - pad) + 'px';
+  highlight.style.width = Math.min(window.innerWidth - 8, rect.width + pad * 2) + 'px';
+  highlight.style.height = Math.min(window.innerHeight - 8, rect.height + pad * 2) + 'px';
+
+  let left = rect.left;
+  if(left + tooltipWidth > window.innerWidth - 16) left = window.innerWidth - tooltipWidth - 16;
+  if(left < 16) left = 16;
+  tooltip.style.left = left + 'px';
+  tooltip.style.bottom = 'auto';
+
+  // измеряем реальную высоту подсказки (после того как текст и ширина уже применены)
+  const tooltipHeight = tooltip.offsetHeight || 180;
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+
+  let top;
+  if(spaceBelow >= tooltipHeight + 18 || spaceBelow >= spaceAbove){
+    top = rect.bottom + pad + 10;
+  } else {
+    top = rect.top - pad - 10 - tooltipHeight;
+  }
+  // железно не даём подсказке и кнопкам уехать за пределы экрана, что бы ни показал rect
+  top = Math.min(top, window.innerHeight - tooltipHeight - 12);
+  top = Math.max(12, top);
+  tooltip.style.top = top + 'px';
 }
 
 let pendingRowActionSpotId = null;
