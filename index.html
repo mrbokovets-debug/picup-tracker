@@ -347,7 +347,8 @@
     display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;
     border:2px solid rgba(255,255,255,0.35);
   }
-  #mapThemeOptions, #appThemeOptions, #payTypeOptions, #currencyOptions{display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;}
+  #mapThemeOptions, #appThemeOptions, #payTypeOptions, #currencyOptions, #languageOptions{display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;}
+  #languageOptions .themeOption{flex:1 1 calc(50% - 6px); min-width:110px;}
   .themeOption{
     flex:1; background:var(--asphalt-2); border:2px solid var(--line); border-radius:12px;
     padding:14px 8px; text-align:center; cursor:pointer; font-size:13px; color:var(--text); font-weight:600;
@@ -575,39 +576,39 @@
 <body>
 
 <div id="arrivalBar">
-  <div id="arrivalText">⏱ Ждём заказ: <span id="arrivalSpotName"></span></div>
+  <div id="arrivalText"><span data-i18n="arrival.waitingFor">⏱ Ждём заказ:</span> <span id="arrivalSpotName"></span></div>
   <div id="arrivalTime">00:00</div>
   <div class="arrivalBtns">
-    <button id="arrivalCancelBtn" onclick="cancelArrival()">Отмена</button>
-    <button id="arrivalDoneBtn" onclick="completeArrival()">✅ Забрал заказ</button>
+    <button id="arrivalCancelBtn" data-i18n="arrival.cancel" onclick="cancelArrival()">Отмена</button>
+    <button id="arrivalDoneBtn" data-i18n="arrival.done" onclick="completeArrival()">✅ Забрал заказ</button>
   </div>
 </div>
 
 <div id="drawerOverlay" onclick="closeDrawer()"></div>
 <div id="sideDrawer">
   <div class="drawerHeader">
-    <span>Меню</span>
+    <span data-i18n="drawer.menu">Меню</span>
   </div>
 
   <div class="drawerGroup">
     <div class="drawerItem" id="drawerItemOrders" onclick="closeDrawer(); openOrdersModal();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></span>
-      <span class="drawerLabel">Мои заказы</span>
+      <span class="drawerLabel" data-i18n="drawer.orders">Мои заказы</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" id="drawerItemStats" onclick="closeDrawer(); openStatsModal();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="9"/></svg></span>
-      <span class="drawerLabel">Статистика</span>
+      <span class="drawerLabel" data-i18n="drawer.stats">Статистика</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" id="drawerItemHistory" onclick="closeDrawer(); openHistoryModal();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg></span>
-      <span class="drawerLabel">История</span>
+      <span class="drawerLabel" data-i18n="drawer.history">История</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" id="recoDrawerItem" style="display:none;" onclick="closeDrawer(); openRecoModal();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg></span>
-      <span class="drawerLabel">Рекомендации</span>
+      <span class="drawerLabel" data-i18n="drawer.reco">Рекомендации</span>
       <span class="drawerChevron">›</span>
     </div>
   </div>
@@ -615,22 +616,22 @@
   <div class="drawerGroup">
     <div class="drawerItem" id="drawerItemSettings" onclick="closeDrawer(); openSettingsModal();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.35a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.65 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.65 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.65a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.35 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.04Z"/></svg></span>
-      <span class="drawerLabel">Настройки</span>
+      <span class="drawerLabel" data-i18n="drawer.settings">Настройки</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" onclick="closeDrawer(); startTour();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 1.9-2.4 3.7"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
-      <span class="drawerLabel">Как пользоваться</span>
+      <span class="drawerLabel" data-i18n="drawer.howTo">Как пользоваться</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" onclick="closeDrawer(); exportData();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span>
-      <span class="drawerLabel">Сохранить копию</span>
+      <span class="drawerLabel" data-i18n="drawer.backup">Сохранить копию</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" onclick="closeDrawer(); document.getElementById('importFile').click();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2Z"/></svg></span>
-      <span class="drawerLabel">Восстановить из файла</span>
+      <span class="drawerLabel" data-i18n="drawer.restore">Восстановить из файла</span>
       <span class="drawerChevron">›</span>
     </div>
   </div>
@@ -638,7 +639,7 @@
   <div class="drawerGroup">
     <div class="drawerItem drawerDanger" onclick="closeDrawer(); resetAll();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></span>
-      <span class="drawerLabel">Очистить все данные</span>
+      <span class="drawerLabel" data-i18n="drawer.clearData">Очистить все данные</span>
       <span class="drawerChevron">›</span>
     </div>
   </div>
@@ -647,25 +648,25 @@
 <div id="app">
   <header>
     <div class="headerTop">
-      <button id="menuBtn" onclick="openDrawer()" aria-label="Меню">
+      <button id="menuBtn" onclick="openDrawer()" aria-label="Меню" data-i18n-aria="header.menuAria">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
       </button>
-      <button id="quickToggleBtn" onclick="handleQuickToggle()">▶ Старт</button>
+      <button id="quickToggleBtn" onclick="handleQuickToggle()" data-i18n="header.start">▶ Старт</button>
     </div>
   </header>
 
   <div id="edgeGrip" onclick="openDrawer()"></div>
 
-  <div id="deliveryAvgBar">📦 Среднее время доставки: <b id="deliveryAvgValue">—</b></div>
+  <div id="deliveryAvgBar"><span data-i18n="header.deliveryAvgLabel">📦 Среднее время доставки:</span> <b id="deliveryAvgValue">—</b></div>
 
   <div id="toast"></div>
 
   <div id="mapOuter">
     <div id="map"></div>
     <div id="modeBadge"></div>
-    <div id="peakHourBadge">🚩 Пиковый час</div>
-    <button id="fullscreenBtn" title="На весь экран" onclick="toggleMapFullscreen(event)">⛶</button>
-    <button id="locateBtn" title="Найти меня">📍</button>
+    <div id="peakHourBadge" data-i18n="header.peakHourBadge">🚩 Пиковый час</div>
+    <button id="fullscreenBtn" data-i18n-title="header.fullscreenTitle" title="На весь экран" onclick="toggleMapFullscreen(event)">⛶</button>
+    <button id="locateBtn" data-i18n-title="header.locateTitle" title="Найти меня">📍</button>
   </div>
 
   <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
@@ -675,11 +676,11 @@
   <div id="ordersModal">
     <div id="ordersModalScroll">
       <div class="stickyHeader">
-        <h3>Мои заказы</h3>
+        <h3 data-i18n="orders.title">Мои заказы</h3>
         <button class="modalXBtn" onclick="closeOrdersModal()">✕</button>
       </div>
-      <input id="searchInput" type="text" placeholder="Поиск среди своих точек..." oninput="renderAll()">
-      <div class="listTitle"><span id="sortModeLabel" onclick="toggleSortMode()" style="cursor:pointer; text-decoration:underline dotted;">По частоте ▾</span><span id="totalCount"></span></div>
+      <input id="searchInput" type="text" data-i18n-ph="orders.searchPlaceholder" placeholder="Поиск среди своих точек..." oninput="renderAll()">
+      <div class="listTitle"><span id="sortModeLabel" data-i18n="orders.sortByCount" onclick="toggleSortMode()" style="cursor:pointer; text-decoration:underline dotted;">По частоте ▾</span><span id="totalCount"></span></div>
       <div id="rows"></div>
     </div>
   </div>
@@ -687,24 +688,24 @@
 
 <div id="modalBg">
   <div id="modal">
-    <h3>Как называется заведение?</h3>
+    <h3 data-i18n="addSpot.title">Как называется заведение?</h3>
     <p class="coords" id="coordsText"></p>
-    <input id="nameInput" type="text" placeholder="Например: Сільпо, АТБ" maxlength="40">
+    <input id="nameInput" type="text" data-i18n-ph="addSpot.namePlaceholder" placeholder="Например: Сільпо, АТБ" maxlength="40">
     <div id="modalBtns">
-      <button id="cancelBtn" onclick="closeModal()">Отмена</button>
-      <button id="saveBtn" onclick="saveNewSpot()">Добавить</button>
+      <button id="cancelBtn" data-i18n="addSpot.cancel" onclick="closeModal()">Отмена</button>
+      <button id="saveBtn" data-i18n="addSpot.add" onclick="saveNewSpot()">Добавить</button>
     </div>
   </div>
 </div>
 
 <div id="choiceModalBg">
   <div id="choiceModal">
-    <h3>Какое заведение?</h3>
-    <p class="coords">Рядом уже есть точки — выбери, куда засчитать забор, или добавь новое</p>
+    <h3 data-i18n="choice.title">Какое заведение?</h3>
+    <p class="coords" data-i18n="choice.text">Рядом уже есть точки — выбери, куда засчитать забор, или добавь новое</p>
     <div id="choiceList"></div>
     <div id="choiceBtns">
-      <button id="choiceNewBtn" onclick="choiceAddNew()">+ Это другое заведение</button>
-      <button id="choiceCancelBtn" onclick="closeChoiceModal()">Отмена</button>
+      <button id="choiceNewBtn" data-i18n="choice.addNew" onclick="choiceAddNew()">+ Это другое заведение</button>
+      <button id="choiceCancelBtn" data-i18n="choice.cancel" onclick="closeChoiceModal()">Отмена</button>
     </div>
   </div>
 </div>
@@ -713,10 +714,10 @@
   <div id="amountModal">
     <h3 id="amountModalTitle">Сколько заплатили за этот заказ?</h3>
     <p class="coords" id="amountModalSpotName"></p>
-    <input id="amountInput" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Например: 4.5">
+    <input id="amountInput" type="number" inputmode="decimal" min="0" step="0.01" data-i18n-ph="amount.placeholder" placeholder="Например: 4.5">
     <div id="amountModalBtns">
-      <button id="amountCancelBtn" onclick="closeAmountModal()">Отмена</button>
-      <button id="amountSaveBtn" onclick="saveAmount()">Добавить</button>
+      <button id="amountCancelBtn" data-i18n="amount.cancel" onclick="closeAmountModal()">Отмена</button>
+      <button id="amountSaveBtn" data-i18n="amount.saveAdd" onclick="saveAmount()">Добавить</button>
     </div>
   </div>
 </div>
@@ -728,7 +729,7 @@
     </div>
     <div class="drawerGroup" id="rowActionOptions" style="border-top:none; margin-top:0; padding-top:0;"></div>
     <div id="rowActionCancelWrap">
-      <button id="rowActionCancelBtn" onclick="closeRowActionModal()">Отмена</button>
+      <button id="rowActionCancelBtn" data-i18n="rowAction.cancel" onclick="closeRowActionModal()">Отмена</button>
     </div>
   </div>
 </div>
@@ -737,23 +738,23 @@
   <div id="onboardModal">
     <div class="onboardHeader">
       <div class="onboardEmoji">👋</div>
-      <h3>Как тебе платят за заказы?</h3>
-      <p class="coords">Выбери свою схему — потом можно сменить в Настройках</p>
+      <h3 data-i18n="onboard.title">Как тебе платят за заказы?</h3>
+      <p class="coords" data-i18n="onboard.sub">Выбери свою схему — потом можно сменить в Настройках</p>
     </div>
     <div class="drawerGroup" style="border-top:none; margin-top:0; padding-top:0;">
       <div class="drawerItem" onclick="choosePayType('hourly')">
         <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg></span>
         <span class="drawerLabel">
-          <div>Почасовая + премия</div>
-          <div class="onboardSub">Платят за время + бонус за скорость и количество</div>
+          <div data-i18n="onboard.hourlyTitle">Почасовая + премия</div>
+          <div class="onboardSub" data-i18n="onboard.hourlyDesc">Платят за время + бонус за скорость и количество</div>
         </span>
         <span class="drawerChevron">›</span>
       </div>
       <div class="drawerItem" onclick="choosePayType('piece')">
         <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 6v.01M18 17.99V18"/></svg></span>
         <span class="drawerLabel">
-          <div>Сдельная за заказ</div>
-          <div class="onboardSub">Фиксированная сумма за каждый заказ + подача</div>
+          <div data-i18n="onboard.pieceTitle">Сдельная за заказ</div>
+          <div class="onboardSub" data-i18n="onboard.pieceDesc">Фиксированная сумма за каждый заказ + подача</div>
         </span>
         <span class="drawerChevron">›</span>
       </div>
@@ -768,8 +769,8 @@
     <h4 id="tourTitle"></h4>
     <p id="tourText"></p>
     <div id="tourBtns">
-      <button id="tourSkipBtn" onclick="skipTour()">Пропустить</button>
-      <button id="tourNextBtn" onclick="nextTourStep()">Далее</button>
+      <button id="tourSkipBtn" data-i18n="tour.skip" onclick="skipTour()">Пропустить</button>
+      <button id="tourNextBtn" data-i18n="tour.next" onclick="nextTourStep()">Далее</button>
     </div>
   </div>
 </div>
@@ -778,7 +779,7 @@
   <div id="statsModal">
     <div id="statsModalScroll">
       <div class="stickyHeader">
-        <h3>Статистика</h3>
+        <h3 data-i18n="stats.title">Статистика</h3>
         <button class="modalXBtn" onclick="closeStatsModal()">✕</button>
       </div>
       <div id="statsBody"></div>
@@ -790,10 +791,10 @@
   <div id="recoModal">
     <div id="recoModalScroll">
       <div class="stickyHeader">
-        <h3>Рекомендации</h3>
+        <h3 data-i18n="reco.title">Рекомендации</h3>
         <button class="modalXBtn" onclick="closeRecoModal()">✕</button>
       </div>
-      <p class="coords">Советы на основе твоей статистики: когда выгоднее бронировать слоты и где ты зарабатываешь больше всего.</p>
+      <p class="coords" data-i18n="reco.intro">Советы на основе твоей статистики: когда выгоднее бронировать слоты и где ты зарабатываешь больше всего.</p>
       <div id="recoBody"></div>
     </div>
   </div>
@@ -801,12 +802,20 @@
 
 <div id="settingsModalBg">
   <div id="settingsModal">
-    <h3>Настройки</h3>
-    <p class="coords">Как отмечать точки на карте</p>
+    <h3 data-i18n="settings.title">Настройки</h3>
+    <p class="coords" data-i18n="settings.languageLabel">Язык приложения</p>
+    <div id="languageOptions">
+      <div class="themeOption" data-lang="ru" onclick="chooseLanguage('ru')">Русский</div>
+      <div class="themeOption" data-lang="uk" onclick="chooseLanguage('uk')">Українська</div>
+      <div class="themeOption" data-lang="es" onclick="chooseLanguage('es')">Español</div>
+      <div class="themeOption" data-lang="en" onclick="chooseLanguage('en')">English</div>
+    </div>
+
+    <p class="coords" data-i18n="settings.markerStyleLabel">Как отмечать точки на карте</p>
     <div id="markerStyleOptions">
       <div class="markerOption" data-style="circle" onclick="chooseMarkerStyle('circle')">
         <div class="markerPreview"><div class="previewCircle">3</div></div>
-        <span>Кружок</span>
+        <span data-i18n="settings.markerCircle">Кружок</span>
       </div>
       <div class="markerOption" data-style="bag" onclick="chooseMarkerStyle('bag')">
         <div class="markerPreview">
@@ -815,17 +824,17 @@
             <div class="bagBody" style="background:var(--signal); box-shadow:none;">3</div>
           </div>
         </div>
-        <span>Сумка курьера</span>
+        <span data-i18n="settings.markerBag">Сумка курьера</span>
       </div>
     </div>
 
-    <p class="coords">Тип оплаты</p>
+    <p class="coords" data-i18n="settings.payTypeLabel">Тип оплаты</p>
     <div id="payTypeOptions">
-      <div class="themeOption" data-paytype="hourly" onclick="choosePayType('hourly')">⏱ Почасовая + премия</div>
-      <div class="themeOption" data-paytype="piece" onclick="choosePayType('piece')">💰 Сдельная за заказ</div>
+      <div class="themeOption" data-paytype="hourly" data-i18n="settings.payTypeHourlyOpt" onclick="choosePayType('hourly')">⏱ Почасовая + премия</div>
+      <div class="themeOption" data-paytype="piece" data-i18n="settings.payTypePieceOpt" onclick="choosePayType('piece')">💰 Сдельная за заказ</div>
     </div>
 
-    <p class="coords">Валюта</p>
+    <p class="coords" data-i18n="settings.currencyLabel">Валюта</p>
     <div id="currencyOptions">
       <div class="themeOption" data-currency="€" onclick="chooseCurrency('€')">€</div>
       <div class="themeOption" data-currency="₴" onclick="chooseCurrency('₴')">₴</div>
@@ -833,19 +842,19 @@
       <div class="themeOption" data-currency="zł" onclick="chooseCurrency('zł')">zł</div>
     </div>
 
-    <p class="coords">Оформление приложения</p>
+    <p class="coords" data-i18n="settings.appThemeLabel">Оформление приложения</p>
     <div id="appThemeOptions">
-      <div class="themeOption" data-theme="light" onclick="chooseAppTheme('light')">☀️ Светлая</div>
-      <div class="themeOption" data-theme="dark" onclick="chooseAppTheme('dark')">🌙 Тёмная</div>
+      <div class="themeOption" data-theme="light" data-i18n="settings.themeLight" onclick="chooseAppTheme('light')">☀️ Светлая</div>
+      <div class="themeOption" data-theme="dark" data-i18n="settings.themeDark" onclick="chooseAppTheme('dark')">🌙 Тёмная</div>
     </div>
 
-    <p class="coords">Оформление карты (можно отдельно от приложения)</p>
+    <p class="coords" data-i18n="settings.mapThemeLabel">Оформление карты (можно отдельно от приложения)</p>
     <div id="mapThemeOptions">
-      <div class="themeOption" data-theme="light" onclick="chooseMapTheme('light')">☀️ Светлая</div>
-      <div class="themeOption" data-theme="dark" onclick="chooseMapTheme('dark')">🌙 Тёмная</div>
+      <div class="themeOption" data-theme="light" data-i18n="settings.themeLight" onclick="chooseMapTheme('light')">☀️ Светлая</div>
+      <div class="themeOption" data-theme="dark" data-i18n="settings.themeDark" onclick="chooseMapTheme('dark')">🌙 Тёмная</div>
     </div>
 
-    <button id="settingsCloseBtn" onclick="closeSettingsModal()">Готово</button>
+    <button id="settingsCloseBtn" data-i18n="settings.done" onclick="closeSettingsModal()">Готово</button>
   </div>
 </div>
 
@@ -853,12 +862,12 @@
   <div id="historyModal">
     <div id="historyModalScroll">
       <div class="stickyHeader">
-        <h3>История заказов</h3>
+        <h3 data-i18n="history.title">История заказов</h3>
         <button class="modalXBtn" onclick="closeHistoryModal()">✕</button>
       </div>
-      <p class="coords">Полный список твоих заказов по дням и времени: где забрал, сколько ждал и когда случайно нажал не туда (−1). Листай вниз или ищи конкретный день по дате.</p>
+      <p class="coords" data-i18n="history.desc">Полный список твоих заказов по дням и времени: где забрал, сколько ждал и когда случайно нажал не туда (−1). Листай вниз или ищи конкретный день по дате.</p>
       <div id="historyDateFilterBar" onclick="openCalendarModal()">
-        <span id="historyDateFilterLabel">📅 Поиск по дате</span>
+        <span id="historyDateFilterLabel" data-i18n="history.dateFilterDefault">📅 Поиск по дате</span>
         <span class="historyDateFilterArrow">›</span>
       </div>
       <div id="historyBody"></div>
@@ -873,21 +882,538 @@
       <span id="calMonthLabel"></span>
       <button class="calNavBtn" onclick="changeCalendarMonth(1)">›</button>
     </div>
-    <button id="calTodayBtn" onclick="calendarPickToday()">Сегодня</button>
-    <div class="calWeekdays">
-      <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+    <button id="calTodayBtn" data-i18n="calendar.today" onclick="calendarPickToday()">Сегодня</button>
+    <div class="calWeekdays" id="calWeekdaysRow">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
     </div>
     <div id="calGrid"></div>
-    <p id="calHint">Выбери один день, или два дня — для диапазона между ними</p>
+    <p id="calHint" data-i18n="calendar.hint">Выбери один день, или два дня — для диапазона между ними</p>
     <div id="calBtns">
-      <button id="calResetBtn" onclick="calendarReset()">Сбросить</button>
-      <button id="calApplyBtn" onclick="calendarApply()">Показать</button>
+      <button id="calResetBtn" data-i18n="calendar.reset" onclick="calendarReset()">Сбросить</button>
+      <button id="calApplyBtn" data-i18n="calendar.apply" onclick="calendarApply()">Показать</button>
     </div>
   </div>
 </div>
 
 
 <script>
+// ====================== I18N ======================
+const LANG_KEY = 'pickup-lang';
+const SUPPORTED_LANGS = ['ru','uk','es','en'];
+
+function detectInitialLang(){
+  try{
+    const saved = localStorage.getItem(LANG_KEY);
+    if(saved && SUPPORTED_LANGS.includes(saved)) return saved;
+    const nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
+    const prefix = nav.slice(0,2);
+    if(prefix === 'ru') return 'ru';
+    if(prefix === 'uk') return 'uk';
+    if(prefix === 'es') return 'es';
+    if(prefix === 'en') return 'en';
+    return 'en';
+  }catch(e){ return 'ru'; }
+}
+
+const TRANSLATIONS = {
+  ru: {
+    drawer:{ menu:'Меню', orders:'Мои заказы', stats:'Статистика', history:'История', reco:'Рекомендации',
+      settings:'Настройки', howTo:'Как пользоваться', backup:'Сохранить копию', restore:'Восстановить из файла',
+      clearData:'Очистить все данные' },
+    header:{ start:'▶ Старт', stop:'⏹ Стоп · {time}{suffix}', searching:'Ищу тебя...', myLocation:'Твоё местоположение',
+      noGpsAccess:'Доступ к GPS не дан', fullscreenTitle:'На весь экран', locateTitle:'Найти меня',
+      peakHourBadge:'🚩 Пиковый час', deliveryAvgLabel:'📦 Среднее время доставки:', deliveryAvgDash:'—',
+      noActiveDeliveries:'Нет активных доставок', startToast:'▶ Старт', startToastMulti:'▶ Старт (заказов в работе: {n})',
+      deliveredToast:'✅ Доставлено за {time}', geoUnavailable:'Геолокация недоступна в этом браузере',
+      menuAria:'Меню' },
+    arrival:{ waitingFor:'⏱ Ждём заказ:', cancel:'Отмена', done:'✅ Забрал заказ' },
+    orders:{ title:'Мои заказы', searchPlaceholder:'Поиск среди своих точек...', sortByCount:'По частоте ▾',
+      sortByEarned:'По сумме ▾', totalLabel:'всего заборов: {n}', emptyNoSpots:'Пока пусто. Тапни по карте, где обычно забираешь заказы.',
+      emptyNoResults:'Ничего не найдено по запросу «{q}»', rowDelete:'Удалить', rowAvgWait:'⏱ в среднем ждёшь тут: {time}',
+      rowEarnedLabel:'💰 Заработано: {amount}' },
+    addSpot:{ title:'Как называется заведение?', namePlaceholder:'Например: Сільпо, АТБ', cancel:'Отмена', add:'Добавить' },
+    choice:{ title:'Какое заведение?', text:'Рядом уже есть точки — выбери, куда засчитать забор, или добавь новое',
+      addNew:'+ Это другое заведение', cancel:'Отмена', avgWait:'⏱ в среднем: {time}', arriveBtn:'⏱ Отметить прибытие' },
+    amount:{ titleAdd:'Сколько заплатили за этот заказ?', titleEdit:'Исправить итоговую сумму', saveAdd:'Добавить',
+      saveEdit:'Сохранить', cancel:'Отмена', placeholder:'Например: 4.5', errAddPositive:'Введи сумму больше нуля.',
+      errEditNonNeg:'Введи сумму 0 или больше.' },
+    rowAction:{ add:'Добавить забор (+1)', remove:'Убрать забор (−1)', editAmount:'Исправить итоговую сумму', cancel:'Отмена' },
+    onboard:{ title:'Как тебе платят за заказы?', sub:'Выбери свою схему — потом можно сменить в Настройках',
+      hourlyTitle:'Почасовая + премия', hourlyDesc:'Платят за время + бонус за скорость и количество',
+      pieceTitle:'Сдельная за заказ', pieceDesc:'Фиксированная сумма за каждый заказ + подача' },
+    tour:{
+      menuTitle:'Главное меню', menuText:'Нажимай сюда в любой момент — откроется меню со всеми разделами приложения. Сейчас пройдёмся по каждому из них.',
+      ordersIntroTitle:'Мои заказы', ordersIntroText:'Список всех точек, где ты когда-либо забирал заказы. Открой — покажу, что там внутри.',
+      searchTitle:'Поиск точки', searchText:'Когда точек накопится много, начинай печатать название заведения — список отфильтруется на лету.',
+      sortTitle:'Сортировка списка', sortText:'Нажми, чтобы переключить порядок: по частоте заборов (самые «ходовые» точки сверху) или по сумме заработка.',
+      rowsTitle:'Список точек', rowsText:'Как только отметишь первую точку на карте, она появится здесь. У каждой строки слева — кнопка с валютой (добавить сумму за заказ) и зелёный карандаш — меню «+1 забор / −1 забор / исправить итоговую сумму». Тап по самой строке переносит на карту прямо к этой точке.',
+      statsIntroTitle:'Статистика', statsIntroText:'Вся твоя работа в цифрах — открой, покажу подробнее.',
+      statsBodyTitle:'Цифры по работе', statsBodyText:'Сверху — сколько заборов сегодня, вчера, на этой неделе (считается с понедельника по воскресенье) и всего. Ниже — график по дням недели, время ожидания на точках и часы пик: в какое время суток у тебя обычно больше всего заказов за всю историю.',
+      historyIntroTitle:'История заказов', historyIntroText:'Полная хроника каждого забора — открой, покажу.',
+      historyDateTitle:'Поиск по дате', historyDateText:'Нажми, чтобы открыть календарь и посмотреть заказы только за конкретный день.',
+      historyBodyTitle:'Полная хроника', historyBodyText:'Ниже — список всех заказов по дням и времени: где забрал, сколько ждал, и отдельно отмечены случайные отмены (−1), если промахнулся мимо нужной точки.',
+      recoIntroTitle:'Рекомендации', recoIntroText:'Отдельный раздел для сдельной оплаты — открой, покажу.',
+      recoBodyTitle:'Советы по слотам', recoBodyText:'Здесь приложение само подсказывает, в какие часы и дни недели у тебя обычно больше всего заказов — удобно бронировать слоты именно на это время. Ниже — твои самые прибыльные точки.',
+      settingsIntroTitle:'Настройки', settingsIntroText:'Здесь всё можно перенастроить под себя в любой момент — открой, покажу по порядку.',
+      payTypeTitle:'Тип оплаты', payTypeText:'Переключай между почасовой с премией и сдельной за заказ — от этого зависит, какие разделы видны в меню.',
+      currencyTitle:'Валюта', currencyText:'Выбери валюту, в которой тебе платят — она сразу появится на кнопке суммы в разделе «Мои заказы».',
+      markerStyleTitle:'Вид точек на карте', markerStyleText:'Кружок с цифрой или значок сумки курьера — выбери, что удобнее видеть на карте во время работы.',
+      appThemeTitle:'Оформление приложения', appThemeText:'Светлая или тёмная тема для всего приложения — переключается мгновенно.',
+      mapThemeTitle:'Оформление карты', mapThemeText:'А тема самой карты настраивается отдельно от темы приложения — удобно, например, оставить карту светлой даже ночью.',
+      langTitle:'Язык приложения', langText:'Переключай язык интерфейса в любой момент — изменения применяются сразу, без перезапуска.',
+      startStopTitle:'Старт / Стоп', startStopText:'Нажимай, когда едешь забирать заказ — запустится таймер доставки. Повторный тап его остановит и запишет время в статистику.',
+      avgDeliveryTitle:'Среднее время доставки', avgDeliveryText:'Тут всегда видно, сколько в среднем занимает доставка по всем твоим заказам — удобно прикидывать, сколько слотов успеешь взять.',
+      mapAddTitle:'Карта: новая точка', mapAddText:'Тапни по пустому месту карты там, где забираешь заказ, — откроется окно, впиши туда название заведения и сохрани.',
+      mapBumpTitle:'Карта: забор заказа (+1)', mapBumpText:'Короткий тап прямо по уже существующей точке на карте сразу засчитывает туда ещё один забор — никаких доп. окон. Если точка не совсем под пальцем, откроется список рядом стоящих — выбери нужную.',
+      mapWaitTitle:'Карта: время ожидания', mapWaitText:'А если на той же точке подержать палец примерно полсекунды не отпуская — точка завибрирует, и запустится отсчёт времени ожидания. Когда получишь заказ, нажми «✅ Забрал заказ» на зелёной полоске внизу экрана — и среднее время ожидания на этой точке посчитается само.',
+      locateTitle:'Моё местоположение', locateText:'Нажми — карта сама найдёт тебя по GPS и приблизится к твоей текущей точке. Полезно, когда нужно быстро понять, где ты сейчас относительно отмеченных точек.',
+      fullscreenTitle:'Полный экран', fullscreenText:'Разворачивает карту на весь экран без шапки и кнопок — удобно, когда нужно точнее прицелиться в нужную точку перед тапом.',
+      zoomTitle:'Масштаб карты', zoomText:'Плюс и минус увеличивают и уменьшают масштаб. На телефоне то же самое делает щипок двумя пальцами или двойной тап по карте.',
+      doneTitle:'Готово!', doneText:'Это полный обзор приложения. Всё, что показали, всегда можно найти заново в этом же меню (☰ → «Как пользоваться»). Удачной работы! 🚀',
+      stepLabel:'Шаг {i} из {n}', next:'Далее', finish:'Готово', skip:'Пропустить'
+    },
+    stats:{ title:'Статистика', empty:'Пока нет данных для статистики. Отмечай заборы — здесь появятся цифры по дням.',
+      cardToday:'сегодня', cardYesterday:'вчера', cardWeek:'на этой неделе', cardTotal:'всего',
+      longestWaitTitle:'Дольше всего ждал', waitEmptyTitle:'Время ожидания',
+      waitEmptyText:'Пока нет данных. Нажимай "⏱ Прибыл" при заказе, чтобы начать замерять.',
+      peakHoursTitle:'🕐 Часы пик', hourChartNoData:'Пока нет данных за этот период.',
+      hourChartPeakSummary:'Пик активности: {hours} ({count})', hourTrendTitle:'Как менялся пик по дням',
+      hourTrendPeakLabel:'пик в {hours}', deletedSpot:'(точка удалена)' },
+    reco:{ title:'Рекомендации', intro:'Советы на основе твоей статистики: когда выгоднее бронировать слоты и где ты зарабатываешь больше всего.',
+      bestHoursTitle:'🕐 Лучшие часы для слотов', bestHoursEmpty:'Пока мало данных. Отмечай заборы — здесь появится совет по часам.',
+      bestHoursText:'По твоей истории заборов чаще всего заказы идут в: {hours}. Стоит бронировать слоты именно на это время.',
+      bestDaysTitle:'📅 Лучшие дни недели', bestDaysText:'Больше всего заказов обычно бывает в: {days}. Старайся планировать смены на эти дни.',
+      topSpotsTitle:'💰 Самые прибыльные точки', topSpotsEmpty:'Пока нет данных о заработке — добавляй суммы за заказы в «Мои заказы».' },
+    settings:{ title:'Настройки', markerStyleLabel:'Как отмечать точки на карте', markerCircle:'Кружок', markerBag:'Сумка курьера',
+      payTypeLabel:'Тип оплаты', payTypeHourlyOpt:'⏱ Почасовая + премия', payTypePieceOpt:'💰 Сдельная за заказ',
+      currencyLabel:'Валюта', appThemeLabel:'Оформление приложения', themeLight:'☀️ Светлая', themeDark:'🌙 Тёмная',
+      mapThemeLabel:'Оформление карты (можно отдельно от приложения)', done:'Готово', languageLabel:'Язык приложения' },
+    history:{ title:'История заказов', desc:'Полный список твоих заказов по дням и времени: где забрал, сколько ждал и когда случайно нажал не туда (−1). Листай вниз или ищи конкретный день по дате.',
+      dateFilterDefault:'📅 Поиск по дате', emptyAll:'Пока пусто. Здесь появится история всех +1 и −1 по точкам.',
+      emptyRange:'За выбранный период записей нет.' },
+    calendar:{ today:'Сегодня', hint:'Выбери один день, или два дня — для диапазона между ними', reset:'Сбросить', apply:'Показать' },
+    alerts:{ confirmRestartTimer:'Уже идёт отсчёт для «{name}». Начать заново для «{newName}»? Прошлый отсчёт не будет засчитан.',
+      spotDeletedDuringWait:'Точка «{name}» была удалена, пока шёл отсчёт ожидания ({time}) - этот заказ не засчитан.',
+      waitResult:'⏱️ Ждал: {time}\n\nСреднее ожидание в «{name}»: {avg}',
+      confirmDeleteLastPickup:'Это последний забор в этой точке. Удалить точку полностью?',
+      nothingToSave:'Пока нечего сохранять - данных пока нет.', noSpotsInFile:'В файле не найдено ни одной точки.',
+      confirmImportMode:'Найдено {n} точек в файле.\nОК - добавить к текущим ({current})\nОтмена - заменить текущие полностью',
+      importDone:'Готово! Точки восстановлены.', importDoneDropped:'\n\n({n} повреждённых записей из истории пропущено.)',
+      importFailed:'Не получилось прочитать файл - убедись, что это файл резервной копии из этого приложения.',
+      confirmResetAll:'Удалить вообще все данные приложения: все точки, заборы, суммы и историю? Это нельзя отменить.' },
+    units:{ min:'мин', sec:'сек' },
+    pickupWord:{ one:'забор', few:'забора', many:'заборов' },
+    months:{ nom:['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'],
+      gen:['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],
+      shortGen:['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'] },
+    weekdaysMon:['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],
+    weekdaysSun:['Вс','Пн','Вт','Ср','Чт','Пт','Сб']
+  },
+
+  uk:{
+    drawer:{ menu:'Меню', orders:'Мої замовлення', stats:'Статистика', history:'Історія', reco:'Рекомендації',
+      settings:'Налаштування', howTo:'Як користуватись', backup:'Зберегти копію', restore:'Відновити з файлу',
+      clearData:'Очистити всі дані' },
+    header:{ start:'▶ Старт', stop:'⏹ Стоп · {time}{suffix}', searching:'Шукаю тебе...', myLocation:'Твоє місцезнаходження',
+      noGpsAccess:'Доступ до GPS не надано', fullscreenTitle:'На весь екран', locateTitle:'Знайти мене',
+      peakHourBadge:'🚩 Пікова година', deliveryAvgLabel:'📦 Середній час доставки:', deliveryAvgDash:'—',
+      noActiveDeliveries:'Немає активних доставок', startToast:'▶ Старт', startToastMulti:'▶ Старт (замовлень у роботі: {n})',
+      deliveredToast:'✅ Доставлено за {time}', geoUnavailable:'Геолокація недоступна в цьому браузері',
+      menuAria:'Меню' },
+    arrival:{ waitingFor:'⏱ Чекаємо замовлення:', cancel:'Скасувати', done:'✅ Забрав замовлення' },
+    orders:{ title:'Мої замовлення', searchPlaceholder:'Пошук серед своїх точок...', sortByCount:'За частотою ▾',
+      sortByEarned:'За сумою ▾', totalLabel:'всього підборів: {n}', emptyNoSpots:'Поки порожньо. Тапни на карті там, де зазвичай забираєш замовлення.',
+      emptyNoResults:'Нічого не знайдено за запитом «{q}»', rowDelete:'Видалити', rowAvgWait:'⏱ в середньому чекаєш тут: {time}',
+      rowEarnedLabel:'💰 Зароблено: {amount}' },
+    addSpot:{ title:'Як називається заклад?', namePlaceholder:'Наприклад: Сільпо, АТБ', cancel:'Скасувати', add:'Додати' },
+    choice:{ title:'Який це заклад?', text:'Поруч вже є точки — обери, куди зарахувати підбір, або додай нову',
+      addNew:'+ Це інший заклад', cancel:'Скасувати', avgWait:'⏱ в середньому: {time}', arriveBtn:'⏱ Відмітити прибуття' },
+    amount:{ titleAdd:'Скільки заплатили за це замовлення?', titleEdit:'Виправити підсумкову суму', saveAdd:'Додати',
+      saveEdit:'Зберегти', cancel:'Скасувати', placeholder:'Наприклад: 4.5', errAddPositive:'Введи суму більше нуля.',
+      errEditNonNeg:'Введи суму 0 або більше.' },
+    rowAction:{ add:'Додати підбір (+1)', remove:'Прибрати підбір (−1)', editAmount:'Виправити підсумкову суму', cancel:'Скасувати' },
+    onboard:{ title:'Як тобі платять за замовлення?', sub:'Обери свою схему — потім можна змінити в Налаштуваннях',
+      hourlyTitle:'Погодинна + премія', hourlyDesc:'Платять за час + бонус за швидкість і кількість',
+      pieceTitle:'Відрядна за замовлення', pieceDesc:'Фіксована сума за кожне замовлення + подача' },
+    tour:{
+      menuTitle:'Головне меню', menuText:'Натискай сюди в будь-який момент — відкриється меню з усіма розділами застосунку. Зараз пройдемось по кожному з них.',
+      ordersIntroTitle:'Мої замовлення', ordersIntroText:'Список усіх точок, де ти коли-небудь забирав замовлення. Відкрий — покажу, що там усередині.',
+      searchTitle:'Пошук точки', searchText:'Коли точок назбирається багато, починай друкувати назву закладу — список відфільтрується на льоту.',
+      sortTitle:'Сортування списку', sortText:'Натисни, щоб перемкнути порядок: за частотою підборів (найходовіші точки зверху) або за сумою заробітку.',
+      rowsTitle:'Список точок', rowsText:'Щойно відмітиш першу точку на карті, вона з’явиться тут. У кожного рядка зліва — кнопка з валютою (додати суму за замовлення) і зелений олівець — меню «+1 підбір / −1 підбір / виправити підсумкову суму». Тап по самому рядку переносить на карту прямо до цієї точки.',
+      statsIntroTitle:'Статистика', statsIntroText:'Уся твоя робота в цифрах — відкрий, покажу детальніше.',
+      statsBodyTitle:'Цифри по роботі', statsBodyText:'Зверху — скільки підборів сьогодні, вчора, цього тижня (рахується з понеділка по неділю) і всього. Нижче — графік по днях тижня, час очікування на точках і пікові години: в який час доби у тебе зазвичай найбільше замовлень за всю історію.',
+      historyIntroTitle:'Історія замовлень', historyIntroText:'Повна хроніка кожного підбору — відкрий, покажу.',
+      historyDateTitle:'Пошук за датою', historyDateText:'Натисни, щоб відкрити календар і подивитись замовлення лише за конкретний день.',
+      historyBodyTitle:'Повна хроніка', historyBodyText:'Нижче — список усіх замовлень по днях і часу: де забрав, скільки чекав, і окремо відмічені випадкові скасування (−1), якщо промахнувся повз потрібну точку.',
+      recoIntroTitle:'Рекомендації', recoIntroText:'Окремий розділ для відрядної оплати — відкрий, покажу.',
+      recoBodyTitle:'Поради щодо слотів', recoBodyText:'Тут застосунок сам підказує, в які години та дні тижня у тебе зазвичай найбільше замовлень — зручно бронювати слоти саме на цей час. Нижче — твої найприбутковіші точки.',
+      settingsIntroTitle:'Налаштування', settingsIntroText:'Тут усе можна перелаштувати під себе в будь-який момент — відкрий, покажу по порядку.',
+      payTypeTitle:'Тип оплати', payTypeText:'Перемикай між погодинною з премією та відрядною за замовлення — від цього залежить, які розділи видно в меню.',
+      currencyTitle:'Валюта', currencyText:'Обери валюту, в якій тобі платять — вона одразу з’явиться на кнопці суми в розділі «Мої замовлення».',
+      markerStyleTitle:'Вигляд точок на карті', markerStyleText:'Кружечок з цифрою або значок сумки кур’єра — обери, що зручніше бачити на карті під час роботи.',
+      appThemeTitle:'Оформлення застосунку', appThemeText:'Світла або темна тема для всього застосунку — перемикається миттєво.',
+      mapThemeTitle:'Оформлення карти', mapThemeText:'А тема самої карти налаштовується окремо від теми застосунку — зручно, наприклад, залишити карту світлою навіть вночі.',
+      langTitle:'Мова застосунку', langText:'Перемикай мову інтерфейсу в будь-який момент — зміни застосовуються одразу, без перезапуску.',
+      startStopTitle:'Старт / Стоп', startStopText:'Натискай, коли їдеш забирати замовлення — запуститься таймер доставки. Повторний тап зупинить його і запише час у статистику.',
+      avgDeliveryTitle:'Середній час доставки', avgDeliveryText:'Тут завжди видно, скільки в середньому займає доставка по всіх твоїх замовленнях — зручно прикидувати, скільки слотів встигнеш взяти.',
+      mapAddTitle:'Карта: нова точка', mapAddText:'Тапни по порожньому місцю карти там, де забираєш замовлення, — відкриється вікно, впиши туди назву закладу і збережи.',
+      mapBumpTitle:'Карта: підбір замовлення (+1)', mapBumpText:'Короткий тап прямо по вже існуючій точці на карті одразу зараховує туди ще один підбір — жодних додаткових вікон. Якщо точка не зовсім під пальцем, відкриється список сусідніх — обери потрібну.',
+      mapWaitTitle:'Карта: час очікування', mapWaitText:'А якщо на тій же точці потримати палець приблизно півсекунди не відпускаючи — точка завібрує, і запуститься відлік часу очікування. Коли отримаєш замовлення, натисни «✅ Забрав замовлення» на зеленій смужці внизу екрана — і середній час очікування на цій точці порахується сам.',
+      locateTitle:'Моє місцезнаходження', locateText:'Натисни — карта сама знайде тебе по GPS і наблизиться до твоєї поточної точки. Корисно, коли потрібно швидко зрозуміти, де ти зараз відносно відмічених точок.',
+      fullscreenTitle:'Повний екран', fullscreenText:'Розгортає карту на весь екран без шапки і кнопок — зручно, коли потрібно точніше прицілитись у потрібну точку перед тапом.',
+      zoomTitle:'Масштаб карти', zoomText:'Плюс і мінус збільшують і зменшують масштаб. На телефоні те саме робить щипок двома пальцями або подвійний тап по карті.',
+      doneTitle:'Готово!', doneText:'Це повний огляд застосунку. Усе, що показали, завжди можна знайти знову в цьому ж меню (☰ → «Як користуватись»). Вдалої роботи! 🚀',
+      stepLabel:'Крок {i} з {n}', next:'Далі', finish:'Готово', skip:'Пропустити'
+    },
+    stats:{ title:'Статистика', empty:'Поки немає даних для статистики. Відмічай підбори — тут з’являться цифри по днях.',
+      cardToday:'сьогодні', cardYesterday:'вчора', cardWeek:'цього тижня', cardTotal:'всього',
+      longestWaitTitle:'Найдовше чекав', waitEmptyTitle:'Час очікування',
+      waitEmptyText:'Поки немає даних. Натискай "⏱ Прибув" при замовленні, щоб почати вимірювати.',
+      peakHoursTitle:'🕐 Пікові години', hourChartNoData:'Поки немає даних за цей період.',
+      hourChartPeakSummary:'Пік активності: {hours} ({count})', hourTrendTitle:'Як змінювався пік по днях',
+      hourTrendPeakLabel:'пік о {hours}', deletedSpot:'(точку видалено)' },
+    reco:{ title:'Рекомендації', intro:'Поради на основі твоєї статистики: коли вигідніше бронювати слоти і де ти заробляєш найбільше.',
+      bestHoursTitle:'🕐 Найкращі години для слотів', bestHoursEmpty:'Поки замало даних. Відмічай підбори — тут з’явиться порада по годинах.',
+      bestHoursText:'За твоєю історією підборів найчастіше замовлення йдуть о: {hours}. Варто бронювати слоти саме на цей час.',
+      bestDaysTitle:'📅 Найкращі дні тижня', bestDaysText:'Найбільше замовлень зазвичай буває у: {days}. Намагайся планувати зміни на ці дні.',
+      topSpotsTitle:'💰 Найприбутковіші точки', topSpotsEmpty:'Поки немає даних про заробіток — додавай суми за замовлення в «Мої замовлення».' },
+    settings:{ title:'Налаштування', markerStyleLabel:'Як відмічати точки на карті', markerCircle:'Кружечок', markerBag:'Сумка кур’єра',
+      payTypeLabel:'Тип оплати', payTypeHourlyOpt:'⏱ Погодинна + премія', payTypePieceOpt:'💰 Відрядна за замовлення',
+      currencyLabel:'Валюта', appThemeLabel:'Оформлення застосунку', themeLight:'☀️ Світла', themeDark:'🌙 Темна',
+      mapThemeLabel:'Оформлення карти (можна окремо від застосунку)', done:'Готово', languageLabel:'Мова застосунку' },
+    history:{ title:'Історія замовлень', desc:'Повний список твоїх замовлень по днях і часу: де забрав, скільки чекав і коли випадково натиснув не туди (−1). Гортай вниз або шукай конкретний день за датою.',
+      dateFilterDefault:'📅 Пошук за датою', emptyAll:'Поки порожньо. Тут з’явиться історія всіх +1 і −1 по точках.',
+      emptyRange:'За обраний період записів немає.' },
+    calendar:{ today:'Сьогодні', hint:'Обери один день, або два дні — для діапазону між ними', reset:'Скинути', apply:'Показати' },
+    alerts:{ confirmRestartTimer:'Вже йде відлік для «{name}». Почати заново для «{newName}»? Попередній відлік не буде зараховано.',
+      spotDeletedDuringWait:'Точку «{name}» було видалено, поки йшов відлік очікування ({time}) - це замовлення не зараховано.',
+      waitResult:'⏱️ Чекав: {time}\n\nСереднє очікування в «{name}»: {avg}',
+      confirmDeleteLastPickup:'Це останній підбір у цій точці. Видалити точку повністю?',
+      nothingToSave:'Поки нема чого зберігати - даних ще немає.', noSpotsInFile:'У файлі не знайдено жодної точки.',
+      confirmImportMode:'Знайдено {n} точок у файлі.\nОК - додати до поточних ({current})\nСкасувати - замінити поточні повністю',
+      importDone:'Готово! Точки відновлено.', importDoneDropped:'\n\n({n} пошкоджених записів з історії пропущено.)',
+      importFailed:'Не вдалося прочитати файл - переконайся, що це файл резервної копії з цього застосунку.',
+      confirmResetAll:'Видалити взагалі всі дані застосунку: всі точки, підбори, суми та історію? Це не можна скасувати.' },
+    units:{ min:'хв', sec:'сек' },
+    pickupWord:{ one:'підбір', few:'підбори', many:'підборів' },
+    months:{ nom:['січень','лютий','березень','квітень','травень','червень','липень','серпень','вересень','жовтень','листопад','грудень'],
+      gen:['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'],
+      shortGen:['січ','лют','бер','кві','тра','чер','лип','сер','вер','жов','лис','гру'] },
+    weekdaysMon:['Пн','Вт','Ср','Чт','Пт','Сб','Нд'],
+    weekdaysSun:['Нд','Пн','Вт','Ср','Чт','Пт','Сб']
+  },
+
+  es:{
+    drawer:{ menu:'Menú', orders:'Mis pedidos', stats:'Estadísticas', history:'Historial', reco:'Recomendaciones',
+      settings:'Ajustes', howTo:'Cómo usar la app', backup:'Guardar copia', restore:'Restaurar desde archivo',
+      clearData:'Borrar todos los datos' },
+    header:{ start:'▶ Empezar', stop:'⏹ Parar · {time}{suffix}', searching:'Buscándote...', myLocation:'Tu ubicación',
+      noGpsAccess:'No se concedió acceso al GPS', fullscreenTitle:'Pantalla completa', locateTitle:'Encontrarme',
+      peakHourBadge:'🚩 Hora punta', deliveryAvgLabel:'📦 Tiempo medio de entrega:', deliveryAvgDash:'—',
+      noActiveDeliveries:'No hay entregas activas', startToast:'▶ Empezar', startToastMulti:'▶ Empezar (pedidos en curso: {n})',
+      deliveredToast:'✅ Entregado en {time}', geoUnavailable:'La geolocalización no está disponible en este navegador',
+      menuAria:'Menú' },
+    arrival:{ waitingFor:'⏱ Esperando pedido:', cancel:'Cancelar', done:'✅ Pedido recogido' },
+    orders:{ title:'Mis pedidos', searchPlaceholder:'Buscar entre tus puntos...', sortByCount:'Por frecuencia ▾',
+      sortByEarned:'Por ganancias ▾', totalLabel:'total de recogidas: {n}', emptyNoSpots:'Aún no hay nada. Toca el mapa donde sueles recoger pedidos.',
+      emptyNoResults:'No se encontró nada para «{q}»', rowDelete:'Eliminar', rowAvgWait:'⏱ espera media aquí: {time}',
+      rowEarnedLabel:'💰 Ganado: {amount}' },
+    addSpot:{ title:'¿Cómo se llama el local?', namePlaceholder:'Por ejemplo: Mercadona, Carrefour', cancel:'Cancelar', add:'Añadir' },
+    choice:{ title:'¿Qué local es?', text:'Ya hay puntos cerca — elige dónde contar la recogida, o añade uno nuevo',
+      addNew:'+ Es otro local', cancel:'Cancelar', avgWait:'⏱ media: {time}', arriveBtn:'⏱ Marcar llegada' },
+    amount:{ titleAdd:'¿Cuánto te pagaron por este pedido?', titleEdit:'Corregir el importe total', saveAdd:'Añadir',
+      saveEdit:'Guardar', cancel:'Cancelar', placeholder:'Por ejemplo: 4.5', errAddPositive:'Introduce un importe mayor que cero.',
+      errEditNonNeg:'Introduce un importe de 0 o más.' },
+    rowAction:{ add:'Añadir recogida (+1)', remove:'Quitar recogida (−1)', editAmount:'Corregir el importe total', cancel:'Cancelar' },
+    onboard:{ title:'¿Cómo te pagan los pedidos?', sub:'Elige tu modelo — luego puedes cambiarlo en Ajustes',
+      hourlyTitle:'Por horas + bonus', hourlyDesc:'Te pagan por tiempo + bonus por velocidad y cantidad',
+      pieceTitle:'Por pedido (destajo)', pieceDesc:'Importe fijo por cada pedido + recargo por distancia' },
+    tour:{
+      menuTitle:'Menú principal', menuText:'Toca aquí en cualquier momento — se abrirá el menú con todas las secciones de la app. Ahora vamos a repasarlas.',
+      ordersIntroTitle:'Mis pedidos', ordersIntroText:'La lista de todos los puntos donde alguna vez recogiste pedidos. Ábrela y te muestro qué hay dentro.',
+      searchTitle:'Buscar un punto', searchText:'Cuando tengas muchos puntos, empieza a escribir el nombre del local — la lista se filtra al instante.',
+      sortTitle:'Orden de la lista', sortText:'Toca aquí para cambiar el orden: por frecuencia de recogidas (los puntos más usados arriba) o por ganancias.',
+      rowsTitle:'Lista de puntos', rowsText:'En cuanto marques el primer punto en el mapa, aparecerá aquí. Cada fila tiene a la izquierda un botón con la moneda (para añadir el importe del pedido) y un lápiz verde — el menú «+1 recogida / −1 recogida / corregir importe total». Tocar la fila te lleva directo a ese punto en el mapa.',
+      statsIntroTitle:'Estadísticas', statsIntroText:'Todo tu trabajo en números — ábrelo y te lo explico.',
+      statsBodyTitle:'Tus números', statsBodyText:'Arriba: cuántas recogidas tienes hoy, ayer, esta semana (de lunes a domingo) y en total. Abajo: un gráfico por día de la semana, el tiempo de espera en los puntos y las horas punta: a qué hora del día sueles tener más pedidos según todo tu historial.',
+      historyIntroTitle:'Historial de pedidos', historyIntroText:'El registro completo de cada recogida — ábrelo y te lo muestro.',
+      historyDateTitle:'Buscar por fecha', historyDateText:'Toca aquí para abrir el calendario y ver los pedidos de un día concreto.',
+      historyBodyTitle:'Registro completo', historyBodyText:'Abajo: la lista de todos los pedidos por día y hora: dónde recogiste, cuánto esperaste, y marcadas aparte las cancelaciones accidentales (−1) si tocaste el punto equivocado.',
+      recoIntroTitle:'Recomendaciones', recoIntroText:'Una sección aparte para el pago por pedido (destajo) — ábrela y te la muestro.',
+      recoBodyTitle:'Consejos sobre horarios', recoBodyText:'Aquí la app te sugiere en qué horas y días de la semana sueles tener más pedidos — útil para reservar turnos justo en esos momentos. Abajo están tus puntos más rentables.',
+      settingsIntroTitle:'Ajustes', settingsIntroText:'Aquí puedes configurarlo todo a tu gusto en cualquier momento — ábrelo y te lo explico por partes.',
+      payTypeTitle:'Tipo de pago', payTypeText:'Cambia entre pago por horas con bonus y pago por pedido — de esto depende qué secciones se ven en el menú.',
+      currencyTitle:'Moneda', currencyText:'Elige la moneda en la que te pagan — aparecerá enseguida en el botón de importe en «Mis pedidos».',
+      markerStyleTitle:'Estilo de los puntos en el mapa', markerStyleText:'Un círculo con número o un icono de mochila de repartidor — elige lo que te resulte más cómodo ver en el mapa mientras trabajas.',
+      appThemeTitle:'Apariencia de la app', appThemeText:'Tema claro u oscuro para toda la app — se cambia al instante.',
+      mapThemeTitle:'Apariencia del mapa', mapThemeText:'El tema del mapa se configura aparte del tema de la app — útil, por ejemplo, para dejar el mapa claro incluso de noche.',
+      langTitle:'Idioma de la app', langText:'Cambia el idioma de la interfaz cuando quieras — los cambios se aplican al instante, sin reiniciar.',
+      startStopTitle:'Empezar / Parar', startStopText:'Tócalo cuando salgas a recoger un pedido — se iniciará el cronómetro de entrega. Tócalo otra vez para pararlo y registrar el tiempo en las estadísticas.',
+      avgDeliveryTitle:'Tiempo medio de entrega', avgDeliveryText:'Aquí siempre ves cuánto tarda de media la entrega en todos tus pedidos — útil para calcular cuántos turnos puedes asumir.',
+      mapAddTitle:'Mapa: punto nuevo', mapAddText:'Toca una zona vacía del mapa donde recoges pedidos — se abrirá una ventana, escribe el nombre del local y guárdalo.',
+      mapBumpTitle:'Mapa: recogida de pedido (+1)', mapBumpText:'Un toque corto directamente sobre un punto ya existente en el mapa registra ahí otra recogida — sin ventanas extra. Si el punto no queda justo bajo tu dedo, se abrirá una lista de los cercanos — elige el correcto.',
+      mapWaitTitle:'Mapa: tiempo de espera', mapWaitText:'Y si mantienes el dedo sobre el mismo punto medio segundo sin soltar, el punto vibrará y se iniciará el cronómetro de espera. Cuando recibas el pedido, pulsa «✅ Pedido recogido» en la franja verde de abajo — y el tiempo medio de espera en ese punto se calculará solo.',
+      locateTitle:'Mi ubicación', locateText:'Pulsa aquí — el mapa te localizará por GPS y se acercará a tu posición actual. Útil para saber rápido dónde estás respecto a tus puntos marcados.',
+      fullscreenTitle:'Pantalla completa', fullscreenText:'Expande el mapa a toda la pantalla sin cabecera ni botones — útil para apuntar con más precisión antes de tocar un punto.',
+      zoomTitle:'Zoom del mapa', zoomText:'Más y menos aumentan y reducen el zoom. En el móvil lo mismo se hace pellizcando con dos dedos o con doble toque en el mapa.',
+      doneTitle:'¡Listo!', doneText:'Este es el recorrido completo de la app. Todo lo que te mostré siempre puedes volver a verlo desde este mismo menú (☰ → «Cómo usar la app»). ¡Buen trabajo! 🚀',
+      stepLabel:'Paso {i} de {n}', next:'Siguiente', finish:'Listo', skip:'Omitir'
+    },
+    stats:{ title:'Estadísticas', empty:'Aún no hay datos para las estadísticas. Marca recogidas — aquí aparecerán los números por día.',
+      cardToday:'hoy', cardYesterday:'ayer', cardWeek:'esta semana', cardTotal:'total',
+      longestWaitTitle:'Mayor tiempo de espera', waitEmptyTitle:'Tiempo de espera',
+      waitEmptyText:'Aún no hay datos. Pulsa "⏱ Llegué" en un pedido para empezar a medir.',
+      peakHoursTitle:'🕐 Horas punta', hourChartNoData:'Aún no hay datos de este periodo.',
+      hourChartPeakSummary:'Pico de actividad: {hours} ({count})', hourTrendTitle:'Cómo cambió el pico por día',
+      hourTrendPeakLabel:'pico a las {hours}', deletedSpot:'(punto eliminado)' },
+    reco:{ title:'Recomendaciones', intro:'Consejos basados en tus estadísticas: cuándo conviene más reservar turnos y dónde ganas más.',
+      bestHoursTitle:'🕐 Mejores horas para reservar turnos', bestHoursEmpty:'Aún hay pocos datos. Marca recogidas — aquí aparecerá un consejo sobre horarios.',
+      bestHoursText:'Según tu historial de recogidas, la mayoría de pedidos llegan a las: {hours}. Conviene reservar turnos justo en esas horas.',
+      bestDaysTitle:'📅 Mejores días de la semana', bestDaysText:'La mayoría de pedidos suelen caer en: {days}. Intenta planear tus turnos esos días.',
+      topSpotsTitle:'💰 Puntos más rentables', topSpotsEmpty:'Aún no hay datos de ganancias — añade los importes de tus pedidos en «Mis pedidos».' },
+    settings:{ title:'Ajustes', markerStyleLabel:'Cómo marcar los puntos en el mapa', markerCircle:'Círculo', markerBag:'Mochila de repartidor',
+      payTypeLabel:'Tipo de pago', payTypeHourlyOpt:'⏱ Por horas + bonus', payTypePieceOpt:'💰 Por pedido (destajo)',
+      currencyLabel:'Moneda', appThemeLabel:'Apariencia de la app', themeLight:'☀️ Claro', themeDark:'🌙 Oscuro',
+      mapThemeLabel:'Apariencia del mapa (independiente de la app)', done:'Listo', languageLabel:'Idioma de la app' },
+    history:{ title:'Historial de pedidos', desc:'La lista completa de tus pedidos por día y hora: dónde recogiste, cuánto esperaste y cuándo tocaste el punto equivocado por error (−1). Desplázate hacia abajo o busca un día concreto por fecha.',
+      dateFilterDefault:'📅 Buscar por fecha', emptyAll:'Aún no hay nada. Aquí aparecerá el historial de todos los +1 y −1 de tus puntos.',
+      emptyRange:'No hay registros en el periodo seleccionado.' },
+    calendar:{ today:'Hoy', hint:'Elige un día, o dos días para un rango entre ellos', reset:'Restablecer', apply:'Mostrar' },
+    alerts:{ confirmRestartTimer:'Ya hay un cronómetro activo para «{name}». ¿Empezar de nuevo para «{newName}»? El cronómetro anterior no se contará.',
+      spotDeletedDuringWait:'El punto «{name}» se eliminó mientras corría el cronómetro de espera ({time}) - este pedido no se contó.',
+      waitResult:'⏱️ Esperaste: {time}\n\nEspera media en «{name}»: {avg}',
+      confirmDeleteLastPickup:'Esta es la última recogida de este punto. ¿Eliminar el punto por completo?',
+      nothingToSave:'Aún no hay nada que guardar - todavía no hay datos.', noSpotsInFile:'No se encontró ningún punto en el archivo.',
+      confirmImportMode:'Se encontraron {n} puntos en el archivo.\nAceptar - añadir a los actuales ({current})\nCancelar - reemplazar los actuales por completo',
+      importDone:'¡Listo! Puntos restaurados.', importDoneDropped:'\n\n({n} registros dañados del historial fueron omitidos.)',
+      importFailed:'No se pudo leer el archivo - asegúrate de que sea un archivo de copia de seguridad de esta app.',
+      confirmResetAll:'¿Eliminar absolutamente todos los datos de la app: todos los puntos, recogidas, importes e historial? Esto no se puede deshacer.' },
+    units:{ min:'min', sec:'s' },
+    pickupWord:{ one:'recogida', few:'recogidas', many:'recogidas' },
+    months:{ nom:['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'],
+      gen:['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'],
+      shortGen:['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'] },
+    weekdaysMon:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],
+    weekdaysSun:['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+  },
+
+  en:{
+    drawer:{ menu:'Menu', orders:'My orders', stats:'Stats', history:'History', reco:'Recommendations',
+      settings:'Settings', howTo:'How to use', backup:'Save a backup', restore:'Restore from file',
+      clearData:'Clear all data' },
+    header:{ start:'▶ Start', stop:'⏹ Stop · {time}{suffix}', searching:'Locating you...', myLocation:'Your location',
+      noGpsAccess:'GPS access not granted', fullscreenTitle:'Fullscreen', locateTitle:'Find me',
+      peakHourBadge:'🚩 Peak hour', deliveryAvgLabel:'📦 Average delivery time:', deliveryAvgDash:'—',
+      noActiveDeliveries:'No active deliveries', startToast:'▶ Started', startToastMulti:'▶ Started (orders in progress: {n})',
+      deliveredToast:'✅ Delivered in {time}', geoUnavailable:'Geolocation is not available in this browser',
+      menuAria:'Menu' },
+    arrival:{ waitingFor:'⏱ Waiting on order:', cancel:'Cancel', done:'✅ Picked up order' },
+    orders:{ title:'My orders', searchPlaceholder:'Search your spots...', sortByCount:'By frequency ▾',
+      sortByEarned:'By earnings ▾', totalLabel:'total pickups: {n}', emptyNoSpots:"Nothing here yet. Tap the map where you usually pick up orders.",
+      emptyNoResults:'No results for "{q}"', rowDelete:'Delete', rowAvgWait:'⏱ average wait here: {time}',
+      rowEarnedLabel:'💰 Earned: {amount}' },
+    addSpot:{ title:'What is this place called?', namePlaceholder:'e.g. McDonald\'s, Subway', cancel:'Cancel', add:'Add' },
+    choice:{ title:'Which place is it?', text:'There are already spots nearby — pick one to count this pickup, or add a new one',
+      addNew:'+ This is a different place', cancel:'Cancel', avgWait:'⏱ average: {time}', arriveBtn:'⏱ Mark arrival' },
+    amount:{ titleAdd:'How much did you get paid for this order?', titleEdit:'Fix the total amount', saveAdd:'Add',
+      saveEdit:'Save', cancel:'Cancel', placeholder:'e.g. 4.5', errAddPositive:'Enter an amount greater than zero.',
+      errEditNonNeg:'Enter an amount of 0 or more.' },
+    rowAction:{ add:'Add pickup (+1)', remove:'Remove pickup (−1)', editAmount:'Fix the total amount', cancel:'Cancel' },
+    onboard:{ title:'How do you get paid for orders?', sub:'Pick your scheme — you can change it later in Settings',
+      hourlyTitle:'Hourly + bonus', hourlyDesc:'Paid by time + bonus for speed and volume',
+      pieceTitle:'Per-order (piece rate)', pieceDesc:'A fixed amount per order + a pickup fee' },
+    tour:{
+      menuTitle:'Main menu', menuText:'Tap here any time — it opens the menu with every section of the app. Let\'s go through each one now.',
+      ordersIntroTitle:'My orders', ordersIntroText:'The list of every spot where you\'ve ever picked up an order. Open it and I\'ll show you what\'s inside.',
+      searchTitle:'Search for a spot', searchText:'Once you have a lot of spots, start typing a place name — the list filters instantly.',
+      sortTitle:'List sorting', sortText:'Tap to switch the order: by pickup frequency (busiest spots on top) or by earnings.',
+      rowsTitle:'List of spots', rowsText:'As soon as you mark your first spot on the map, it shows up here. Each row has a currency button on the left (to add the order amount) and a green pencil — the "+1 pickup / −1 pickup / fix total amount" menu. Tapping the row itself jumps straight to that spot on the map.',
+      statsIntroTitle:'Stats', statsIntroText:'All your work in numbers — open it and I\'ll walk you through it.',
+      statsBodyTitle:'Your numbers', statsBodyText:'At the top: how many pickups today, yesterday, this week (Monday to Sunday) and overall. Below: a chart by day of the week, wait times at your spots, and peak hours — what time of day you usually get the most orders, based on your whole history.',
+      historyIntroTitle:'Order history', historyIntroText:'A full log of every pickup — open it and I\'ll show you.',
+      historyDateTitle:'Search by date', historyDateText:'Tap here to open the calendar and view orders for one specific day.',
+      historyBodyTitle:'Full log', historyBodyText:'Below: a list of every order by day and time — where you picked it up, how long you waited, with accidental cancellations (−1) marked separately if you tapped the wrong spot.',
+      recoIntroTitle:'Recommendations', recoIntroText:'A separate section for per-order pay — open it and I\'ll show you.',
+      recoBodyTitle:'Slot tips', recoBodyText:'The app figures out which hours and days of the week usually bring you the most orders — handy for booking slots at just the right time. Below that are your most profitable spots.',
+      settingsIntroTitle:'Settings', settingsIntroText:'Everything here can be adjusted to your liking any time — open it and I\'ll go through it step by step.',
+      payTypeTitle:'Pay type', payTypeText:'Switch between hourly-plus-bonus and per-order pay — this controls which sections show up in the menu.',
+      currencyTitle:'Currency', currencyText:'Pick the currency you get paid in — it shows up right away on the amount button in "My orders".',
+      markerStyleTitle:'Spot markers on the map', markerStyleText:'A numbered circle or a courier-bag icon — pick whichever is easier to see on the map while you work.',
+      appThemeTitle:'App appearance', appThemeText:'Light or dark theme for the whole app — switches instantly.',
+      mapThemeTitle:'Map appearance', mapThemeText:'The map theme is set separately from the app theme — handy if you want to keep the map light even at night.',
+      langTitle:'App language', langText:'Switch the interface language any time — changes apply instantly, no restart needed.',
+      startStopTitle:'Start / Stop', startStopText:'Tap it when you head off to pick up an order — the delivery timer starts. Tap again to stop it and log the time to your stats.',
+      avgDeliveryTitle:'Average delivery time', avgDeliveryText:'This always shows how long your deliveries take on average — handy for estimating how many slots you can fit in.',
+      mapAddTitle:'Map: a new spot', mapAddText:'Tap an empty spot on the map where you pick up orders — a window opens, type the place\'s name in it and save.',
+      mapBumpTitle:'Map: picking up an order (+1)', mapBumpText:'A quick tap right on an existing spot on the map counts another pickup there instantly — no extra windows. If the spot isn\'t quite under your finger, a list of nearby ones opens — pick the right one.',
+      mapWaitTitle:'Map: wait time', mapWaitText:'And if you hold your finger on the same spot for about half a second without lifting it, the spot will vibrate and a wait timer starts. Once you get the order, tap "✅ Picked up order" on the green bar at the bottom — and the average wait time for that spot gets calculated automatically.',
+      locateTitle:'My location', locateText:'Tap it — the map finds you via GPS and zooms to your current position. Handy for quickly seeing where you are relative to your marked spots.',
+      fullscreenTitle:'Fullscreen', fullscreenText:'Expands the map to fill the whole screen with no header or buttons — handy for aiming more precisely at a spot before tapping.',
+      zoomTitle:'Map zoom', zoomText:'Plus and minus zoom in and out. On a phone, the same thing works with a two-finger pinch or a double-tap on the map.',
+      doneTitle:'All done!', doneText:'That\'s the full tour of the app. Everything shown here can always be found again in this same menu (☰ → "How to use"). Happy riding! 🚀',
+      stepLabel:'Step {i} of {n}', next:'Next', finish:'Done', skip:'Skip'
+    },
+    stats:{ title:'Stats', empty:'No stats yet. Log pickups and daily numbers will show up here.',
+      cardToday:'today', cardYesterday:'yesterday', cardWeek:'this week', cardTotal:'total',
+      longestWaitTitle:'Longest waits', waitEmptyTitle:'Wait time',
+      waitEmptyText:'No data yet. Tap "⏱ Arrived" on an order to start measuring.',
+      peakHoursTitle:'🕐 Peak hours', hourChartNoData:'No data for this period yet.',
+      hourChartPeakSummary:'Peak activity: {hours} ({count})', hourTrendTitle:'How the peak changed by day',
+      hourTrendPeakLabel:'peak at {hours}', deletedSpot:'(spot deleted)' },
+    reco:{ title:'Recommendations', intro:'Tips based on your stats: when it pays off to book slots and where you earn the most.',
+      bestHoursTitle:'🕐 Best hours for slots', bestHoursEmpty:'Not enough data yet. Log pickups and an hourly tip will show up here.',
+      bestHoursText:'Based on your pickup history, orders most often come in at: {hours}. It\'s worth booking slots for that time.',
+      bestDaysTitle:'📅 Best days of the week', bestDaysText:'Most orders usually come in on: {days}. Try to schedule your shifts on these days.',
+      topSpotsTitle:'💰 Most profitable spots', topSpotsEmpty:'No earnings data yet — add order amounts in "My orders".' },
+    settings:{ title:'Settings', markerStyleLabel:'How to mark spots on the map', markerCircle:'Circle', markerBag:'Courier bag',
+      payTypeLabel:'Pay type', payTypeHourlyOpt:'⏱ Hourly + bonus', payTypePieceOpt:'💰 Per-order (piece rate)',
+      currencyLabel:'Currency', appThemeLabel:'App appearance', themeLight:'☀️ Light', themeDark:'🌙 Dark',
+      mapThemeLabel:'Map appearance (independent of the app)', done:'Done', languageLabel:'App language' },
+    history:{ title:'Order history', desc:'The full list of your orders by day and time: where you picked up, how long you waited, and when you accidentally tapped the wrong spot (−1). Scroll down or search for a specific day.',
+      dateFilterDefault:'📅 Search by date', emptyAll:'Nothing here yet. The history of every +1 and −1 on your spots will show up here.',
+      emptyRange:'No records for the selected period.' },
+    calendar:{ today:'Today', hint:'Pick one day, or two days for a range between them', reset:'Reset', apply:'Show' },
+    alerts:{ confirmRestartTimer:'A timer is already running for "{name}". Start over for "{newName}"? The previous timer won\'t be counted.',
+      spotDeletedDuringWait:'The spot "{name}" was deleted while the wait timer was running ({time}) - this order was not counted.',
+      waitResult:'⏱️ Waited: {time}\n\nAverage wait at "{name}": {avg}',
+      confirmDeleteLastPickup:'This is the last pickup at this spot. Delete the spot entirely?',
+      nothingToSave:'Nothing to save yet - there\'s no data.', noSpotsInFile:'No spots found in the file.',
+      confirmImportMode:'Found {n} spots in the file.\nOK - add to your current ones ({current})\nCancel - replace your current ones entirely',
+      importDone:'Done! Spots restored.', importDoneDropped:'\n\n({n} corrupted records from the history were skipped.)',
+      importFailed:'Couldn\'t read the file - make sure it\'s a backup file from this app.',
+      confirmResetAll:'Delete absolutely all app data: all spots, pickups, amounts and history? This cannot be undone.' },
+    units:{ min:'min', sec:'sec' },
+    pickupWord:{ one:'pickup', few:'pickups', many:'pickups' },
+    months:{ nom:['January','February','March','April','May','June','July','August','September','October','November','December'],
+      gen:['January','February','March','April','May','June','July','August','September','October','November','December'],
+      shortGen:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] },
+    weekdaysMon:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    weekdaysSun:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+  }
+};
+
+let currentLang = detectInitialLang();
+
+function t(path, vars){
+  const parts = path.split('.');
+  let node = TRANSLATIONS[currentLang];
+  for(const p of parts){ node = node && node[p]; }
+  if(node == null){
+    // откат на русский, если в текущем языке почему-то нет ключа
+    node = TRANSLATIONS.ru;
+    for(const p of parts){ node = node && node[p]; }
+  }
+  if(typeof node !== 'string') return '';
+  if(!vars) return node;
+  return node.replace(/\{(\w+)\}/g, (m, key) => (vars[key] != null ? vars[key] : m));
+}
+
+function pluralSlavic(n, one, few, many){
+  const mod10 = n % 10, mod100 = n % 100;
+  if(mod10 === 1 && mod100 !== 11) return one;
+  if([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) return many === few ? few : few;
+  return many;
+}
+
+// универсальное склонение слова "забор/pickup" под текущий язык
+function formatPickups(n){
+  const w = TRANSLATIONS[currentLang].pickupWord || TRANSLATIONS.ru.pickupWord;
+  if(currentLang === 'ru' || currentLang === 'uk'){
+    const mod10 = n % 10, mod100 = n % 100;
+    let form;
+    if(mod10 === 1 && mod100 !== 11) form = w.one;
+    else if([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) form = w.few;
+    else form = w.many;
+    return `${n} ${form}`;
+  }
+  return `${n} ${n === 1 ? w.one : w.many}`;
+}
+
+function pad2(n){ return String(n).padStart(2, '0'); }
+function formatTimeHM(d){ return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+function formatDayMonthShort(d){
+  const months = (TRANSLATIONS[currentLang].months || TRANSLATIONS.ru.months).shortGen;
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+function formatDayMonthLong(d){
+  const months = (TRANSLATIONS[currentLang].months || TRANSLATIONS.ru.months).gen;
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+function formatMonthYear(d){
+  const months = (TRANSLATIONS[currentLang].months || TRANSLATIONS.ru.months).nom;
+  const name = months[d.getMonth()];
+  const capped = currentLang === 'es' || currentLang === 'en' ? (name.charAt(0).toUpperCase() + name.slice(1)) : name;
+  return `${capped} ${d.getFullYear()}`;
+}
+function weekdaysMon(){ return (TRANSLATIONS[currentLang].weekdaysMon || TRANSLATIONS.ru.weekdaysMon); }
+function weekdaysSun(){ return (TRANSLATIONS[currentLang].weekdaysSun || TRANSLATIONS.ru.weekdaysSun); }
+
+// применяем язык ко всей статической разметке (data-i18n / data-i18n-ph) и перерисовываем динамические экраны
+function applyStaticI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph')));
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+    el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
+  });
+  const calRow = document.getElementById('calWeekdaysRow');
+  if(calRow){
+    const wd = weekdaysMon();
+    calRow.querySelectorAll('span').forEach((el, i) => { el.textContent = wd[i] || ''; });
+  }
+  document.documentElement.setAttribute('lang', currentLang);
+}
+
+function refreshOpenScreens(){
+  // перерисовываем динамически сгенерированный контент открытых/уже отрисованных экранов,
+  // чтобы смена языка применялась мгновенно без перезагрузки
+  try{ renderAll(); }catch(e){}
+  try{ if(document.getElementById('statsModalBg')?.classList.contains('show')) renderStats(); }catch(e){}
+  try{ if(document.getElementById('historyModalBg')?.classList.contains('show')) renderHistory(); }catch(e){}
+  try{ if(document.getElementById('recoModalBg')?.classList.contains('show')) renderRecommendations(); }catch(e){}
+  try{ if(document.getElementById('calendarModalBg')?.classList.contains('show')) renderCalendar(); }catch(e){}
+  try{
+    const sortLabelEl = document.getElementById('sortModeLabel');
+    if(sortLabelEl) sortLabelEl.textContent = (isPieceRate() && sortMode === 'earned') ? t('orders.sortByEarned') : t('orders.sortByCount');
+  }catch(e){}
+  try{ updateQuickButton(); }catch(e){}
+  try{ renderDeliveryAvg(); }catch(e){}
+  try{
+    if(document.getElementById('historyDateFilterBar')){
+      const lbl = document.getElementById('historyDateFilterLabel');
+      if(lbl && historyRangeStart == null) lbl.textContent = t('history.dateFilterDefault');
+    }
+  }catch(e){}
+  try{
+    if(document.getElementById('tourOverlay')?.classList.contains('show')){
+      positionTourStep(tourSteps[tourIndex], tourIndex);
+    }
+  }catch(e){}
+}
+
+function updateLangSwitcherUI(){
+  document.querySelectorAll('#languageOptions .themeOption').forEach(el => {
+    el.classList.toggle('active', el.dataset.lang === currentLang);
+  });
+}
+
+function chooseLanguage(lang){
+  if(!SUPPORTED_LANGS.includes(lang)) return;
+  currentLang = lang;
+  try{ localStorage.setItem(LANG_KEY, lang); }catch(e){}
+  applyStaticI18n();
+  updateLangSwitcherUI();
+  refreshOpenScreens();
+}
+// ==================== /I18N ========================
+
 const STORAGE_KEY = 'pickup-spots-geo';
 const VISITS_KEY = 'pickup-visits-log'; // журнал каждого отдельного забора с датой - для статистики по дням
 const MAP_THEME_KEY = 'pickup-map-theme';
@@ -1232,32 +1758,32 @@ function renderAll(){
 
   const sortLabelEl = document.getElementById('sortModeLabel');
   if(sortLabelEl){
-    sortLabelEl.textContent = effectiveSortMode === 'earned' ? 'По сумме ▾' : 'По частоте ▾';
+    sortLabelEl.textContent = effectiveSortMode === 'earned' ? t('orders.sortByEarned') : t('orders.sortByCount');
     sortLabelEl.style.cursor = earningsOn ? 'pointer' : 'default';
     sortLabelEl.style.textDecoration = earningsOn ? 'underline dotted' : 'none';
   }
 
   if(sorted.length === 0){
-    rowsEl.innerHTML = '<div class="empty">Пока пусто. Тапни по карте, где обычно забираешь заказы.</div>';
+    rowsEl.innerHTML = `<div class="empty">${t('orders.emptyNoSpots')}</div>`;
   } else if(filtered.length === 0){
-    rowsEl.innerHTML = '<div class="empty">Ничего не найдено по запросу «' + escapeHtml(query) + '»</div>';
+    rowsEl.innerHTML = `<div class="empty">${t('orders.emptyNoResults', { q: escapeHtml(query) })}</div>`;
   } else {
     rowsEl.innerHTML = filtered.map(s => {
       const avgWait = (s.waitCount > 0) ? formatDuration(Math.round(s.waitTotalSec / s.waitCount)) : null;
       const earned = s.earned || 0;
       return `
       <div class="rowSwipeWrap" data-id="${s.id}">
-        <div class="rowDeleteAction" data-id="${s.id}">Удалить</div>
+        <div class="rowDeleteAction" data-id="${s.id}">${t('orders.rowDelete')}</div>
         <div class="row">
           <div class="rowTop">
             <div class="dot" style="background:${colorForCount(s.count, max)}"></div>
             <div class="name">${escapeHtml(s.name)}${s.id === topEarnerId ? ' 🏆' : ''}</div>
             <div class="n">${formatZaboros(s.count)}</div>
           </div>
-          ${avgWait ? `<div class="rowWait">⏱ в среднем ждёшь тут: ${avgWait}</div>` : ''}
+          ${avgWait ? `<div class="rowWait">${t('orders.rowAvgWait', { time: avgWait })}</div>` : ''}
           ${earningsOn ? `
           <div class="rowEarned">
-            <span>💰 Заработано: ${earned > 0 ? formatMoney(earned) : '—'}</span>
+            <span>${t('orders.rowEarnedLabel', { amount: earned > 0 ? formatMoney(earned) : t('header.deliveryAvgDash') })}</span>
           </div>` : ''}
           <div class="rowBtns">
             ${earningsOn ? `<button class="rowEarnedBtn" onclick="openAmountModal('${s.id}')">${escapeHtml(getCurrency())}</button>` : ''}
@@ -1271,7 +1797,7 @@ function renderAll(){
     attachAllSwipes();
   }
   const total = spots.reduce((a,s) => a + s.count, 0);
-  document.getElementById('totalCount').textContent = total ? `всего заборов: ${total}` : '';
+  document.getElementById('totalCount').textContent = total ? t('orders.totalLabel', { n: total }) : '';
 }
 
 function isPieceRate(){
@@ -1306,6 +1832,7 @@ function openSettingsModal(){
   document.querySelectorAll('#currencyOptions .themeOption').forEach(el => {
     el.classList.toggle('active', el.dataset.currency === currentCurrency);
   });
+  updateLangSwitcherUI();
   document.getElementById('settingsModalBg').classList.add('show');
 }
 function closeSettingsModal(){
@@ -1386,68 +1913,68 @@ function buildTourSteps(){
 
   steps.push({
     sel: '#menuBtn',
-    title: 'Главное меню',
-    text: 'Нажимай сюда в любой момент — откроется меню со всеми разделами приложения. Сейчас пройдёмся по каждому из них.',
+    title: t('tour.menuTitle'),
+    text: t('tour.menuText'),
     before: tourShowNothing
   });
 
   // --- Мои заказы ---
   steps.push({
     sel: '#drawerItemOrders',
-    title: 'Мои заказы',
-    text: 'Список всех точек, где ты когда-либо забирал заказы. Открой — покажу, что там внутри.',
+    title: t('tour.ordersIntroTitle'),
+    text: t('tour.ordersIntroText'),
     before: tourShowMenu
   });
   steps.push({
     sel: '#searchInput',
-    title: 'Поиск точки',
-    text: 'Когда точек накопится много, начинай печатать название заведения — список отфильтруется на лету.',
+    title: t('tour.searchTitle'),
+    text: t('tour.searchText'),
     before: tourShowOrders
   });
   steps.push({
     sel: '#sortModeLabel',
-    title: 'Сортировка списка',
-    text: 'Нажми, чтобы переключить порядок: по частоте заборов (самые «ходовые» точки сверху) или по алфавиту.',
+    title: t('tour.sortTitle'),
+    text: t('tour.sortText'),
     before: tourShowOrders
   });
   steps.push({
     sel: '#rows',
-    title: 'Список точек',
-    text: 'Как только отметишь первую точку на карте, она появится здесь. У каждой строки слева — кнопка с валютой (добавить сумму за заказ) и зелёный карандаш — меню «+1 забор / −1 забор / исправить итоговую сумму». Тап по самой строке переносит на карту прямо к этой точке.',
+    title: t('tour.rowsTitle'),
+    text: t('tour.rowsText'),
     before: tourShowOrders
   });
 
   // --- Статистика ---
   steps.push({
     sel: '#drawerItemStats',
-    title: 'Статистика',
-    text: 'Вся твоя работа в цифрах — открой, покажу подробнее.',
+    title: t('tour.statsIntroTitle'),
+    text: t('tour.statsIntroText'),
     before: tourShowMenu
   });
   steps.push({
     sel: '#statsModalScroll',
-    title: 'Цифры по работе',
-    text: 'Сверху — сколько заборов сегодня, вчера, на этой неделе (считается с понедельника по воскресенье) и всего. Ниже — график по дням недели, время ожидания на точках и часы пик: в какое время суток у тебя обычно больше всего заказов за всю историю.',
+    title: t('tour.statsBodyTitle'),
+    text: t('tour.statsBodyText'),
     before: tourShowStats
   });
 
   // --- История заказов ---
   steps.push({
     sel: '#drawerItemHistory',
-    title: 'История заказов',
-    text: 'Полная хроника каждого забора — открой, покажу.',
+    title: t('tour.historyIntroTitle'),
+    text: t('tour.historyIntroText'),
     before: tourShowMenu
   });
   steps.push({
     sel: '#historyDateFilterBar',
-    title: 'Поиск по дате',
-    text: 'Нажми, чтобы открыть календарь и посмотреть заказы только за конкретный день.',
+    title: t('tour.historyDateTitle'),
+    text: t('tour.historyDateText'),
     before: tourShowHistory
   });
   steps.push({
     sel: '#historyModalScroll',
-    title: 'Полная хроника',
-    text: 'Ниже — список всех заказов по дням и времени: где забрал, сколько ждал, и отдельно отмечены случайные отмены (−1), если промахнулся мимо нужной точки.',
+    title: t('tour.historyBodyTitle'),
+    text: t('tour.historyBodyText'),
     before: tourShowHistory
   });
 
@@ -1456,14 +1983,14 @@ function buildTourSteps(){
   if(reco && reco.style.display !== 'none'){
     steps.push({
       sel: '#recoDrawerItem',
-      title: 'Рекомендации',
-      text: 'Отдельный раздел для сдельной оплаты — открой, покажу.',
+      title: t('tour.recoIntroTitle'),
+      text: t('tour.recoIntroText'),
       before: tourShowMenu
     });
     steps.push({
       sel: '#recoModalScroll',
-      title: 'Советы по слотам',
-      text: 'Здесь приложение само подсказывает, в какие часы и дни недели у тебя обычно больше всего заказов — удобно бронировать слоты именно на это время. Ниже — твои самые прибыльные точки.',
+      title: t('tour.recoBodyTitle'),
+      text: t('tour.recoBodyText'),
       before: tourShowReco
     });
   }
@@ -1471,97 +1998,103 @@ function buildTourSteps(){
   // --- Настройки ---
   steps.push({
     sel: '#drawerItemSettings',
-    title: 'Настройки',
-    text: 'Здесь всё можно перенастроить под себя в любой момент — открой, покажу по порядку.',
+    title: t('tour.settingsIntroTitle'),
+    text: t('tour.settingsIntroText'),
     before: tourShowMenu
   });
   steps.push({
+    sel: '#languageOptions',
+    title: t('tour.langTitle'),
+    text: t('tour.langText'),
+    before: tourShowSettings
+  });
+  steps.push({
     sel: '#payTypeOptions',
-    title: 'Тип оплаты',
-    text: 'Переключай между почасовой с премией и сдельной за заказ — от этого зависит, какие разделы видны в меню.',
+    title: t('tour.payTypeTitle'),
+    text: t('tour.payTypeText'),
     before: tourShowSettings
   });
   steps.push({
     sel: '#currencyOptions',
-    title: 'Валюта',
-    text: 'Выбери валюту, в которой тебе платят — она сразу появится на кнопке суммы в разделе «Мои заказы».',
+    title: t('tour.currencyTitle'),
+    text: t('tour.currencyText'),
     before: tourShowSettings
   });
   steps.push({
     sel: '#markerStyleOptions',
-    title: 'Вид точек на карте',
-    text: 'Кружок с цифрой или значок сумки курьера — выбери, что удобнее видеть на карте во время работы.',
+    title: t('tour.markerStyleTitle'),
+    text: t('tour.markerStyleText'),
     before: tourShowSettings
   });
   steps.push({
     sel: '#appThemeOptions',
-    title: 'Оформление приложения',
-    text: 'Светлая или тёмная тема для всего приложения — переключается мгновенно.',
+    title: t('tour.appThemeTitle'),
+    text: t('tour.appThemeText'),
     before: tourShowSettings
   });
   steps.push({
     sel: '#mapThemeOptions',
-    title: 'Оформление карты',
-    text: 'А тема самой карты настраивается отдельно от темы приложения — удобно, например, оставить карту светлой даже ночью.',
+    title: t('tour.mapThemeTitle'),
+    text: t('tour.mapThemeText'),
     before: tourShowSettings
   });
 
   // --- Главный экран ---
   steps.push({
     sel: '#quickToggleBtn',
-    title: 'Старт / Стоп',
-    text: 'Нажимай, когда едешь забирать заказ — запустится таймер доставки. Повторный тап его остановит и запишет время в статистику.',
+    title: t('tour.startStopTitle'),
+    text: t('tour.startStopText'),
     before: tourShowNothing
   });
   steps.push({
     sel: '#deliveryAvgBar',
-    title: 'Среднее время доставки',
-    text: 'Тут всегда видно, сколько в среднем занимает доставка по всем твоим заказам — удобно прикидывать, сколько слотов успеешь взять.',
+    title: t('tour.avgDeliveryTitle'),
+    text: t('tour.avgDeliveryText'),
     before: tourShowNothing
   });
 
   // --- Карта, подробно по каждому действию (можно реально попробовать прямо во время тура) ---
   steps.push({
     sel: '#mapOuter',
-    title: 'Карта: новая точка',
-    text: 'Тапни по пустому месту карты там, где забираешь заказ, — откроется окно, впиши туда название заведения и сохрани.',
+    title: t('tour.mapAddTitle'),
+    text: t('tour.mapAddText'),
     before: tourShowNothing
   });
   steps.push({
     sel: '#mapOuter',
-    title: 'Карта: забор заказа (+1)',
-    text: 'Короткий тап прямо по уже существующей точке на карте сразу засчитывает туда ещё один забор — никаких доп. окон. Если точка не совсем под пальцем, откроется список рядом стоящих — выбери нужную.',
+    title: t('tour.mapBumpTitle'),
+    text: t('tour.mapBumpText'),
     before: tourShowNothing
   });
   steps.push({
     sel: '#mapOuter',
-    title: 'Карта: время ожидания',
-    text: 'А если на той же точке подержать палец примерно полсекунды не отпуская — точка завибрирует, и запустится отсчёт времени ожидания. Когда получишь заказ, нажми «✅ Забрал заказ» на зелёной полоске внизу экрана — и среднее время ожидания на этой точке посчитается само.',
+    title: t('tour.mapWaitTitle'),
+    text: t('tour.mapWaitText'),
     before: tourShowNothing
   });
   steps.push({
     sel: '#locateBtn',
-    title: 'Моё местоположение',
-    text: 'Нажми — карта сама найдёт тебя по GPS и приблизится к твоей текущей точке. Полезно, когда нужно быстро понять, где ты сейчас относительно отмеченных точек.',
+    title: t('tour.locateTitle'),
+    text: t('tour.locateText'),
     before: tourShowNothing
   });
   steps.push({
     sel: '#fullscreenBtn',
-    title: 'Полный экран',
-    text: 'Разворачивает карту на весь экран без шапки и кнопок — удобно, когда нужно точнее прицелиться в нужную точку перед тапом.',
+    title: t('tour.fullscreenTitle'),
+    text: t('tour.fullscreenText'),
     before: tourShowNothing
   });
   steps.push({
     selOptions: ['.leaflet-control-zoom', '#mapOuter'],
-    title: 'Масштаб карты',
-    text: 'Плюс и минус увеличивают и уменьшают масштаб. На телефоне то же самое делает щипок двумя пальцами или двойной тап по карте.',
+    title: t('tour.zoomTitle'),
+    text: t('tour.zoomText'),
     before: tourShowNothing
   });
 
   steps.push({
     sel: null,
-    title: 'Готово!',
-    text: 'Это полный обзор приложения. Всё, что показали, всегда можно найти заново в этом же меню (☰ → «Как пользоваться»). Удачной работы! 🚀',
+    title: t('tour.doneTitle'),
+    text: t('tour.doneText'),
     before: tourShowNothing
   });
 
@@ -1652,8 +2185,8 @@ function positionTourStep(step, i){
 
   titleEl.textContent = step.title;
   textEl.textContent = step.text;
-  stepLabel.textContent = `Шаг ${i + 1} из ${tourSteps.length}`;
-  nextBtn.textContent = (i === tourSteps.length - 1) ? 'Готово' : 'Далее';
+  stepLabel.textContent = t('tour.stepLabel', { i: i + 1, n: tourSteps.length });
+  nextBtn.textContent = (i === tourSteps.length - 1) ? t('tour.finish') : t('tour.next');
 
   const target = findTourTarget(step);
   const tooltipWidth = Math.min(280, window.innerWidth - 32);
@@ -1718,18 +2251,18 @@ function openRowActionMenu(spotId){
   opts.innerHTML = `
     <div class="drawerItem" onclick="rowActionBump()">
       <span class="drawerIcon">➕</span>
-      <span class="drawerLabel">Добавить забор (+1)</span>
+      <span class="drawerLabel">${t('rowAction.add')}</span>
       <span class="drawerChevron">›</span>
     </div>
     <div class="drawerItem" onclick="rowActionUnbump()">
       <span class="drawerIcon">➖</span>
-      <span class="drawerLabel">Убрать забор (−1)</span>
+      <span class="drawerLabel">${t('rowAction.remove')}</span>
       <span class="drawerChevron">›</span>
     </div>
     ${earningsOn ? `
     <div class="drawerItem" onclick="rowActionEditAmount()">
       <span class="drawerIcon">✎</span>
-      <span class="drawerLabel">Исправить итоговую сумму</span>
+      <span class="drawerLabel">${t('rowAction.editAmount')}</span>
       <span class="drawerChevron">›</span>
     </div>` : ''}
   `;
@@ -1765,12 +2298,12 @@ function openAmountModal(spotId, mode){
   const saveBtn = document.getElementById('amountSaveBtn');
   const input = document.getElementById('amountInput');
   if(amountMode === 'edit'){
-    titleEl.textContent = 'Исправить итоговую сумму';
-    saveBtn.textContent = 'Сохранить';
+    titleEl.textContent = t('amount.titleEdit');
+    saveBtn.textContent = t('amount.saveEdit');
     input.value = s.earned ? s.earned : '';
   } else {
-    titleEl.textContent = 'Сколько заплатили за этот заказ?';
-    saveBtn.textContent = 'Добавить';
+    titleEl.textContent = t('amount.titleAdd');
+    saveBtn.textContent = t('amount.saveAdd');
     input.value = '';
   }
   document.getElementById('amountModalBg').classList.add('show');
@@ -1786,7 +2319,7 @@ function saveAmount(){
   const amount = parseFloat(raw);
   const isEdit = amountMode === 'edit';
   if(!pendingAmountSpotId || isNaN(amount) || amount < 0 || (!isEdit && amount === 0)){
-    alert(isEdit ? 'Введи сумму 0 или больше.' : 'Введи сумму больше нуля.');
+    alert(isEdit ? t('amount.errEditNonNeg') : t('amount.errAddPositive'));
     return;
   }
   const s = spots.find(sp => sp.id === pendingAmountSpotId);
@@ -1889,20 +2422,20 @@ function handleQuickToggle(){
 function quickOrderReceived(){
   startNewRoute();
   const n = routeActive.length;
-  showToast(n > 1 ? `▶ Старт (заказов в работе: ${n})` : '▶ Старт');
+  showToast(n > 1 ? t('header.startToastMulti', { n }) : t('header.startToast'));
   updateQuickButton();
 }
 
 function quickArrived(){
   if(routeActive.length === 0){
-    showToast('Нет активных доставок');
+    showToast(t('header.noActiveDeliveries'));
     return;
   }
   // закрываем самый старый из активных (тот, что приняли раньше всех)
   const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
   const durationSec = Math.max(1, Math.floor((Date.now() - oldest.startTs) / 1000));
   markRouteArrived(oldest.id);
-  showToast(`✅ Доставлено за ${formatDuration(durationSec)}`);
+  showToast(t('header.deliveredToast', { time: formatDuration(durationSec) }));
   updateQuickButton();
   renderDeliveryAvg();
 }
@@ -1912,13 +2445,13 @@ function updateQuickButton(){
   if(!btn) return;
   if(routeActive.length === 0){
     btn.classList.remove('active');
-    btn.textContent = '▶ Старт';
+    btn.textContent = t('header.start');
   } else {
     btn.classList.add('active');
     const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
     const elapsed = Math.floor((Date.now() - oldest.startTs) / 1000);
     const suffix = routeActive.length > 1 ? ` (+${routeActive.length - 1})` : '';
-    btn.textContent = `⏹ Стоп · ${formatTimer(elapsed)}${suffix}`;
+    btn.textContent = t('header.stop', { time: formatTimer(elapsed), suffix });
   }
 }
 
@@ -1927,7 +2460,7 @@ function renderDeliveryAvg(){
   const el = document.getElementById('deliveryAvgValue');
   if(!el) return;
   if(routeLog.length === 0){
-    el.textContent = '—';
+    el.textContent = t('header.deliveryAvgDash');
     return;
   }
   const avgSec = Math.round(routeLog.reduce((a, r) => a + r.durationSec, 0) / routeLog.length);
@@ -2010,7 +2543,7 @@ function calendarReset(){
   historyRangeEnd = null;
   calPickStart = null;
   calPickEnd = null;
-  document.getElementById('historyDateFilterLabel').textContent = '📅 Поиск по дате';
+  document.getElementById('historyDateFilterLabel').textContent = t('history.dateFilterDefault');
   closeCalendarModal();
   renderHistory();
 }
@@ -2020,9 +2553,9 @@ function calendarApply(){
   historyRangeStart = startOfDay(calPickStart);
   historyRangeEnd = endOfDay(calPickEnd != null ? calPickEnd : calPickStart);
 
-  const startLabel = new Date(historyRangeStart).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  const startLabel = formatDayMonthShort(new Date(historyRangeStart));
   if(calPickEnd != null && startOfDay(calPickEnd) !== startOfDay(calPickStart)){
-    const endLabel = new Date(historyRangeEnd).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    const endLabel = formatDayMonthShort(new Date(historyRangeEnd));
     document.getElementById('historyDateFilterLabel').textContent = `📅 ${startLabel} — ${endLabel}`;
   } else {
     document.getElementById('historyDateFilterLabel').textContent = `📅 ${startLabel}`;
@@ -2032,7 +2565,7 @@ function calendarApply(){
 }
 
 function renderCalendar(){
-  const monthLabel = calViewDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+  const monthLabel = formatMonthYear(calViewDate);
   document.getElementById('calMonthLabel').textContent = monthLabel;
 
   const year = calViewDate.getFullYear();
@@ -2113,7 +2646,7 @@ function closeHistoryModal(){
 function renderHistory(){
   const body = document.getElementById('historyBody');
   if(visitsLog.length === 0){
-    body.innerHTML = '<div class="statsEmpty">Пока пусто. Здесь появится история всех +1 и −1 по точкам.</div>';
+    body.innerHTML = `<div class="statsEmpty">${t('history.emptyAll')}</div>`;
     return;
   }
 
@@ -2126,7 +2659,7 @@ function renderHistory(){
   const rangedLog = visitsLog.filter(inRange);
 
   if(rangedLog.length === 0){
-    body.innerHTML = '<div class="statsEmpty">За выбранный период записей нет.</div>';
+    body.innerHTML = `<div class="statsEmpty">${t('history.emptyRange')}</div>`;
     return;
   }
 
@@ -2137,7 +2670,7 @@ function renderHistory(){
   // считаем чистое число заборов за каждый день (добавления минус отмены) в пределах выбранного периода
   const dayNetCounts = {};
   rangedLog.forEach(v => {
-    const label = new Date(v.ts).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    const label = formatDayMonthLong(new Date(v.ts));
     dayNetCounts[label] = (dayNetCounts[label] || 0) + (v.type === 'remove' ? -1 : 1);
   });
 
@@ -2145,15 +2678,15 @@ function renderHistory(){
   let html = '';
   sorted.forEach(v => {
     const d = new Date(v.ts);
-    const dayLabel = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    const dayLabel = formatDayMonthLong(d);
     if(dayLabel !== lastDayLabel){
       const dayCount = Math.max(0, dayNetCounts[dayLabel] || 0);
       html += `<div class="historyDayHeader"><span>${escapeHtml(dayLabel)}</span><span class="historyDayCount">${formatZaboros(dayCount)}</span></div>`;
       lastDayLabel = dayLabel;
     }
-    const timeStr = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    const timeStr = formatTimeHM(d);
     const spot = spotById[v.spotId];
-    const spotName = spot ? spot.name : '(точка удалена)';
+    const spotName = spot ? spot.name : t('stats.deletedSpot');
     const waitStr = v.waitSec != null ? `⏱ ${formatDuration(v.waitSec)}` : '';
     const isRemove = v.type === 'remove';
     const badge = isRemove
@@ -2204,7 +2737,7 @@ function computePeakHoursTop3(){
 
 // --- Топ-3 дня недели за всю историю (для раздела "Рекомендации") ---
 function computePeakDaysTop3(){
-  const dayNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']; // индекс = Date.getDay()
+  const dayNames = weekdaysSun(); // индекс = Date.getDay()
   const counts = Array.from({ length: 7 }, () => 0);
   visitsLog.forEach(v => {
     counts[new Date(v.ts).getDay()] += (v.type === 'remove' ? -1 : 1);
@@ -2257,12 +2790,12 @@ function renderRecommendations(){
   const peak = computePeakHoursTop3();
   let hoursHtml;
   if(peak.length === 0){
-    hoursHtml = '<div class="statsEmpty">Пока мало данных. Отмечай заборы — здесь появится совет по часам.</div>';
+    hoursHtml = `<div class="statsEmpty">${t('reco.bestHoursEmpty')}</div>`;
   } else {
     const hourList = peak.map(p => `${String(p.h).padStart(2,'0')}:00`).join(', ');
     hoursHtml = `
-      <div class="statsChartTitle">🕐 Лучшие часы для слотов</div>
-      <div class="recoHint">По твоей истории заборов чаще всего заказы идут в: <b>${hourList}</b>. Стоит бронировать слоты именно на это время.</div>
+      <div class="statsChartTitle">${t('reco.bestHoursTitle')}</div>
+      <div class="recoHint">${t('reco.bestHoursText', { hours: `<b>${hourList}</b>` })}</div>
     `;
   }
 
@@ -2271,14 +2804,14 @@ function renderRecommendations(){
   if(peakDays.length > 0){
     const dayList = peakDays.map(p => p.label).join(', ');
     daysHtml = `
-      <div class="statsChartTitle" style="margin-top:18px;">📅 Лучшие дни недели</div>
-      <div class="recoHint">Больше всего заказов обычно бывает в: <b>${dayList}</b>. Старайся планировать смены на эти дни.</div>
+      <div class="statsChartTitle" style="margin-top:18px;">${t('reco.bestDaysTitle')}</div>
+      <div class="recoHint">${t('reco.bestDaysText', { days: `<b>${dayList}</b>` })}</div>
     `;
   }
 
   const topSpots = [...spots].filter(s => (s.earned || 0) > 0).sort((a, b) => b.earned - a.earned).slice(0, 3);
   const spotsHtml = `
-    <div class="statsChartTitle" style="margin-top:18px;">💰 Самые прибыльные точки</div>
+    <div class="statsChartTitle" style="margin-top:18px;">${t('reco.topSpotsTitle')}</div>
     ${topSpots.length ? `
     <div id="recoTopSpots">
       ${topSpots.map((s, i) => `
@@ -2290,7 +2823,7 @@ function renderRecommendations(){
         </div>
       `).join('')}
     </div>` : `
-    <div class="statsEmpty" style="padding:10px 0;">Пока нет данных о заработке — добавляй суммы за заказы в «Мои заказы».</div>
+    <div class="statsEmpty" style="padding:10px 0;">${t('reco.topSpotsEmpty')}</div>
     `}
   `;
 
@@ -2300,7 +2833,7 @@ function renderRecommendations(){
 function renderStats(){
   const body = document.getElementById('statsBody');
   if(visitsLog.length === 0){
-    body.innerHTML = '<div class="statsEmpty">Пока нет данных для статистики. Отмечай заборы — здесь появятся цифры по дням.</div>';
+    body.innerHTML = `<div class="statsEmpty">${t('stats.empty')}</div>`;
     return;
   }
 
@@ -2317,7 +2850,7 @@ function renderStats(){
   const days = [];
   for(let i = 0; i <= 6; i++){
     const d = new Date(monday); d.setDate(d.getDate()+i);
-    days.push({ key: dayKey(d), label: d.toLocaleDateString('ru-RU', { weekday: 'short' }), count: 0 });
+    days.push({ key: dayKey(d), label: weekdaysMon()[i], count: 0 });
   }
   const dayMap = {};
   days.forEach(d => dayMap[d.key] = d);
@@ -2342,10 +2875,10 @@ function renderStats(){
 
   const cardsHtml = `
     <div class="statsRow">
-      <div class="statsCard"><div class="num">${todayCount}</div><div class="lbl">сегодня</div></div>
-      <div class="statsCard"><div class="num">${yesterdayCount}</div><div class="lbl">вчера</div></div>
-      <div class="statsCard"><div class="num">${weekCount}</div><div class="lbl">на этой неделе</div></div>
-      <div class="statsCard"><div class="num">${totalNet}</div><div class="lbl">всего</div></div>
+      <div class="statsCard"><div class="num">${todayCount}</div><div class="lbl">${t('stats.cardToday')}</div></div>
+      <div class="statsCard"><div class="num">${yesterdayCount}</div><div class="lbl">${t('stats.cardYesterday')}</div></div>
+      <div class="statsCard"><div class="num">${weekCount}</div><div class="lbl">${t('stats.cardWeek')}</div></div>
+      <div class="statsCard"><div class="num">${totalNet}</div><div class="lbl">${t('stats.cardTotal')}</div></div>
     </div>
   `;
 
@@ -2372,14 +2905,14 @@ function renderStats(){
     .slice(0, 5);
 
   const waitHtml = longestWaits.length > 0 ? `
-    <div class="statsChartTitle" style="margin-top:18px;">Дольше всего ждал</div>
+    <div class="statsChartTitle" style="margin-top:18px;">${t('stats.longestWaitTitle')}</div>
     <div id="waitRanking">
       ${longestWaits.map(v => {
         const spot = spotByIdForWait[v.spotId];
-        const spotName = spot ? spot.name : '(точка удалена)';
+        const spotName = spot ? spot.name : t('stats.deletedSpot');
         const d = new Date(v.ts);
-        const dateStr = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-        const timeStr = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = formatDayMonthShort(d);
+        const timeStr = formatTimeHM(d);
         return `
         <div class="waitRow">
           <div class="waitRowMain">
@@ -2391,13 +2924,13 @@ function renderStats(){
       `}).join('')}
     </div>
   ` : `
-    <div class="statsChartTitle" style="margin-top:18px;">Время ожидания</div>
-    <div class="statsEmpty" style="padding:10px 0;">Пока нет данных. Нажимай "⏱ Прибыл" при заказе, чтобы начать замерять.</div>
+    <div class="statsChartTitle" style="margin-top:18px;">${t('stats.waitEmptyTitle')}</div>
+    <div class="statsEmpty" style="padding:10px 0;">${t('stats.waitEmptyText')}</div>
   `;
 
   const hourHtml = `
     <div class="statsChartTitle" style="margin-top:18px; display:flex; justify-content:space-between; align-items:center;">
-      <span>🕐 Часы пик</span>
+      <span>${t('stats.peakHoursTitle')}</span>
     </div>
     <div id="hourChartWrap"></div>
     <div id="hourTrend"></div>
@@ -2436,11 +2969,11 @@ function renderHourChart(){
     </div>`;
   }).join('');
 
-  let summary = 'Пока нет данных за этот период.';
+  let summary = t('stats.hourChartNoData');
   if(peakVal > 0){
     const peakHours = hours.map((c, h) => ({ c, h })).filter(x => x.c === peakVal).map(x => x.h);
     const peakStr = peakHours.map(h => `${h}:00`).join(', ');
-    summary = `Пик активности: ${peakStr} (${formatZaboros(peakVal)})`;
+    summary = t('stats.hourChartPeakSummary', { hours: peakStr, count: formatZaboros(peakVal) });
   }
 
   wrap.innerHTML = `<div id="hourChart">${barsHtml}</div><div class="hourSummary">${summary}</div>`;
@@ -2468,7 +3001,7 @@ function renderHourTrend(){
     if(max <= 0) continue;
     const peakHours = hours.map((c, h) => ({ c, h })).filter(x => x.c === max).map(x => `${x.h}:00`);
     rows.push({
-      label: d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+      label: formatDayMonthShort(d),
       peak: peakHours.join(', '),
       count: max
     });
@@ -2480,12 +3013,12 @@ function renderHourTrend(){
   }
 
   trendEl.innerHTML = `
-    <div class="statsChartTitle" style="margin-top:14px;">Как менялся пик по дням</div>
+    <div class="statsChartTitle" style="margin-top:14px;">${t('stats.hourTrendTitle')}</div>
     <div id="hourTrendList">
       ${rows.map(r => `
         <div class="hourTrendRow">
           <span class="hourTrendDate">${escapeHtml(r.label)}</span>
-          <span class="hourTrendPeak">пик в ${escapeHtml(r.peak)}</span>
+          <span class="hourTrendPeak">${t('stats.hourTrendPeakLabel', { hours: escapeHtml(r.peak) })}</span>
           <span class="hourTrendCount">${formatZaboros(r.count)}</span>
         </div>
       `).join('')}
@@ -2501,10 +3034,7 @@ function plural(n){
 }
 
 function formatZaboros(n){
-  const mod10 = n % 10, mod100 = n % 100;
-  if(mod10 === 1 && mod100 !== 11) return `${n} забор`;
-  if([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) return `${n} забора`;
-  return `${n} заборов`;
+  return formatPickups(n);
 }
 function escapeHtml(str){
   const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
@@ -2514,8 +3044,9 @@ function escapeHtml(str){
 function formatDuration(totalSec){
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
-  if(m === 0) return `${s} сек`;
-  return `${m} мин ${s} сек`;
+  const u = (TRANSLATIONS[currentLang] || TRANSLATIONS.ru).units;
+  if(m === 0) return `${s} ${u.sec}`;
+  return `${m} ${u.min} ${s} ${u.sec}`;
 }
 
 function formatTimer(totalSec){
@@ -2578,7 +3109,7 @@ function startArrival(spotId){
   if(!s) return;
   if(activeArrival){
     if(activeArrival.spotId === spotId) return; // уже идёт для этой же точки
-    if(!confirm(`Уже идёт отсчёт для «${activeArrival.spotName}». Начать заново для «${s.name}»? Прошлый отсчёт не будет засчитан.`)) return;
+    if(!confirm(t('alerts.confirmRestartTimer', { name: activeArrival.spotName, newName: s.name }))) return;
   }
   activeArrival = { spotId, spotName: s.name, startTs: Date.now() };
   try{ localStorage.setItem(ARRIVAL_TIMER_KEY, JSON.stringify(activeArrival)); }catch(e){}
@@ -2623,7 +3154,7 @@ function completeArrival(){
 
   if(!s){
     // точку успели удалить, пока шёл отсчёт - честно говорим об этом, а не молча проглатываем нажатие
-    alert(`Точка «${spotName}» была удалена, пока шёл отсчёт ожидания (${formatDuration(elapsedSec)}) - этот заказ не засчитан.`);
+    alert(t('alerts.spotDeletedDuringWait', { name: spotName, time: formatDuration(elapsedSec) }));
     return;
   }
 
@@ -2638,7 +3169,7 @@ function completeArrival(){
   persistVisits();
   renderAll();
 
-  alert(`⏱️ Ждал: ${formatDuration(elapsedSec)}\n\nСреднее ожидание в «${spotName}»: ${formatDuration(avgSec)}`);
+  alert(t('alerts.waitResult', { time: formatDuration(elapsedSec), name: spotName, avg: formatDuration(avgSec) }));
 }
 
 // восстанавливаем незавершённый отсчёт, если приложение закрыли во время ожидания
@@ -2672,7 +3203,7 @@ function unbump(id){
   if(!s) return;
   if(s.count <= 1){
     // если счётчик уже 1, спрашиваем удалить точку целиком
-    if(confirm('Это последний забор в этой точке. Удалить точку полностью?')){
+    if(confirm(t('alerts.confirmDeleteLastPickup'))){
       removeSpot(id);
     }
     return;
@@ -2752,8 +3283,8 @@ function openChoiceModal(lat, lng, nearby, prefillName){
         <span class="choiceName">${escapeHtml(s.name)}</span>
         <span class="choiceCount">${formatZaboros(s.count)}</span>
       </div>
-      ${avgWait ? `<div class="choiceWait">⏱ в среднем: ${avgWait}</div>` : ''}
-      <button class="choiceArriveBtn" data-arrive-id="${s.id}">⏱ Отметить прибытие</button>
+      ${avgWait ? `<div class="choiceWait">${t('choice.avgWait', { time: avgWait })}</div>` : ''}
+      <button class="choiceArriveBtn" data-arrive-id="${s.id}">${t('choice.arriveBtn')}</button>
     </div>
   `}).join('');
   box.querySelectorAll('.choiceRow').forEach(el => {
@@ -2820,7 +3351,7 @@ function saveNewSpot(){
 
 function exportData(){
   if(spots.length === 0 && visitsLog.length === 0 && earningsLog.length === 0 && routeLog.length === 0){
-    alert('Пока нечего сохранять - данных пока нет.');
+    alert(t('alerts.nothingToSave'));
     return;
   }
   const payload = { spots, visitsLog, routeLog, earningsLog };
@@ -2850,7 +3381,7 @@ function importData(event){
       const importedEarnings = Array.isArray(parsed) ? [] : (parsed.earningsLog || []);
       const validSpots = importedSpots.filter(s => s && typeof s.lat === 'number' && typeof s.lng === 'number' && typeof s.name === 'string');
       validSpots.forEach(s => { if(typeof s.earned !== 'number') s.earned = 0; });
-      if(validSpots.length === 0){ alert('В файле не найдено ни одной точки.'); return; }
+      if(validSpots.length === 0){ alert(t('alerts.noSpotsInFile')); return; }
 
       // отбрасываем записи с битой/отсутствующей формой (например, из повреждённого или чужого файла) -
       // иначе NaN-даты из них тихо портят статистику по часам/дням на годы вперёд
@@ -2865,7 +3396,7 @@ function importData(event){
         + (importedEarnings.length - validImportedEarnings.length);
 
       const action = spots.length > 0
-        ? confirm(`Найдено ${validSpots.length} точек в файле.\nОК - добавить к текущим (${spots.length})\nОтмена - заменить текущие полностью`)
+        ? confirm(t('alerts.confirmImportMode', { n: validSpots.length, current: spots.length }))
         : true;
 
       if(action){
@@ -2910,9 +3441,9 @@ function importData(event){
         const group = L.featureGroup(Object.values(markers));
         try{ map.fitBounds(group.getBounds().pad(0.3)); }catch(err){}
       }
-      alert('Готово! Точки восстановлены.' + (droppedCount > 0 ? `\n\n(${droppedCount} повреждённых записей из истории пропущено.)` : ''));
+      alert(t('alerts.importDone') + (droppedCount > 0 ? t('alerts.importDoneDropped', { n: droppedCount }) : ''));
     }catch(err){
-      alert('Не получилось прочитать файл - убедись, что это файл резервной копии из этого приложения.');
+      alert(t('alerts.importFailed'));
     }
     event.target.value = '';
   };
@@ -2920,7 +3451,7 @@ function importData(event){
 }
 
 function resetAll(){
-  if(!confirm('Удалить вообще все данные приложения: все точки, заборы, суммы и историю? Это нельзя отменить.')) return;
+  if(!confirm(t('alerts.confirmResetAll'))) return;
   wipeAllData();
 }
 
@@ -2970,13 +3501,13 @@ function startGeoWatch(){
 }
 
 document.getElementById('locateBtn').addEventListener('click', () => {
-  if(!navigator.geolocation){ alert('Геолокация недоступна в этом браузере'); return; }
-  document.getElementById('modeBadge').textContent = 'Ищу тебя...';
+  if(!navigator.geolocation){ alert(t('header.geoUnavailable')); return; }
+  document.getElementById('modeBadge').textContent = t('header.searching');
   startGeoWatch();
 
   const finishCentering = (lat, lng) => {
     map.setView([lat, lng], 16);
-    document.getElementById('modeBadge').textContent = 'Твоё местоположение';
+    document.getElementById('modeBadge').textContent = t('header.myLocation');
     setTimeout(() => document.getElementById('modeBadge').textContent = '', 2000);
   };
 
@@ -2986,7 +3517,7 @@ document.getElementById('locateBtn').addEventListener('click', () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => finishCentering(pos.coords.latitude, pos.coords.longitude),
       () => {
-        document.getElementById('modeBadge').textContent = 'Доступ к GPS не дан';
+        document.getElementById('modeBadge').textContent = t('header.noGpsAccess');
         setTimeout(() => document.getElementById('modeBadge').textContent = '', 2000);
       },
       { enableHighAccuracy: true, timeout: 8000 }
@@ -2994,6 +3525,7 @@ document.getElementById('locateBtn').addEventListener('click', () => {
   }
 });
 
+applyStaticI18n();
 loadSpots();
 </script>
 </body>
