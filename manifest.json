@@ -1,12 +1,16 @@
 {
+  "id": "./",
   "name": "PickupMap",
   "short_name": "PickupMap",
-  "description": "Трекер мест, где чаще всего забираешь заказы",
+  "description": "Rastreador de los lugares donde más recoges pedidos",
+  "lang": "es",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "orientation": "portrait",
+  "categories": ["navigation", "productivity"],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
