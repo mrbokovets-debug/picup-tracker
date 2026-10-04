@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pickup-tracker-v2';
+const CACHE_NAME = 'pickup-tracker-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -9,14 +9,14 @@ const ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'
 ];
-
+ 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {})
   );
   self.skipWaiting();
 });
-
+ 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -25,7 +25,7 @@ self.addEventListener('activate', (event) => {
   );
   self.clients.claim();
 });
-
+ 
 self.addEventListener('fetch', (event) => {
   const isMapTile = event.request.url.includes('tile.openstreetmap.org');
   if (isMapTile) {
@@ -33,7 +33,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(fetch(event.request).catch(() => new Response('', { status: 504 })));
     return;
   }
-
+ 
   // Network-first: всегда пытаемся взять свежую версию из сети,
   // а кэш используем только как запасной вариант, если сети нет (офлайн).
   event.respondWith(
@@ -46,4 +46,18 @@ self.addEventListener('fetch', (event) => {
       .catch(() => caches.match(event.request))
   );
 });
-
+ 
+// Тап по пуш-уведомлению из шторки ("забыл нажать Стоп?") - закрываем уведомление
+// и открываем/фокусируем уже открытую вкладку приложения вместо новой
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientsArr) => {
+      const existing = clientsArr.find((c) => 'focus' in c);
+      if (existing) return existing.focus();
+      return self.clients.openWindow('./index.html');
+    })
+  );
+});
+ 
+ 
