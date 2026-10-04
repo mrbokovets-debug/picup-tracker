@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -491,6 +491,14 @@
   #arrivalDoneBtn{background:#ffffff; color:var(--signal);}
   #arrivalCancelBtn{background:rgba(255,255,255,0.2); color:#ffffff;}
 
+  /* визуальная подсказка "не забыл выключить таймер?" - используется и на зелёной полоске ожидания,
+     и на кнопке Старт/Стоп, когда соответствующий таймер идёт подозрительно долго */
+  @keyframes reminderPulse{
+    0%, 100%{ filter:none; box-shadow:none; }
+    50%{ filter:brightness(1.5); box-shadow:0 0 0 4px var(--danger); }
+  }
+  .reminderPulse{ animation:reminderPulse 0.7s ease-in-out 3; }
+
   #drawerOverlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1500;
     opacity:0; pointer-events:none; transition:opacity .25s ease;
@@ -901,6 +909,16 @@
 const LANG_KEY = 'pickup-lang';
 const SUPPORTED_LANGS = ['ru','uk','es','en'];
 
+// ====================== НАПОМИНАНИЯ О ЗАБЫТЫХ ТАЙМЕРАХ ======================
+// Курьер может забыть остановить один из двух "висящих" таймеров (ожидание на точке
+// или доезд к клиенту) - тогда статистика по среднему времени портится. Эти константы
+// задают, через сколько после старта считать таймер "подозрительно долгим" и как часто
+// после этого напоминать повторно, пока он не будет остановлен.
+const ARRIVAL_REMINDER_MS = 10 * 60 * 1000; // не нажал "Забрал заказ" дольше 10 мин - напоминаем
+const ROUTE_REMINDER_MS = 10 * 60 * 1000;   // не нажал "Стоп" по доставке дольше 10 мин - напоминаем
+const REMINDER_PULSE_MS = 4 * 1000;         // после этого - вибрация+мигание почти непрерывно, каждые 4 сек, пока не нажмут
+const REMINDER_REPEAT_MS = 10 * 60 * 1000;  // системное уведомление (если свёрнуто) - не чаще раза в 10 мин, чтобы не засыпать шторку
+
 function detectInitialLang(){
   try{
     const saved = localStorage.getItem(LANG_KEY);
@@ -927,6 +945,8 @@ const TRANSLATIONS = {
       deliveredToast:'✅ Доставлено за {time}', geoUnavailable:'Геолокация недоступна в этом браузере',
       menuAria:'Меню' },
     arrival:{ waitingFor:'⏱ Ждём заказ:', cancel:'Отмена', done:'✅ Забрал заказ' },
+    reminder:{ arrivalTitle:'⏱ Не забыл забрать заказ?', arrivalBody:'Таймер ожидания идёт уже {min} мин. Если уже забрал — нажми «✅ Забрал заказ».',
+      routeTitle:'🚴 Не забыл нажать «Стоп»?', routeBody:'Доставка идёт уже {min} мин. Если уже приехал — останови таймер в приложении.' },
     orders:{ title:'Мои заказы', searchPlaceholder:'Поиск среди своих точек...', sortByCount:'По частоте ▾',
       sortByEarned:'По сумме ▾', totalLabel:'всего заборов: {n}', emptyNoSpots:'Пока пусто. Тапни по карте, где обычно забираешь заказы.',
       emptyNoResults:'Ничего не найдено по запросу «{q}»', rowDelete:'Удалить', rowAvgWait:'⏱ в среднем ждёшь тут: {time}',
@@ -1021,6 +1041,8 @@ const TRANSLATIONS = {
       deliveredToast:'✅ Доставлено за {time}', geoUnavailable:'Геолокація недоступна в цьому браузері',
       menuAria:'Меню' },
     arrival:{ waitingFor:'⏱ Чекаємо замовлення:', cancel:'Скасувати', done:'✅ Забрав замовлення' },
+    reminder:{ arrivalTitle:'⏱ Не забув забрати замовлення?', arrivalBody:'Таймер очікування йде вже {min} хв. Якщо вже забрав — натисни «✅ Забрав замовлення».',
+      routeTitle:'🚴 Не забув натиснути «Стоп»?', routeBody:'Доставка триває вже {min} хв. Якщо вже приїхав — зупини таймер у застосунку.' },
     orders:{ title:'Мої замовлення', searchPlaceholder:'Пошук серед своїх точок...', sortByCount:'За частотою ▾',
       sortByEarned:'За сумою ▾', totalLabel:'всього підборів: {n}', emptyNoSpots:'Поки порожньо. Тапни на карті там, де зазвичай забираєш замовлення.',
       emptyNoResults:'Нічого не знайдено за запитом «{q}»', rowDelete:'Видалити', rowAvgWait:'⏱ в середньому чекаєш тут: {time}',
@@ -1115,6 +1137,8 @@ const TRANSLATIONS = {
       deliveredToast:'✅ Entregado en {time}', geoUnavailable:'La geolocalización no está disponible en este navegador',
       menuAria:'Menú' },
     arrival:{ waitingFor:'⏱ Esperando pedido:', cancel:'Cancelar', done:'✅ Pedido recogido' },
+    reminder:{ arrivalTitle:'⏱ ¿Olvidaste recoger el pedido?', arrivalBody:'El temporizador de espera lleva ya {min} min. Si ya lo recogiste, pulsa «✅ Pedido recogido».',
+      routeTitle:'🚴 ¿Olvidaste pulsar «Parar»?', routeBody:'La entrega lleva ya {min} min en marcha. Si ya llegaste, detén el temporizador en la app.' },
     orders:{ title:'Mis pedidos', searchPlaceholder:'Buscar entre tus puntos...', sortByCount:'Por frecuencia ▾',
       sortByEarned:'Por ganancias ▾', totalLabel:'total de recogidas: {n}', emptyNoSpots:'Aún no hay nada. Toca el mapa donde sueles recoger pedidos.',
       emptyNoResults:'No se encontró nada para «{q}»', rowDelete:'Eliminar', rowAvgWait:'⏱ espera media aquí: {time}',
@@ -1209,6 +1233,8 @@ const TRANSLATIONS = {
       deliveredToast:'✅ Delivered in {time}', geoUnavailable:'Geolocation is not available in this browser',
       menuAria:'Menu' },
     arrival:{ waitingFor:'⏱ Waiting on order:', cancel:'Cancel', done:'✅ Picked up order' },
+    reminder:{ arrivalTitle:'⏱ Forgot to mark the pickup?', arrivalBody:'The wait timer has been running for {min} min. If you already got the order, tap "✅ Picked up order".',
+      routeTitle:'🚴 Forgot to tap "Stop"?', routeBody:'The delivery timer has been running for {min} min. If you already arrived, stop the timer in the app.' },
     orders:{ title:'My orders', searchPlaceholder:'Search your spots...', sortByCount:'By frequency ▾',
       sortByEarned:'By earnings ▾', totalLabel:'total pickups: {n}', emptyNoSpots:"Nothing here yet. Tap the map where you usually pick up orders.",
       emptyNoResults:'No results for "{q}"', rowDelete:'Delete', rowAvgWait:'⏱ average wait here: {time}',
@@ -1606,6 +1632,10 @@ function loadSpots(){
     const rawRouteActive = localStorage.getItem(ROUTE_ACTIVE_KEY);
     routeActive = rawRouteActive ? JSON.parse(rawRouteActive) : [];
   }catch(e){ routeActive = []; }
+  // если доезды к клиенту остались активными после перезагрузки страницы - пересчитываем
+  // напоминания от их реальных startTs, а не запускаем отсчёт заново
+  clearAllRouteReminders();
+  routeActive.forEach(r => scheduleRouteReminder(r.id));
   try{
     const rawRouteLog = localStorage.getItem(ROUTE_LOG_KEY);
     routeLog = rawRouteLog ? JSON.parse(rawRouteLog) : [];
@@ -2123,6 +2153,7 @@ window.addEventListener('resize', () => {
 // используется и после автоматического тура, и вручную через «Очистить все данные» в меню
 function wipeAllData(){
   try{ cancelArrival(); }catch(e){}
+  try{ clearAllRouteReminders(); }catch(e){}
   spots = [];
   visitsLog = [];
   earningsLog = [];
@@ -2472,8 +2503,11 @@ clearInterval(quickBtnInterval);
 quickBtnInterval = setInterval(updateQuickButton, 1000);
 
 function startNewRoute(){
-  routeActive.push({ id: 'route_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), startTs: Date.now() });
+  const route = { id: 'route_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), startTs: Date.now() };
+  routeActive.push(route);
   persistRouteActive();
+  ensureNotificationPermission();
+  scheduleRouteReminder(route.id);
 }
 
 function markRouteArrived(routeId){
@@ -2485,6 +2519,7 @@ function markRouteArrived(routeId){
   routeLog.push({ id: route.id, startTs: route.startTs, endTs: Date.now(), durationSec });
   persistRouteActive();
   persistRouteLog();
+  clearRouteReminder(routeId);
 }
 
 // --- Календарь для выбора даты/диапазона дат в истории ---
@@ -3104,6 +3139,186 @@ function attachLongPress(marker, spotId){
   el.addEventListener('pointercancel', cancelPress);
 }
 
+// ====================== НАПОМИНАНИЯ: общий механизм для обоих таймеров ======================
+// Нужен, т.к. курьер может забыть нажать "✅ Забрал заказ" (таймер ожидания на точке) или
+// "⏹ Стоп" (таймер доезда к клиенту), и тогда они будут висеть бесконечно, портя статистику.
+//
+// ВАЖНО про ограничения браузера/ОС (честно, чтобы не было иллюзий):
+// - Пока приложение открыто на экране (хоть и не в фокусе по нажатию кнопок) - вибрация и мигание
+//   кнопки работают надёжно и повторяются часто (см. REMINDER_PULSE_MS).
+// - Пока активен просроченный таймер, мы держим экран включённым через Wake Lock API, чтобы
+//   телефон не "уснул" сам по себе от бездействия - тогда вибрация продолжает идти без того,
+//   чтобы курьер что-то трогал руками.
+// - НО если курьер сам сворачивает приложение (уходит в другое приложение) или вручную блокирует
+//   экран - браузер по спецификации перестаёт давать странице вибрировать и сильно замедляет её
+//   фоновые таймеры. Это ограничение самого Android/Chrome, обойти его кодом веб-приложения нельзя.
+//   Мы подстраховываемся системным уведомлением (fireReminderNotification), но это best-effort:
+//   надёжная фоновая вибрация потребовала бы push-сервера на бэкенде, которого у приложения нет.
+let notificationPermissionRequested = false;
+function ensureNotificationPermission(){
+  try{
+    if(!('Notification' in window)) return;
+    if(notificationPermissionRequested) return;
+    notificationPermissionRequested = true;
+    if(Notification.permission === 'default'){
+      // не блокируем работу приложения, если браузер молчит/юзер игнорирует - просто пробуем
+      Notification.requestPermission().catch(() => {});
+    }
+  }catch(e){}
+}
+
+function vibrateReminder(){
+  try{ if(navigator.vibrate) navigator.vibrate([80,60,80,60,180]); }catch(e){}
+}
+
+// --- Wake Lock: держим экран включённым, пока есть хотя бы один просроченный таймер,
+// чтобы вибрация продолжала идти сама, без того чтобы телефон уснул от бездействия ---
+let screenWakeLock = null;
+const activeReminderKeys = new Set();
+
+async function acquireReminderWakeLock(){
+  try{
+    if(!('wakeLock' in navigator)) return;
+    if(screenWakeLock) return;
+    screenWakeLock = await navigator.wakeLock.request('screen');
+    screenWakeLock.addEventListener('release', () => { screenWakeLock = null; });
+  }catch(e){ screenWakeLock = null; }
+}
+
+function releaseReminderWakeLock(){
+  try{ if(screenWakeLock){ screenWakeLock.release(); screenWakeLock = null; } }catch(e){}
+}
+
+function noteReminderActive(key){
+  activeReminderKeys.add(key);
+  acquireReminderWakeLock();
+}
+
+function noteReminderInactive(key){
+  activeReminderKeys.delete(key);
+  if(activeReminderKeys.size === 0) releaseReminderWakeLock();
+}
+
+// Wake Lock автоматически снимается браузером, когда вкладка скрыта - возвращаем его,
+// как только курьер снова открыл приложение, если просроченный таймер всё ещё идёт
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden && activeReminderKeys.size > 0) acquireReminderWakeLock();
+});
+
+// визуальная подсказка на самом элементе таймера (зелёная полоска ожидания или кнопка Старт/Стоп) -
+// кратко "мигает", не блокируя интерфейс
+function flashReminder(elId){
+  try{
+    const el = document.getElementById(elId);
+    if(!el) return;
+    el.classList.remove('reminderPulse');
+    // перезапускаем анимацию, даже если предыдущая ещё не исчезла
+    void el.offsetWidth;
+    el.classList.add('reminderPulse');
+    setTimeout(() => el.classList.remove('reminderPulse'), 2200);
+  }catch(e){}
+}
+
+// настоящее системное уведомление - только если разрешение уже дано И приложение свёрнуто/экран заблокирован
+// (пока приложение на экране, вибрации + подсветки достаточно и не нужно дублировать пуш)
+function fireReminderNotification(titleKey, bodyKey, vars){
+  try{
+    if(!('Notification' in window)) return;
+    if(Notification.permission !== 'granted') return;
+    if(!document.hidden) return;
+    const title = t(titleKey, vars);
+    const body = t(bodyKey, vars);
+    const opts = {
+      body,
+      icon: 'icon-192.png',
+      badge: 'icon-192.png',
+      tag: titleKey,
+      renotify: true,        // звук/вибро на КАЖДОЕ повторное уведомление с тем же tag, а не только на первое
+      requireInteraction: true, // не исчезает само из шторки - висит, пока не смахнут или не нажмут "Стоп"
+      vibrate: [200, 100, 200, 100, 400] // вибрация от самого пуша - работает даже когда navigator.vibrate() со страницы уже не может (вкладка в фоне)
+    };
+    if('serviceWorker' in navigator && navigator.serviceWorker.getRegistration){
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if(reg && reg.showNotification){ reg.showNotification(title, opts); }
+        else{ new Notification(title, opts); }
+      }).catch(() => { try{ new Notification(title, opts); }catch(e){} });
+    } else {
+      new Notification(title, opts);
+    }
+  }catch(e){}
+}
+
+// --- напоминание по таймеру ожидания на точке (один активный одновременно) ---
+let arrivalReminderTimer = null;
+
+function clearArrivalReminder(){
+  if(arrivalReminderTimer){ clearTimeout(arrivalReminderTimer); arrivalReminderTimer = null; }
+  arrivalLastNotifyTs = 0;
+  noteReminderInactive('arrival');
+}
+
+// пересчитываем задержку от реального startTs, а не "начинаем заново" - важно, если страницу
+// перезагрузили, пока таймер уже шёл: напоминание не должно сбрасывать уже прошедшее время
+function scheduleArrivalReminder(){
+  clearArrivalReminder();
+  if(!activeArrival) return;
+  const elapsedMs = Date.now() - activeArrival.startTs;
+  const delay = Math.max(0, ARRIVAL_REMINDER_MS - elapsedMs);
+  arrivalReminderTimer = setTimeout(arrivalReminderTick, delay);
+}
+
+let arrivalLastNotifyTs = 0;
+function arrivalReminderTick(){
+  if(!activeArrival){ noteReminderInactive('arrival'); return; } // таймер уже остановили - больше не напоминаем
+  noteReminderActive('arrival');
+  const minutes = Math.round((Date.now() - activeArrival.startTs) / 60000);
+  vibrateReminder();
+  flashReminder('arrivalBar');
+  // системное уведомление дублируем не на каждый короткий тик (иначе зальёт шторку), а раз в REMINDER_REPEAT_MS
+  if(Date.now() - arrivalLastNotifyTs >= REMINDER_REPEAT_MS){
+    arrivalLastNotifyTs = Date.now();
+    fireReminderNotification('reminder.arrivalTitle', 'reminder.arrivalBody', { min: minutes });
+  }
+  arrivalReminderTimer = setTimeout(arrivalReminderTick, REMINDER_PULSE_MS);
+}
+
+// --- напоминание по таймеру доезда к клиенту (может идти несколько параллельно - свой на каждый id) ---
+let routeReminderTimers = {}; // routeId -> handle setTimeout
+
+function clearRouteReminder(routeId){
+  if(routeReminderTimers[routeId]){ clearTimeout(routeReminderTimers[routeId]); delete routeReminderTimers[routeId]; }
+  delete routeLastNotifyTs[routeId];
+  noteReminderInactive('route:' + routeId);
+}
+
+function clearAllRouteReminders(){
+  Object.keys(routeReminderTimers).forEach(clearRouteReminder);
+}
+
+function scheduleRouteReminder(routeId){
+  clearRouteReminder(routeId);
+  const route = routeActive.find(r => r.id === routeId);
+  if(!route) return;
+  const elapsedMs = Date.now() - route.startTs;
+  const delay = Math.max(0, ROUTE_REMINDER_MS - elapsedMs);
+  routeReminderTimers[routeId] = setTimeout(() => routeReminderTick(routeId), delay);
+}
+
+let routeLastNotifyTs = {}; // routeId -> ts последнего системного уведомления
+function routeReminderTick(routeId){
+  const route = routeActive.find(r => r.id === routeId);
+  if(!route){ clearRouteReminder(routeId); noteReminderInactive('route:' + routeId); return; } // уже остановили этот доезд
+  noteReminderActive('route:' + routeId);
+  const minutes = Math.round((Date.now() - route.startTs) / 60000);
+  vibrateReminder();
+  flashReminder('quickToggleBtn');
+  if(Date.now() - (routeLastNotifyTs[routeId] || 0) >= REMINDER_REPEAT_MS){
+    routeLastNotifyTs[routeId] = Date.now();
+    fireReminderNotification('reminder.routeTitle', 'reminder.routeBody', { min: minutes });
+  }
+  routeReminderTimers[routeId] = setTimeout(() => routeReminderTick(routeId), REMINDER_PULSE_MS);
+}
+
 function startArrival(spotId){
   const s = spots.find(sp => sp.id === spotId);
   if(!s) return;
@@ -3113,6 +3328,7 @@ function startArrival(spotId){
   }
   activeArrival = { spotId, spotName: s.name, startTs: Date.now() };
   try{ localStorage.setItem(ARRIVAL_TIMER_KEY, JSON.stringify(activeArrival)); }catch(e){}
+  ensureNotificationPermission();
   showArrivalBar();
 }
 
@@ -3123,6 +3339,9 @@ function showArrivalBar(){
   updateArrivalTimerDisplay();
   clearInterval(arrivalInterval);
   arrivalInterval = setInterval(updateArrivalTimerDisplay, 1000);
+  // пересчитываем от реального startTs - важно и при обычном старте, и при восстановлении
+  // после перезагрузки страницы (чтобы не "продлевать" уже прошедшее время ожидания)
+  scheduleArrivalReminder();
 }
 
 function updateArrivalTimerDisplay(){
@@ -3133,8 +3352,10 @@ function updateArrivalTimerDisplay(){
 
 function hideArrivalBar(){
   document.getElementById('arrivalBar').classList.remove('show');
+  document.getElementById('arrivalBar').classList.remove('reminderPulse');
   clearInterval(arrivalInterval);
   arrivalInterval = null;
+  clearArrivalReminder();
 }
 
 function cancelArrival(){
