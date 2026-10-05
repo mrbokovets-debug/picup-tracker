@@ -331,7 +331,8 @@
     align-items:flex-end; justify-content:center; z-index:1000;}
   #settingsModalBg.show{display:flex;}
   #settingsModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
-    padding:20px; border-top:1px solid var(--line);}
+    padding:20px; border-top:1px solid var(--line);
+    max-height:92vh; max-height:92dvh; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;}
   #settingsModal h3{margin:0 0 6px; font-size:16px;}
   #settingsModal .coords{color:var(--text-dim); font-size:12px; margin:0 0 16px;}
   #markerStyleOptions{display:flex; gap:12px; margin-bottom:16px;}
