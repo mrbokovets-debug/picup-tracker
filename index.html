@@ -355,6 +355,9 @@
   }
   .themeOption.active{border-color:var(--signal);}
 
+  #resetDeliveryAvgBtn{width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;
+    background:transparent; color:var(--text); border:2px solid var(--line); margin-bottom:16px;}
+  #resetDeliveryAvgBtn:active{border-color:var(--signal);}
   #settingsCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
     font-weight:700; cursor:pointer; background:var(--signal); color:var(--signal-text);}
 
@@ -862,6 +865,9 @@
       <div class="themeOption" data-theme="dark" data-i18n="settings.themeDark" onclick="chooseMapTheme('dark')">🌙 Тёмная</div>
     </div>
 
+    <p class="coords" data-i18n="settings.deliveryAvgLabel">Среднее время доставки</p>
+    <button id="resetDeliveryAvgBtn" data-i18n="settings.resetDeliveryAvgBtn" onclick="resetDeliveryAvg()">🔄 Обнулить среднее время доставки</button>
+
     <button id="settingsCloseBtn" data-i18n="settings.done" onclick="closeSettingsModal()">Готово</button>
   </div>
 </div>
@@ -1007,7 +1013,8 @@ const TRANSLATIONS = {
     settings:{ title:'Настройки', markerStyleLabel:'Как отмечать точки на карте', markerCircle:'Кружок', markerBag:'Сумка курьера',
       payTypeLabel:'Тип оплаты', payTypeHourlyOpt:'⏱ Почасовая + премия', payTypePieceOpt:'💰 Сдельная за заказ',
       currencyLabel:'Валюта', appThemeLabel:'Оформление приложения', themeLight:'☀️ Светлая', themeDark:'🌙 Тёмная',
-      mapThemeLabel:'Оформление карты (можно отдельно от приложения)', done:'Готово', languageLabel:'Язык приложения' },
+      mapThemeLabel:'Оформление карты (можно отдельно от приложения)', done:'Готово', languageLabel:'Язык приложения',
+      deliveryAvgLabel:'Среднее время доставки', resetDeliveryAvgBtn:'🔄 Обнулить среднее время доставки' },
     history:{ title:'История заказов', desc:'Полный список твоих заказов по дням и времени: где забрал, сколько ждал и когда случайно нажал не туда (−1). Листай вниз или ищи конкретный день по дате.',
       dateFilterDefault:'📅 Поиск по дате', emptyAll:'Пока пусто. Здесь появится история всех +1 и −1 по точкам.',
       emptyRange:'За выбранный период записей нет.' },
@@ -1020,7 +1027,9 @@ const TRANSLATIONS = {
       confirmImportMode:'Найдено {n} точек в файле.\nОК - добавить к текущим ({current})\nОтмена - заменить текущие полностью',
       importDone:'Готово! Точки восстановлены.', importDoneDropped:'\n\n({n} повреждённых записей из истории пропущено.)',
       importFailed:'Не получилось прочитать файл - убедись, что это файл резервной копии из этого приложения.',
-      confirmResetAll:'Удалить вообще все данные приложения: все точки, заборы, суммы и историю? Это нельзя отменить.' },
+      confirmResetAll:'Удалить вообще все данные приложения: все точки, заборы, суммы и историю? Это нельзя отменить.',
+      confirmResetDeliveryAvg:'Обнулить среднее время доставки? Сейчас оно считается по {n} доставкам (в среднем {avg}). Точки, заборы и суммы не изменятся.',
+      deliveryAvgAlreadyEmpty:'Среднее время доставки и так пустое - обнулять нечего.' },
     units:{ min:'мин', sec:'сек' },
     pickupWord:{ one:'забор', few:'забора', many:'заборов' },
     months:{ nom:['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'],
@@ -1103,7 +1112,8 @@ const TRANSLATIONS = {
     settings:{ title:'Налаштування', markerStyleLabel:'Як відмічати точки на карті', markerCircle:'Кружечок', markerBag:'Сумка кур’єра',
       payTypeLabel:'Тип оплати', payTypeHourlyOpt:'⏱ Погодинна + премія', payTypePieceOpt:'💰 Відрядна за замовлення',
       currencyLabel:'Валюта', appThemeLabel:'Оформлення застосунку', themeLight:'☀️ Світла', themeDark:'🌙 Темна',
-      mapThemeLabel:'Оформлення карти (можна окремо від застосунку)', done:'Готово', languageLabel:'Мова застосунку' },
+      mapThemeLabel:'Оформлення карти (можна окремо від застосунку)', done:'Готово', languageLabel:'Мова застосунку',
+      deliveryAvgLabel:'Середній час доставки', resetDeliveryAvgBtn:'🔄 Обнулити середній час доставки' },
     history:{ title:'Історія замовлень', desc:'Повний список твоїх замовлень по днях і часу: де забрав, скільки чекав і коли випадково натиснув не туди (−1). Гортай вниз або шукай конкретний день за датою.',
       dateFilterDefault:'📅 Пошук за датою', emptyAll:'Поки порожньо. Тут з’явиться історія всіх +1 і −1 по точках.',
       emptyRange:'За обраний період записів немає.' },
@@ -1116,7 +1126,9 @@ const TRANSLATIONS = {
       confirmImportMode:'Знайдено {n} точок у файлі.\nОК - додати до поточних ({current})\nСкасувати - замінити поточні повністю',
       importDone:'Готово! Точки відновлено.', importDoneDropped:'\n\n({n} пошкоджених записів з історії пропущено.)',
       importFailed:'Не вдалося прочитати файл - переконайся, що це файл резервної копії з цього застосунку.',
-      confirmResetAll:'Видалити взагалі всі дані застосунку: всі точки, підбори, суми та історію? Це не можна скасувати.' },
+      confirmResetAll:'Видалити взагалі всі дані застосунку: всі точки, підбори, суми та історію? Це не можна скасувати.',
+      confirmResetDeliveryAvg:'Обнулити середній час доставки? Зараз він рахується по {n} доставках (в середньому {avg}). Точки, підбори та суми не зміняться.',
+      deliveryAvgAlreadyEmpty:'Середній час доставки і так порожній - обнуляти нічого.' },
     units:{ min:'хв', sec:'сек' },
     pickupWord:{ one:'підбір', few:'підбори', many:'підборів' },
     months:{ nom:['січень','лютий','березень','квітень','травень','червень','липень','серпень','вересень','жовтень','листопад','грудень'],
@@ -1199,7 +1211,8 @@ const TRANSLATIONS = {
     settings:{ title:'Ajustes', markerStyleLabel:'Cómo marcar los puntos en el mapa', markerCircle:'Círculo', markerBag:'Mochila de repartidor',
       payTypeLabel:'Tipo de pago', payTypeHourlyOpt:'⏱ Por horas + bonus', payTypePieceOpt:'💰 Por pedido (destajo)',
       currencyLabel:'Moneda', appThemeLabel:'Apariencia de la app', themeLight:'☀️ Claro', themeDark:'🌙 Oscuro',
-      mapThemeLabel:'Apariencia del mapa (independiente de la app)', done:'Listo', languageLabel:'Idioma de la app' },
+      mapThemeLabel:'Apariencia del mapa (independiente de la app)', done:'Listo', languageLabel:'Idioma de la app',
+      deliveryAvgLabel:'Tiempo medio de entrega', resetDeliveryAvgBtn:'🔄 Reiniciar tiempo medio de entrega' },
     history:{ title:'Historial de pedidos', desc:'La lista completa de tus pedidos por día y hora: dónde recogiste, cuánto esperaste y cuándo tocaste el punto equivocado por error (−1). Desplázate hacia abajo o busca un día concreto por fecha.',
       dateFilterDefault:'📅 Buscar por fecha', emptyAll:'Aún no hay nada. Aquí aparecerá el historial de todos los +1 y −1 de tus puntos.',
       emptyRange:'No hay registros en el periodo seleccionado.' },
@@ -1212,7 +1225,9 @@ const TRANSLATIONS = {
       confirmImportMode:'Se encontraron {n} puntos en el archivo.\nAceptar - añadir a los actuales ({current})\nCancelar - reemplazar los actuales por completo',
       importDone:'¡Listo! Puntos restaurados.', importDoneDropped:'\n\n({n} registros dañados del historial fueron omitidos.)',
       importFailed:'No se pudo leer el archivo - asegúrate de que sea un archivo de copia de seguridad de esta app.',
-      confirmResetAll:'¿Eliminar absolutamente todos los datos de la app: todos los puntos, recogidas, importes e historial? Esto no se puede deshacer.' },
+      confirmResetAll:'¿Eliminar absolutamente todos los datos de la app: todos los puntos, recogidas, importes e historial? Esto no se puede deshacer.',
+      confirmResetDeliveryAvg:'¿Reiniciar el tiempo medio de entrega? Ahora se calcula con {n} entregas (media: {avg}). Los puntos, recogidas e importes no cambian.',
+      deliveryAvgAlreadyEmpty:'El tiempo medio de entrega ya está vacío - no hay nada que reiniciar.' },
     units:{ min:'min', sec:'s' },
     pickupWord:{ one:'recogida', few:'recogidas', many:'recogidas' },
     months:{ nom:['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'],
@@ -1295,7 +1310,8 @@ const TRANSLATIONS = {
     settings:{ title:'Settings', markerStyleLabel:'How to mark spots on the map', markerCircle:'Circle', markerBag:'Courier bag',
       payTypeLabel:'Pay type', payTypeHourlyOpt:'⏱ Hourly + bonus', payTypePieceOpt:'💰 Per-order (piece rate)',
       currencyLabel:'Currency', appThemeLabel:'App appearance', themeLight:'☀️ Light', themeDark:'🌙 Dark',
-      mapThemeLabel:'Map appearance (independent of the app)', done:'Done', languageLabel:'App language' },
+      mapThemeLabel:'Map appearance (independent of the app)', done:'Done', languageLabel:'App language',
+      deliveryAvgLabel:'Average delivery time', resetDeliveryAvgBtn:'🔄 Reset average delivery time' },
     history:{ title:'Order history', desc:'The full list of your orders by day and time: where you picked up, how long you waited, and when you accidentally tapped the wrong spot (−1). Scroll down or search for a specific day.',
       dateFilterDefault:'📅 Search by date', emptyAll:'Nothing here yet. The history of every +1 and −1 on your spots will show up here.',
       emptyRange:'No records for the selected period.' },
@@ -1308,7 +1324,9 @@ const TRANSLATIONS = {
       confirmImportMode:'Found {n} spots in the file.\nOK - add to your current ones ({current})\nCancel - replace your current ones entirely',
       importDone:'Done! Spots restored.', importDoneDropped:'\n\n({n} corrupted records from the history were skipped.)',
       importFailed:'Couldn\'t read the file - make sure it\'s a backup file from this app.',
-      confirmResetAll:'Delete absolutely all app data: all spots, pickups, amounts and history? This cannot be undone.' },
+      confirmResetAll:'Delete absolutely all app data: all spots, pickups, amounts and history? This cannot be undone.',
+      confirmResetDeliveryAvg:'Reset the average delivery time? It is currently based on {n} deliveries (average {avg}). Spots, pickups and amounts stay untouched.',
+      deliveryAvgAlreadyEmpty:'The average delivery time is already empty - nothing to reset.' },
     units:{ min:'min', sec:'sec' },
     pickupWord:{ one:'pickup', few:'pickups', many:'pickups' },
     months:{ nom:['January','February','March','April','May','June','July','August','September','October','November','December'],
@@ -3674,6 +3692,20 @@ function importData(event){
 function resetAll(){
   if(!confirm(t('alerts.confirmResetAll'))) return;
   wipeAllData();
+}
+
+// Обнуляет ТОЛЬКО счётчик среднего времени доезда до клиента (routeLog). Идущие сейчас доставки
+// (routeActive), точки, заборы, суммы и ожидание в ресторанах не трогаем.
+function resetDeliveryAvg(){
+  if(routeLog.length === 0){
+    alert(t('alerts.deliveryAvgAlreadyEmpty'));
+    return;
+  }
+  const avgSec = Math.round(routeLog.reduce((a, r) => a + r.durationSec, 0) / routeLog.length);
+  if(!confirm(t('alerts.confirmResetDeliveryAvg', { n: routeLog.length, avg: formatDuration(avgSec) }))) return;
+  routeLog = [];
+  persistRouteLog();
+  renderDeliveryAvg();
 }
 
 // регистрируем service worker для офлайн-работы (сработает только когда сайт открыт по HTTPS)
