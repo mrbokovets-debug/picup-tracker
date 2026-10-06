@@ -356,9 +356,10 @@
   }
   .themeOption.active{border-color:var(--signal);}
 
-  #resetDeliveryAvgBtn{width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;
-    background:transparent; color:var(--text); border:2px solid var(--line); margin-bottom:16px;}
-  #resetDeliveryAvgBtn:active{border-color:var(--signal);}
+  #resetDeliveryAvgBtn, .settingsActionBtn{width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;
+    background:transparent; color:var(--text); border:2px solid var(--line); margin-bottom:12px;}
+  #resetDeliveryAvgBtn{margin-bottom:16px;}
+  #resetDeliveryAvgBtn:active, .settingsActionBtn:active{border-color:var(--signal);}
   #settingsCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
     font-weight:700; cursor:pointer; background:var(--signal); color:var(--signal-text);}
 
@@ -866,6 +867,11 @@
       <div class="themeOption" data-theme="dark" data-i18n="settings.themeDark" onclick="chooseMapTheme('dark')">🌙 Тёмная</div>
     </div>
 
+    <p class="coords" data-i18n="settings.notifLabel">Уведомления «не забыл нажать Стоп?»</p>
+    <p id="notifStatus" class="coords" style="margin-top:0;"></p>
+    <button id="notifEnableBtn" class="settingsActionBtn" data-i18n="settings.notifEnableBtn" onclick="enableNotificationsFromTap()">🔔 Включить уведомления</button>
+    <button id="notifTestBtn" class="settingsActionBtn" data-i18n="settings.notifTestBtn" onclick="sendTestNotification()">📨 Проверить уведомление</button>
+
     <p class="coords" data-i18n="settings.deliveryAvgLabel">Среднее время доставки</p>
     <button id="resetDeliveryAvgBtn" data-i18n="settings.resetDeliveryAvgBtn" onclick="resetDeliveryAvg()">🔄 Обнулить среднее время доставки</button>
 
@@ -953,7 +959,8 @@ const TRANSLATIONS = {
       menuAria:'Меню' },
     arrival:{ waitingFor:'⏱ Ждём заказ:', cancel:'Отмена', done:'✅ Забрал заказ' },
     reminder:{ arrivalTitle:'⏱ Не забыл забрать заказ?', arrivalBody:'Таймер ожидания идёт уже {min} мин. Если уже забрал — нажми «✅ Забрал заказ».',
-      routeTitle:'🚴 Не забыл нажать «Стоп»?', routeBody:'Доставка идёт уже {min} мин. Если уже приехал — останови таймер в приложении.' },
+      routeTitle:'🚴 Не забыл нажать «Стоп»?', routeBody:'Доставка идёт уже {min} мин. Если уже приехал — останови таймер в приложении.',
+      testTitle:'🔔 Проверка уведомлений', testBody:'Всё работает: так будет выглядеть напоминание «не забыл нажать Стоп?».' },
     orders:{ title:'Мои заказы', searchPlaceholder:'Поиск среди своих точек...', sortByCount:'По частоте ▾',
       sortByEarned:'По сумме ▾', totalLabel:'всего заборов: {n}', emptyNoSpots:'Пока пусто. Тапни по карте, где обычно забираешь заказы.',
       emptyNoResults:'Ничего не найдено по запросу «{q}»', rowDelete:'Удалить', rowAvgWait:'⏱ в среднем ждёшь тут: {time}',
@@ -1015,7 +1022,12 @@ const TRANSLATIONS = {
       payTypeLabel:'Тип оплаты', payTypeHourlyOpt:'⏱ Почасовая + премия', payTypePieceOpt:'💰 Сдельная за заказ',
       currencyLabel:'Валюта', appThemeLabel:'Оформление приложения', themeLight:'☀️ Светлая', themeDark:'🌙 Тёмная',
       mapThemeLabel:'Оформление карты (можно отдельно от приложения)', done:'Готово', languageLabel:'Язык приложения',
-      deliveryAvgLabel:'Среднее время доставки', resetDeliveryAvgBtn:'🔄 Обнулить среднее время доставки' },
+      deliveryAvgLabel:'Среднее время доставки', resetDeliveryAvgBtn:'🔄 Обнулить среднее время доставки',
+      notifLabel:'Уведомления «не забыл нажать Стоп?»', notifEnableBtn:'🔔 Включить уведомления', notifTestBtn:'📨 Проверить уведомление',
+      notifStatusGranted:'✅ Включены', notifStatusDefault:'⚪ Ещё не разрешены — нажми «Включить» и подтверди в окне телефона',
+      notifStatusDenied:'⛔ Запрещены. Открой настройки телефона → Приложения/Chrome → Уведомления и разреши для этого сайта',
+      notifStatusUnsupported:'⚠️ Этот браузер не поддерживает уведомления. Открой приложение в Chrome или установи его на экран «Домой»',
+      notifTestFailed:'Не получилось показать уведомление. Проверь разрешение в настройках телефона.' },
     history:{ title:'История заказов', desc:'Полный список твоих заказов по дням и времени: где забрал, сколько ждал и когда случайно нажал не туда (−1). Листай вниз или ищи конкретный день по дате.',
       dateFilterDefault:'📅 Поиск по дате', emptyAll:'Пока пусто. Здесь появится история всех +1 и −1 по точкам.',
       emptyRange:'За выбранный период записей нет.' },
@@ -1052,7 +1064,8 @@ const TRANSLATIONS = {
       menuAria:'Меню' },
     arrival:{ waitingFor:'⏱ Чекаємо замовлення:', cancel:'Скасувати', done:'✅ Забрав замовлення' },
     reminder:{ arrivalTitle:'⏱ Не забув забрати замовлення?', arrivalBody:'Таймер очікування йде вже {min} хв. Якщо вже забрав — натисни «✅ Забрав замовлення».',
-      routeTitle:'🚴 Не забув натиснути «Стоп»?', routeBody:'Доставка триває вже {min} хв. Якщо вже приїхав — зупини таймер у застосунку.' },
+      routeTitle:'🚴 Не забув натиснути «Стоп»?', routeBody:'Доставка триває вже {min} хв. Якщо вже приїхав — зупини таймер у застосунку.',
+      testTitle:'🔔 Перевірка сповіщень', testBody:'Усе працює: так виглядатиме нагадування «не забув натиснути Стоп?».' },
     orders:{ title:'Мої замовлення', searchPlaceholder:'Пошук серед своїх точок...', sortByCount:'За частотою ▾',
       sortByEarned:'За сумою ▾', totalLabel:'всього підборів: {n}', emptyNoSpots:'Поки порожньо. Тапни на карті там, де зазвичай забираєш замовлення.',
       emptyNoResults:'Нічого не знайдено за запитом «{q}»', rowDelete:'Видалити', rowAvgWait:'⏱ в середньому чекаєш тут: {time}',
@@ -1114,7 +1127,12 @@ const TRANSLATIONS = {
       payTypeLabel:'Тип оплати', payTypeHourlyOpt:'⏱ Погодинна + премія', payTypePieceOpt:'💰 Відрядна за замовлення',
       currencyLabel:'Валюта', appThemeLabel:'Оформлення застосунку', themeLight:'☀️ Світла', themeDark:'🌙 Темна',
       mapThemeLabel:'Оформлення карти (можна окремо від застосунку)', done:'Готово', languageLabel:'Мова застосунку',
-      deliveryAvgLabel:'Середній час доставки', resetDeliveryAvgBtn:'🔄 Обнулити середній час доставки' },
+      deliveryAvgLabel:'Середній час доставки', resetDeliveryAvgBtn:'🔄 Обнулити середній час доставки',
+      notifLabel:'Сповіщення «не забув натиснути Стоп?»', notifEnableBtn:'🔔 Увімкнути сповіщення', notifTestBtn:'📨 Перевірити сповіщення',
+      notifStatusGranted:'✅ Увімкнено', notifStatusDefault:'⚪ Ще не дозволені — натисни «Увімкнути» й підтверди у вікні телефона',
+      notifStatusDenied:'⛔ Заборонені. Відкрий налаштування телефона → Застосунки/Chrome → Сповіщення й дозволь для цього сайту',
+      notifStatusUnsupported:'⚠️ Цей браузер не підтримує сповіщення. Відкрий застосунок у Chrome або встанови його на екран «Додому»',
+      notifTestFailed:'Не вдалося показати сповіщення. Перевір дозвіл у налаштуваннях телефона.' },
     history:{ title:'Історія замовлень', desc:'Повний список твоїх замовлень по днях і часу: де забрав, скільки чекав і коли випадково натиснув не туди (−1). Гортай вниз або шукай конкретний день за датою.',
       dateFilterDefault:'📅 Пошук за датою', emptyAll:'Поки порожньо. Тут з’явиться історія всіх +1 і −1 по точках.',
       emptyRange:'За обраний період записів немає.' },
@@ -1151,7 +1169,8 @@ const TRANSLATIONS = {
       menuAria:'Menú' },
     arrival:{ waitingFor:'⏱ Esperando pedido:', cancel:'Cancelar', done:'✅ Pedido recogido' },
     reminder:{ arrivalTitle:'⏱ ¿Olvidaste recoger el pedido?', arrivalBody:'El temporizador de espera lleva ya {min} min. Si ya lo recogiste, pulsa «✅ Pedido recogido».',
-      routeTitle:'🚴 ¿Olvidaste pulsar «Parar»?', routeBody:'La entrega lleva ya {min} min en marcha. Si ya llegaste, detén el temporizador en la app.' },
+      routeTitle:'🚴 ¿Olvidaste pulsar «Parar»?', routeBody:'La entrega lleva ya {min} min en marcha. Si ya llegaste, detén el temporizador en la app.',
+      testTitle:'🔔 Prueba de notificaciones', testBody:'Todo funciona: así se verá el aviso «¿olvidaste pulsar Parar?».' },
     orders:{ title:'Mis pedidos', searchPlaceholder:'Buscar entre tus puntos...', sortByCount:'Por frecuencia ▾',
       sortByEarned:'Por ganancias ▾', totalLabel:'total de recogidas: {n}', emptyNoSpots:'Aún no hay nada. Toca el mapa donde sueles recoger pedidos.',
       emptyNoResults:'No se encontró nada para «{q}»', rowDelete:'Eliminar', rowAvgWait:'⏱ espera media aquí: {time}',
@@ -1213,7 +1232,12 @@ const TRANSLATIONS = {
       payTypeLabel:'Tipo de pago', payTypeHourlyOpt:'⏱ Por horas + bonus', payTypePieceOpt:'💰 Por pedido (destajo)',
       currencyLabel:'Moneda', appThemeLabel:'Apariencia de la app', themeLight:'☀️ Claro', themeDark:'🌙 Oscuro',
       mapThemeLabel:'Apariencia del mapa (independiente de la app)', done:'Listo', languageLabel:'Idioma de la app',
-      deliveryAvgLabel:'Tiempo medio de entrega', resetDeliveryAvgBtn:'🔄 Reiniciar tiempo medio de entrega' },
+      deliveryAvgLabel:'Tiempo medio de entrega', resetDeliveryAvgBtn:'🔄 Reiniciar tiempo medio de entrega',
+      notifLabel:'Avisos «¿olvidaste pulsar Parar?»', notifEnableBtn:'🔔 Activar notificaciones', notifTestBtn:'📨 Probar notificación',
+      notifStatusGranted:'✅ Activadas', notifStatusDefault:'⚪ Aún sin permiso — pulsa «Activar» y confirma en la ventana del móvil',
+      notifStatusDenied:'⛔ Bloqueadas. Abre Ajustes del móvil → Apps/Chrome → Notificaciones y permítelas para este sitio',
+      notifStatusUnsupported:'⚠️ Este navegador no admite notificaciones. Abre la app en Chrome o instálala en la pantalla de inicio',
+      notifTestFailed:'No se pudo mostrar la notificación. Revisa el permiso en los ajustes del móvil.' },
     history:{ title:'Historial de pedidos', desc:'La lista completa de tus pedidos por día y hora: dónde recogiste, cuánto esperaste y cuándo tocaste el punto equivocado por error (−1). Desplázate hacia abajo o busca un día concreto por fecha.',
       dateFilterDefault:'📅 Buscar por fecha', emptyAll:'Aún no hay nada. Aquí aparecerá el historial de todos los +1 y −1 de tus puntos.',
       emptyRange:'No hay registros en el periodo seleccionado.' },
@@ -1250,7 +1274,8 @@ const TRANSLATIONS = {
       menuAria:'Menu' },
     arrival:{ waitingFor:'⏱ Waiting on order:', cancel:'Cancel', done:'✅ Picked up order' },
     reminder:{ arrivalTitle:'⏱ Forgot to mark the pickup?', arrivalBody:'The wait timer has been running for {min} min. If you already got the order, tap "✅ Picked up order".',
-      routeTitle:'🚴 Forgot to tap "Stop"?', routeBody:'The delivery timer has been running for {min} min. If you already arrived, stop the timer in the app.' },
+      routeTitle:'🚴 Forgot to tap "Stop"?', routeBody:'The delivery timer has been running for {min} min. If you already arrived, stop the timer in the app.',
+      testTitle:'🔔 Notification test', testBody:'All good: this is how the "forgot to tap Stop?" reminder will look.' },
     orders:{ title:'My orders', searchPlaceholder:'Search your spots...', sortByCount:'By frequency ▾',
       sortByEarned:'By earnings ▾', totalLabel:'total pickups: {n}', emptyNoSpots:"Nothing here yet. Tap the map where you usually pick up orders.",
       emptyNoResults:'No results for "{q}"', rowDelete:'Delete', rowAvgWait:'⏱ average wait here: {time}',
@@ -1312,7 +1337,12 @@ const TRANSLATIONS = {
       payTypeLabel:'Pay type', payTypeHourlyOpt:'⏱ Hourly + bonus', payTypePieceOpt:'💰 Per-order (piece rate)',
       currencyLabel:'Currency', appThemeLabel:'App appearance', themeLight:'☀️ Light', themeDark:'🌙 Dark',
       mapThemeLabel:'Map appearance (independent of the app)', done:'Done', languageLabel:'App language',
-      deliveryAvgLabel:'Average delivery time', resetDeliveryAvgBtn:'🔄 Reset average delivery time' },
+      deliveryAvgLabel:'Average delivery time', resetDeliveryAvgBtn:'🔄 Reset average delivery time',
+      notifLabel:'"Forgot to tap Stop?" notifications', notifEnableBtn:'🔔 Enable notifications', notifTestBtn:'📨 Send test notification',
+      notifStatusGranted:'✅ Enabled', notifStatusDefault:'⚪ Not allowed yet — tap "Enable" and confirm in the phone prompt',
+      notifStatusDenied:'⛔ Blocked. Open phone Settings → Apps/Chrome → Notifications and allow them for this site',
+      notifStatusUnsupported:'⚠️ This browser does not support notifications. Open the app in Chrome or install it to the home screen',
+      notifTestFailed:'Could not show the notification. Check the permission in your phone settings.' },
     history:{ title:'Order history', desc:'The full list of your orders by day and time: where you picked up, how long you waited, and when you accidentally tapped the wrong spot (−1). Scroll down or search for a specific day.',
       dateFilterDefault:'📅 Search by date', emptyAll:'Nothing here yet. The history of every +1 and −1 on your spots will show up here.',
       emptyRange:'No records for the selected period.' },
@@ -1430,6 +1460,7 @@ function refreshOpenScreens(){
   }catch(e){}
   try{ updateQuickButton(); }catch(e){}
   try{ renderDeliveryAvg(); }catch(e){}
+  try{ renderNotifStatus(); }catch(e){}
   try{
     if(document.getElementById('historyDateFilterBar')){
       const lbl = document.getElementById('historyDateFilterLabel');
@@ -1882,6 +1913,7 @@ function openSettingsModal(){
     el.classList.toggle('active', el.dataset.currency === currentCurrency);
   });
   updateLangSwitcherUI();
+  renderNotifStatus();
   document.getElementById('settingsModalBg').classList.add('show');
 }
 function closeSettingsModal(){
@@ -3245,26 +3277,78 @@ function fireReminderNotification(titleKey, bodyKey, vars){
     if(!('Notification' in window)) return;
     if(Notification.permission !== 'granted') return;
     if(!document.hidden) return;
-    const title = t(titleKey, vars);
-    const body = t(bodyKey, vars);
-    const opts = {
-      body,
-      icon: 'icon-192.png',
-      badge: 'icon-192.png',
-      tag: titleKey,
-      renotify: true,        // звук/вибро на КАЖДОЕ повторное уведомление с тем же tag, а не только на первое
-      requireInteraction: true, // не исчезает само из шторки - висит, пока не смахнут или не нажмут "Стоп"
-      vibrate: [200, 100, 200, 100, 400] // вибрация от самого пуша - работает даже когда navigator.vibrate() со страницы уже не может (вкладка в фоне)
-    };
-    if('serviceWorker' in navigator && navigator.serviceWorker.getRegistration){
-      navigator.serviceWorker.getRegistration().then((reg) => {
-        if(reg && reg.showNotification){ reg.showNotification(title, opts); }
-        else{ new Notification(title, opts); }
-      }).catch(() => { try{ new Notification(title, opts); }catch(e){} });
-    } else {
-      new Notification(title, opts);
-    }
+    showSystemNotification(t(titleKey, vars), t(bodyKey, vars), titleKey);
   }catch(e){}
+}
+
+// Единая точка показа системного уведомления. На Android Chrome конструктор `new Notification()`
+// НЕ работает вообще ("Illegal constructor") - только через ServiceWorkerRegistration.showNotification,
+// поэтому ждём именно активный service worker (.ready), а не просто getRegistration().
+// Возвращает Promise<boolean>: получилось ли показать.
+function showSystemNotification(title, body, tag){
+  const opts = {
+    body,
+    icon: 'icon-192.png',
+    badge: 'icon-192.png',
+    tag,
+    renotify: true,        // звук/вибро на КАЖДОЕ повторное уведомление с тем же tag, а не только на первое
+    requireInteraction: true, // не исчезает само из шторки - висит, пока не смахнут или не нажмут "Стоп"
+    vibrate: [200, 100, 200, 100, 400] // вибрация от самого пуша - работает даже когда navigator.vibrate() со страницы уже не может (вкладка в фоне)
+  };
+  const viaConstructor = () => { try{ new Notification(title, opts); return true; }catch(e){ return false; } };
+  try{
+    if(!('Notification' in window) || Notification.permission !== 'granted') return Promise.resolve(false);
+    if('serviceWorker' in navigator && navigator.serviceWorker.ready){
+      const timeout = new Promise(resolve => setTimeout(() => resolve(null), 3000)); // SW не зарегистрирован - не ждём вечно
+      return Promise.race([navigator.serviceWorker.ready, timeout]).then((reg) => {
+        if(reg && reg.showNotification) return reg.showNotification(title, opts).then(() => true);
+        return viaConstructor();
+      }).catch(() => viaConstructor());
+    }
+    return Promise.resolve(viaConstructor());
+  }catch(e){ return Promise.resolve(false); }
+}
+
+// --- Настройки: статус разрешения, кнопка "включить" (реальный тап пользователя - единственный
+// надёжный способ получить окно разрешения на Android) и тестовое уведомление ---
+function renderNotifStatus(){
+  const statusEl = document.getElementById('notifStatus');
+  if(!statusEl) return;
+  const enableBtn = document.getElementById('notifEnableBtn');
+  const testBtn = document.getElementById('notifTestBtn');
+  let key, showEnable = false, showTest = true;
+  if(!('Notification' in window)){ key = 'unsupported'; showTest = false; }
+  else if(Notification.permission === 'granted'){ key = 'granted'; }
+  else if(Notification.permission === 'denied'){ key = 'denied'; }
+  else{ key = 'default'; showEnable = true; }
+  statusEl.textContent = t('settings.notifStatus' + key.charAt(0).toUpperCase() + key.slice(1));
+  if(enableBtn) enableBtn.style.display = showEnable ? '' : 'none';
+  if(testBtn) testBtn.style.display = showTest ? '' : 'none';
+}
+
+function enableNotificationsFromTap(){
+  if(!('Notification' in window)){ renderNotifStatus(); return; }
+  notificationPermissionRequested = true;
+  try{
+    const r = Notification.requestPermission(() => renderNotifStatus()); // callback-форма для старых браузеров
+    if(r && r.then) r.then(() => renderNotifStatus()).catch(() => renderNotifStatus());
+  }catch(e){ renderNotifStatus(); }
+}
+
+function sendTestNotification(){
+  const show = () => {
+    showSystemNotification(t('reminder.testTitle'), t('reminder.testBody'), 'pickup-test').then((ok) => {
+      if(!ok) alert(t('settings.notifTestFailed'));
+    });
+  };
+  if(!('Notification' in window)){ renderNotifStatus(); return; }
+  if(Notification.permission === 'granted'){ show(); return; }
+  if(Notification.permission === 'denied'){ alert(t('settings.notifStatusDenied')); return; }
+  notificationPermissionRequested = true;
+  try{
+    const r = Notification.requestPermission();
+    Promise.resolve(r).then(() => { renderNotifStatus(); if(Notification.permission === 'granted') show(); });
+  }catch(e){ renderNotifStatus(); }
 }
 
 // --- напоминание по таймеру ожидания на точке (один активный одновременно) ---
