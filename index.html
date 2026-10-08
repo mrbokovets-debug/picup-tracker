@@ -356,6 +356,16 @@
   }
   .themeOption.active{border-color:var(--signal);}
 
+  #backupBanner{position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:496px; margin:0 auto;
+    z-index:1700; background:var(--card); border:1px solid var(--signal); border-radius:14px; padding:12px 14px;
+    box-shadow:0 8px 28px rgba(0,0,0,0.35); display:none;}
+  #backupBanner.show{display:block;}
+  .backupBannerTitle{font-weight:800; font-size:14px; margin-bottom:4px;}
+  .backupBannerText{font-size:12.5px; color:var(--text-dim); line-height:1.35; margin-bottom:10px;}
+  .backupBannerBtns{display:flex; gap:8px; justify-content:flex-end;}
+  .backupBannerBtns button{padding:9px 16px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;
+    border:1px solid var(--line); background:var(--asphalt-2); color:var(--text);}
+  #backupBannerSave{background:var(--signal) !important; border-color:var(--signal) !important; color:var(--signal-text) !important;}
   #resetDeliveryAvgBtn, .settingsActionBtn{width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;
     background:transparent; color:var(--text); border:2px solid var(--line); margin-bottom:12px;}
   #resetDeliveryAvgBtn{margin-bottom:16px;}
@@ -587,6 +597,15 @@
 </style>
 </head>
 <body>
+
+<div id="backupBanner" role="alert">
+  <div class="backupBannerTitle" data-i18n="backup.bannerTitle">💾 Сохрани копию данных</div>
+  <div id="backupBannerText" class="backupBannerText"></div>
+  <div class="backupBannerBtns">
+    <button id="backupBannerLater" data-i18n="backup.bannerLater" onclick="snoozeBackupBanner()">Позже</button>
+    <button id="backupBannerSave" data-i18n="backup.bannerSave" onclick="exportData()">Сохранить</button>
+  </div>
+</div>
 
 <div id="arrivalBar">
   <div id="arrivalText"><span data-i18n="arrival.waitingFor">⏱ Ждём заказ:</span> <span id="arrivalSpotName"></span></div>
@@ -873,6 +892,10 @@
     <button id="notifEnableBtn" class="settingsActionBtn" data-i18n="settings.notifEnableBtn" onclick="enableNotificationsFromTap()">🔔 Включить уведомления</button>
     <button id="notifTestBtn" class="settingsActionBtn" data-i18n="settings.notifTestBtn" onclick="sendTestNotification()">📨 Проверить уведомление</button>
 
+    <p class="coords" data-i18n="backup.settingsLabel">Резервная копия данных</p>
+    <p id="backupStatus" class="coords" style="margin-top:0;"></p>
+    <button id="backupNowBtn" class="settingsActionBtn" data-i18n="backup.settingsBtn" onclick="exportData()">💾 Сохранить копию сейчас</button>
+
     <p class="coords" data-i18n="settings.deliveryAvgLabel">Среднее время доставки</p>
     <button id="resetDeliveryAvgBtn" data-i18n="settings.resetDeliveryAvgBtn" onclick="resetDeliveryAvg()">🔄 Обнулить среднее время доставки</button>
 
@@ -959,6 +982,10 @@ const TRANSLATIONS = {
       deliveredToast:'✅ Доставлено за {time}', geoUnavailable:'Геолокация недоступна в этом браузере',
       menuAria:'Меню' },
     arrival:{ waitingFor:'⏱ Ждём заказ:', cancel:'Отмена', done:'✅ Забрал заказ' },
+    backup:{ bannerTitle:'💾 Сохрани копию данных', bannerNever:'Данные хранятся только в этом телефоне. Если очистить браузер, удалить иконку или сменить телефон, они пропадут.',
+      bannerAge:'Последняя копия была {days} дн. назад. Сохрани новую, чтобы не потерять данные.', bannerSave:'Сохранить', bannerLater:'Позже',
+      settingsLabel:'Резервная копия данных', statusNever:'Копия ещё не сохранялась', statusLast:'Последняя копия: {date}', settingsBtn:'💾 Сохранить копию сейчас',
+      savedToast:'✅ Копия сохранена' },
     reminder:{ arrivalTitle:'⏱ Не забыл забрать заказ?', arrivalBody:'Таймер ожидания идёт уже {min} мин. Если уже забрал — нажми «✅ Забрал заказ».',
       routeTitle:'🚴 Не забыл нажать «Стоп»?', routeBody:'Доставка идёт уже {min} мин. Если уже приехал — останови таймер в приложении.',
       testTitle:'🔔 Проверка уведомлений', testBody:'Всё работает: так будет выглядеть напоминание «не забыл нажать Стоп?».' },
@@ -1065,6 +1092,10 @@ const TRANSLATIONS = {
       deliveredToast:'✅ Доставлено за {time}', geoUnavailable:'Геолокація недоступна в цьому браузері',
       menuAria:'Меню' },
     arrival:{ waitingFor:'⏱ Чекаємо замовлення:', cancel:'Скасувати', done:'✅ Забрав замовлення' },
+    backup:{ bannerTitle:'💾 Збережи копію даних', bannerNever:'Дані зберігаються лише в цьому телефоні. Якщо очистити браузер, видалити іконку або змінити телефон, вони зникнуть.',
+      bannerAge:'Остання копія була {days} дн. тому. Збережи нову, щоб не втратити дані.', bannerSave:'Зберегти', bannerLater:'Пізніше',
+      settingsLabel:'Резервна копія даних', statusNever:'Копію ще не зберігали', statusLast:'Остання копія: {date}', settingsBtn:'💾 Зберегти копію зараз',
+      savedToast:'✅ Копію збережено' },
     reminder:{ arrivalTitle:'⏱ Не забув забрати замовлення?', arrivalBody:'Таймер очікування йде вже {min} хв. Якщо вже забрав — натисни «✅ Забрав замовлення».',
       routeTitle:'🚴 Не забув натиснути «Стоп»?', routeBody:'Доставка триває вже {min} хв. Якщо вже приїхав — зупини таймер у застосунку.',
       testTitle:'🔔 Перевірка сповіщень', testBody:'Усе працює: так виглядатиме нагадування «не забув натиснути Стоп?».' },
@@ -1171,6 +1202,10 @@ const TRANSLATIONS = {
       deliveredToast:'✅ Entregado en {time}', geoUnavailable:'La geolocalización no está disponible en este navegador',
       menuAria:'Menú' },
     arrival:{ waitingFor:'⏱ Esperando pedido:', cancel:'Cancelar', done:'✅ Pedido recogido' },
+    backup:{ bannerTitle:'💾 Guarda una copia de tus datos', bannerNever:'Los datos se guardan solo en este móvil. Si borras el navegador, eliminas el icono o cambias de móvil, se perderán.',
+      bannerAge:'La última copia fue hace {days} días. Guarda una nueva para no perder tus datos.', bannerSave:'Guardar', bannerLater:'Más tarde',
+      settingsLabel:'Copia de seguridad', statusNever:'Aún no se ha guardado ninguna copia', statusLast:'Última copia: {date}', settingsBtn:'💾 Guardar copia ahora',
+      savedToast:'✅ Copia guardada' },
     reminder:{ arrivalTitle:'⏱ ¿Olvidaste recoger el pedido?', arrivalBody:'El temporizador de espera lleva ya {min} min. Si ya lo recogiste, pulsa «✅ Pedido recogido».',
       routeTitle:'🚴 ¿Olvidaste pulsar «Parar»?', routeBody:'La entrega lleva ya {min} min en marcha. Si ya llegaste, detén el temporizador en la app.',
       testTitle:'🔔 Prueba de notificaciones', testBody:'Todo funciona: así se verá el aviso «¿olvidaste pulsar Parar?».' },
@@ -1277,6 +1312,10 @@ const TRANSLATIONS = {
       deliveredToast:'✅ Delivered in {time}', geoUnavailable:'Geolocation is not available in this browser',
       menuAria:'Menu' },
     arrival:{ waitingFor:'⏱ Waiting on order:', cancel:'Cancel', done:'✅ Picked up order' },
+    backup:{ bannerTitle:'💾 Save a backup of your data', bannerNever:'Your data is stored only on this phone. If you clear the browser, delete the icon or change phones, it will be lost.',
+      bannerAge:'Your last backup was {days} days ago. Save a new one so you don\'t lose your data.', bannerSave:'Save', bannerLater:'Later',
+      settingsLabel:'Data backup', statusNever:'No backup saved yet', statusLast:'Last backup: {date}', settingsBtn:'💾 Save a backup now',
+      savedToast:'✅ Backup saved' },
     reminder:{ arrivalTitle:'⏱ Forgot to mark the pickup?', arrivalBody:'The wait timer has been running for {min} min. If you already got the order, tap "✅ Picked up order".',
       routeTitle:'🚴 Forgot to tap "Stop"?', routeBody:'The delivery timer has been running for {min} min. If you already arrived, stop the timer in the app.',
       testTitle:'🔔 Notification test', testBody:'All good: this is how the "forgot to tap Stop?" reminder will look.' },
@@ -1493,6 +1532,7 @@ function chooseLanguage(lang){
   updateLangSwitcherUI();
   refreshOpenScreens();
   try{ pushSyncState(); }catch(e){}
+  try{ renderBackupStatus(); showBackupBannerIfNeeded(); }catch(e){}
 }
 // ==================== /I18N ========================
 
@@ -1898,6 +1938,7 @@ function toggleSortMode(){
 }
 
 function openSettingsModal(){
+  try{ renderBackupStatus(); }catch(e){}
   const current = localStorage.getItem(MARKER_STYLE_KEY) || 'circle';
   document.querySelectorAll('.markerOption').forEach(el => {
     el.classList.toggle('active', el.dataset.style === current);
@@ -2212,6 +2253,7 @@ function wipeAllData(){
   try{ cancelArrival(); }catch(e){}
   try{ clearAllRouteReminders(); }catch(e){}
   try{ pushCancelAll(); }catch(e){}
+  try{ [LAST_BACKUP_KEY, BACKUP_SINCE_KEY, BACKUP_SNOOZE_KEY].forEach(k => localStorage.removeItem(k)); hideBackupBanner(); }catch(e){}
   spots = [];
   visitsLog = [];
   earningsLog = [];
@@ -3842,22 +3884,101 @@ function saveNewSpot(){
   renderAll();
 }
 
+const LAST_BACKUP_KEY = 'pickup-last-backup';       // ms последней УСПЕШНО сохранённой копии
+const BACKUP_SINCE_KEY = 'pickup-backup-since';     // ms, когда в приложении впервые появились данные
+const BACKUP_SNOOZE_KEY = 'pickup-backup-snooze';   // ms, до какого момента не напоминать
+const BACKUP_REMIND_DAYS = 7;                       // как часто напоминать, если копии уже были
+const BACKUP_FIRST_REMIND_DAYS = 3;                 // когда напомнить в первый раз, если копии не было вовсе
+const BACKUP_SNOOZE_MS = 24 * 3600 * 1000;          // «Позже» - не беспокоить сутки
+
+function lsGetNum(key){ try{ const n = Number(localStorage.getItem(key)); return isFinite(n) && n > 0 ? n : 0; }catch(e){ return 0; } }
+function lsSetNum(key, n){ try{ localStorage.setItem(key, String(n)); }catch(e){} }
+function hasAnyData(){ return spots.length > 0 || visitsLog.length > 0 || earningsLog.length > 0 || routeLog.length > 0; }
+
+function markBackupDone(){
+  lsSetNum(LAST_BACKUP_KEY, Date.now());
+  try{ localStorage.removeItem(BACKUP_SNOOZE_KEY); }catch(e){}
+  hideBackupBanner();
+  renderBackupStatus();
+}
+
+// Нужно ли сейчас показать напоминание (чистая функция - удобно проверять тестами)
+function backupReminderState(now){
+  if(!hasAnyData()) return null;
+  const last = lsGetNum(LAST_BACKUP_KEY);
+  let since = lsGetNum(BACKUP_SINCE_KEY);
+  if(!since){ since = now; lsSetNum(BACKUP_SINCE_KEY, since); }
+  if(lsGetNum(BACKUP_SNOOZE_KEY) > now) return null;
+  const DAY = 24 * 3600 * 1000;
+  if(last){
+    const days = Math.floor((now - last) / DAY);
+    return days >= BACKUP_REMIND_DAYS ? { kind: 'age', days } : null;
+  }
+  return (now - since) >= BACKUP_FIRST_REMIND_DAYS * DAY ? { kind: 'never' } : null;
+}
+
+function showBackupBannerIfNeeded(){
+  const st = backupReminderState(Date.now());
+  const el = document.getElementById('backupBanner');
+  if(!el) return;
+  if(!st){ el.classList.remove('show'); return; }
+  document.getElementById('backupBannerText').textContent =
+    st.kind === 'age' ? t('backup.bannerAge', { days: st.days }) : t('backup.bannerNever');
+  el.classList.add('show');
+}
+function hideBackupBanner(){ const el = document.getElementById('backupBanner'); if(el) el.classList.remove('show'); }
+function snoozeBackupBanner(){ lsSetNum(BACKUP_SNOOZE_KEY, Date.now() + BACKUP_SNOOZE_MS); hideBackupBanner(); }
+
+function renderBackupStatus(){
+  const el = document.getElementById('backupStatus');
+  if(!el) return;
+  const last = lsGetNum(LAST_BACKUP_KEY);
+  el.textContent = last
+    ? t('backup.statusLast', { date: new Date(last).toLocaleDateString(currentLang === 'uk' ? 'uk-UA' : currentLang === 'es' ? 'es-ES' : currentLang === 'en' ? 'en-GB' : 'ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }) })
+    : t('backup.statusNever');
+}
+
+// Просим браузер не выбрасывать данные приложения при нехватке места (где поддерживается)
+function requestPersistentStorage(){
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); }catch(e){}
+}
+
 function exportData(){
-  if(spots.length === 0 && visitsLog.length === 0 && earningsLog.length === 0 && routeLog.length === 0){
+  if(!hasAnyData()){
     alert(t('alerts.nothingToSave'));
     return;
   }
   const payload = { spots, visitsLog, routeLog, earningsLog };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const text = JSON.stringify(payload, null, 2);
   const dateStr = new Date().toISOString().slice(0, 10);
-  a.href = url;
-  a.download = `pickup-spots-backup-${dateStr}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const fileName = `pickup-spots-backup-${dateStr}.json`;
+
+  const downloadFallback = () => {
+    const blob = new Blob([text], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    markBackupDone();
+  };
+
+  // На телефоне надёжнее системное меню «Поделиться» -> «Сохранить в Файлы»/Диск/Telegram:
+  // обычная ссылка-скачивание в установленном приложении на iPhone часто ничего не делает
+  try{
+    const file = new File([text], fileName, { type: 'application/json' });
+    if(navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share){
+      navigator.share({ files: [file], title: fileName }).then(markBackupDone).catch((e) => {
+        if(e && e.name === 'AbortError') return; // человек закрыл меню - копию не считаем сохранённой
+        downloadFallback();
+      });
+      return;
+    }
+  }catch(e){}
+  downloadFallback();
 }
 
 function importData(event){
@@ -4034,6 +4155,10 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 
 applyStaticI18n();
 loadSpots();
+requestPersistentStorage();
+renderBackupStatus();
+// даём приложению загрузиться и только потом (не поверх тура/онбординга) напоминаем про копию
+setTimeout(() => { try{ showBackupBannerIfNeeded(); }catch(e){} }, 4000);
 </script>
 </body>
 </html>
