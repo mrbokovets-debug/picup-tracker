@@ -869,6 +869,7 @@
 
     <p class="coords" data-i18n="settings.notifLabel">Уведомления «не забыл нажать Стоп?»</p>
     <p id="notifStatus" class="coords" style="margin-top:0;"></p>
+    <p id="pushStatus" class="coords" style="margin-top:0;display:none;"></p>
     <button id="notifEnableBtn" class="settingsActionBtn" data-i18n="settings.notifEnableBtn" onclick="enableNotificationsFromTap()">🔔 Включить уведомления</button>
     <button id="notifTestBtn" class="settingsActionBtn" data-i18n="settings.notifTestBtn" onclick="sendTestNotification()">📨 Проверить уведомление</button>
 
@@ -1027,7 +1028,8 @@ const TRANSLATIONS = {
       notifStatusGranted:'✅ Включены', notifStatusDefault:'⚪ Ещё не разрешены — нажми «Включить» и подтверди в окне телефона',
       notifStatusDenied:'⛔ Запрещены. Открой настройки телефона → Приложения/Chrome → Уведомления и разреши для этого сайта',
       notifStatusUnsupported:'⚠️ Этот браузер не поддерживает уведомления. Открой приложение в Chrome или установи его на экран «Домой»',
-      notifTestFailed:'Не получилось показать уведомление. Проверь разрешение в настройках телефона.' },
+      notifTestFailed:'Не получилось показать уведомление. Проверь разрешение в настройках телефона.',
+      pushOn:'☁️ Напоминания придут, даже если приложение закрыто', pushIosHint:'ℹ️ На iPhone напоминания при закрытом приложении работают, только если добавить его на экран «Домой» (Поделиться → На экран «Домой»)' },
     history:{ title:'История заказов', desc:'Полный список твоих заказов по дням и времени: где забрал, сколько ждал и когда случайно нажал не туда (−1). Листай вниз или ищи конкретный день по дате.',
       dateFilterDefault:'📅 Поиск по дате', emptyAll:'Пока пусто. Здесь появится история всех +1 и −1 по точкам.',
       emptyRange:'За выбранный период записей нет.' },
@@ -1132,7 +1134,8 @@ const TRANSLATIONS = {
       notifStatusGranted:'✅ Увімкнено', notifStatusDefault:'⚪ Ще не дозволені — натисни «Увімкнути» й підтверди у вікні телефона',
       notifStatusDenied:'⛔ Заборонені. Відкрий налаштування телефона → Застосунки/Chrome → Сповіщення й дозволь для цього сайту',
       notifStatusUnsupported:'⚠️ Цей браузер не підтримує сповіщення. Відкрий застосунок у Chrome або встанови його на екран «Додому»',
-      notifTestFailed:'Не вдалося показати сповіщення. Перевір дозвіл у налаштуваннях телефона.' },
+      notifTestFailed:'Не вдалося показати сповіщення. Перевір дозвіл у налаштуваннях телефона.',
+      pushOn:'☁️ Нагадування прийдуть, навіть якщо застосунок закрито', pushIosHint:'ℹ️ На iPhone нагадування при закритому застосунку працюють, лише якщо додати його на екран «Додому» (Поділитися → На екран «Додому»)' },
     history:{ title:'Історія замовлень', desc:'Повний список твоїх замовлень по днях і часу: де забрав, скільки чекав і коли випадково натиснув не туди (−1). Гортай вниз або шукай конкретний день за датою.',
       dateFilterDefault:'📅 Пошук за датою', emptyAll:'Поки порожньо. Тут з’явиться історія всіх +1 і −1 по точках.',
       emptyRange:'За обраний період записів немає.' },
@@ -1237,7 +1240,8 @@ const TRANSLATIONS = {
       notifStatusGranted:'✅ Activadas', notifStatusDefault:'⚪ Aún sin permiso — pulsa «Activar» y confirma en la ventana del móvil',
       notifStatusDenied:'⛔ Bloqueadas. Abre Ajustes del móvil → Apps/Chrome → Notificaciones y permítelas para este sitio',
       notifStatusUnsupported:'⚠️ Este navegador no admite notificaciones. Abre la app en Chrome o instálala en la pantalla de inicio',
-      notifTestFailed:'No se pudo mostrar la notificación. Revisa el permiso en los ajustes del móvil.' },
+      notifTestFailed:'No se pudo mostrar la notificación. Revisa el permiso en los ajustes del móvil.',
+      pushOn:'☁️ Los avisos llegarán aunque la app esté cerrada', pushIosHint:'ℹ️ En iPhone los avisos con la app cerrada solo funcionan si la añades a la pantalla de inicio (Compartir → Añadir a pantalla de inicio)' },
     history:{ title:'Historial de pedidos', desc:'La lista completa de tus pedidos por día y hora: dónde recogiste, cuánto esperaste y cuándo tocaste el punto equivocado por error (−1). Desplázate hacia abajo o busca un día concreto por fecha.',
       dateFilterDefault:'📅 Buscar por fecha', emptyAll:'Aún no hay nada. Aquí aparecerá el historial de todos los +1 y −1 de tus puntos.',
       emptyRange:'No hay registros en el periodo seleccionado.' },
@@ -1342,7 +1346,8 @@ const TRANSLATIONS = {
       notifStatusGranted:'✅ Enabled', notifStatusDefault:'⚪ Not allowed yet — tap "Enable" and confirm in the phone prompt',
       notifStatusDenied:'⛔ Blocked. Open phone Settings → Apps/Chrome → Notifications and allow them for this site',
       notifStatusUnsupported:'⚠️ This browser does not support notifications. Open the app in Chrome or install it to the home screen',
-      notifTestFailed:'Could not show the notification. Check the permission in your phone settings.' },
+      notifTestFailed:'Could not show the notification. Check the permission in your phone settings.',
+      pushOn:'☁️ Reminders will arrive even if the app is closed', pushIosHint:'ℹ️ On iPhone, reminders with the app closed only work if you add it to the Home Screen (Share → Add to Home Screen)' },
     history:{ title:'Order history', desc:'The full list of your orders by day and time: where you picked up, how long you waited, and when you accidentally tapped the wrong spot (−1). Scroll down or search for a specific day.',
       dateFilterDefault:'📅 Search by date', emptyAll:'Nothing here yet. The history of every +1 and −1 on your spots will show up here.',
       emptyRange:'No records for the selected period.' },
@@ -1487,6 +1492,7 @@ function chooseLanguage(lang){
   applyStaticI18n();
   updateLangSwitcherUI();
   refreshOpenScreens();
+  try{ pushSyncState(); }catch(e){}
 }
 // ==================== /I18N ========================
 
@@ -2205,6 +2211,7 @@ window.addEventListener('resize', () => {
 function wipeAllData(){
   try{ cancelArrival(); }catch(e){}
   try{ clearAllRouteReminders(); }catch(e){}
+  try{ pushCancelAll(); }catch(e){}
   spots = [];
   visitsLog = [];
   earningsLog = [];
@@ -2571,6 +2578,7 @@ function markRouteArrived(routeId){
   persistRouteActive();
   persistRouteLog();
   clearRouteReminder(routeId);
+  pushCancel('route', routeId);
 }
 
 // --- Календарь для выбора даты/диапазона дат в истории ---
@@ -3213,7 +3221,7 @@ function ensureNotificationPermission(){
     notificationPermissionRequested = true;
     if(Notification.permission === 'default'){
       // не блокируем работу приложения, если браузер молчит/юзер игнорирует - просто пробуем
-      Notification.requestPermission().catch(() => {});
+      Notification.requestPermission().then(() => pushResyncAll()).catch(() => {});
     }
   }catch(e){}
 }
@@ -3277,6 +3285,8 @@ function fireReminderNotification(titleKey, bodyKey, vars){
     if(!('Notification' in window)) return;
     if(Notification.permission !== 'granted') return;
     if(!document.hidden) return;
+    // если сервер уже взял это напоминание на себя - он пришлёт свой пуш, свой не дублируем
+    if(pushCovers(titleKey === 'reminder.arrivalTitle' ? 'arrival' : 'route')) return;
     showSystemNotification(t(titleKey, vars), t(bodyKey, vars), titleKey);
   }catch(e){}
 }
@@ -3322,6 +3332,7 @@ function renderNotifStatus(){
   else if(Notification.permission === 'denied'){ key = 'denied'; }
   else{ key = 'default'; showEnable = true; }
   statusEl.textContent = t('settings.notifStatus' + key.charAt(0).toUpperCase() + key.slice(1));
+  renderPushStatus();
   if(enableBtn) enableBtn.style.display = showEnable ? '' : 'none';
   if(testBtn) testBtn.style.display = showTest ? '' : 'none';
 }
@@ -3330,8 +3341,8 @@ function enableNotificationsFromTap(){
   if(!('Notification' in window)){ renderNotifStatus(); return; }
   notificationPermissionRequested = true;
   try{
-    const r = Notification.requestPermission(() => renderNotifStatus()); // callback-форма для старых браузеров
-    if(r && r.then) r.then(() => renderNotifStatus()).catch(() => renderNotifStatus());
+    const r = Notification.requestPermission(() => { renderNotifStatus(); pushResyncAll(); }); // callback-форма для старых браузеров
+    if(r && r.then) r.then(() => { renderNotifStatus(); pushResyncAll(); }).catch(() => renderNotifStatus());
   }catch(e){ renderNotifStatus(); }
 }
 
@@ -3351,6 +3362,158 @@ function sendTestNotification(){
   }catch(e){ renderNotifStatus(); }
 }
 
+// ====================== ПУШ С СЕРВЕРА (работает при закрытом приложении) ======================
+// Свёрнутую страницу телефон замораживает, и таймер внутри неё не тикает. Поэтому при старте таймера
+// просим маленький сервер (Cloudflare Worker) прислать настоящий Web Push через 10 минут,
+// а при «Стоп» отменяем. На сервер уходит только адрес пуш-подписки и время - никаких точек и сумм.
+// После развёртывания Worker сюда вставляется его адрес, например 'https://pickup-push.имя.workers.dev'.
+// Пока строка пустая - пуш с сервера выключен, всё остальное работает как раньше.
+const PUSH_SERVER_URL = '';
+const PUSH_VAPID_PUBLIC_KEY = 'BO7DfE5zSope4v89v4iSIuKxlvy4ABg0Tmw7N-zJy1opR08SMsPfvUnVcjxR5D2eh8pHviU9Hi5lWrH7vwZ-6nQ';
+const PUSH_DB_NAME = 'pickup-push';
+let pushTimers = {};      // 'arrival:<id>' | 'route:<id>' -> { kind, id, startTs, repeatMs, ok }
+let pushEndpoint = null;  // endpoint текущей подписки телефона
+let pushSubscribing = null;
+
+function pushSupported(){
+  return !!PUSH_SERVER_URL && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
+function pushKey(kind, id){ return kind + ':' + id; }
+function pushCovers(kind){
+  return Object.values(pushTimers).some(x => x.kind === kind && x.ok);
+}
+
+function pushKeyToBytes(b64){
+  const pad = '='.repeat((4 - b64.length % 4) % 4);
+  const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+  const out = new Uint8Array(raw.length);
+  for(let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+async function ensurePushSubscription(){
+  if(!pushSupported() || Notification.permission !== 'granted') return null;
+  if(pushEndpoint) return pushEndpoint;
+  if(pushSubscribing) return pushSubscribing;
+  pushSubscribing = (async () => {
+    try{
+      const timeout = new Promise(res => setTimeout(() => res(null), 4000));
+      const reg = await Promise.race([navigator.serviceWorker.ready, timeout]);
+      if(!reg || !reg.pushManager) return null;
+      let sub = await reg.pushManager.getSubscription();
+      if(!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: pushKeyToBytes(PUSH_VAPID_PUBLIC_KEY) });
+      pushEndpoint = sub && sub.endpoint ? sub.endpoint : null;
+      return pushEndpoint;
+    }catch(e){ return null; }
+    finally{ pushSubscribing = null; renderPushStatus(); }
+  })();
+  return pushSubscribing;
+}
+
+async function pushPost(path, body){
+  const res = await fetch(PUSH_SERVER_URL.replace(/\/+$/, '') + path, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  });
+  return res.ok;
+}
+
+// --- IndexedDB: service worker не видит localStorage, поэтому кладём ему тексты и активные таймеры сюда ---
+function pushDbOpen(){
+  return new Promise((resolve, reject) => {
+    const rq = indexedDB.open(PUSH_DB_NAME, 1);
+    rq.onupgradeneeded = () => { rq.result.createObjectStore('cfg'); };
+    rq.onsuccess = () => resolve(rq.result);
+    rq.onerror = () => reject(rq.error);
+  });
+}
+async function pushSyncState(){
+  if(!pushSupported() || !('indexedDB' in window)) return;
+  try{
+    const state = {
+      texts: {
+        arrival: { title: t('reminder.arrivalTitle'), body: t('reminder.arrivalBody') },
+        route: { title: t('reminder.routeTitle'), body: t('reminder.routeBody') }
+      },
+      timers: Object.values(pushTimers).map(x => ({ kind: x.kind, id: x.id, startTs: x.startTs }))
+    };
+    const db = await pushDbOpen();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('cfg', 'readwrite');
+      tx.objectStore('cfg').put(state, 'state');
+      tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  }catch(e){}
+}
+
+async function pushSendSchedule(entry){
+  try{
+    const ep = await ensurePushSubscription();
+    if(!ep) return;
+    const wait = entry.kind === 'arrival' ? ARRIVAL_REMINDER_MS : ROUTE_REMINDER_MS;
+    entry.ok = await pushPost('/schedule', {
+      subscription: { endpoint: ep }, kind: entry.kind, id: String(entry.id),
+      delayMs: Math.max(0, wait - (Date.now() - entry.startTs)), repeatMs: entry.repeatMs
+    });
+    renderPushStatus();
+  }catch(e){ entry.ok = false; }
+}
+
+function pushSchedule(kind, id, startTs){
+  if(!pushSupported()) return;
+  const key = pushKey(kind, id);
+  const entry = { kind, id: String(id), startTs, repeatMs: REMINDER_REPEAT_MS, ok: false };
+  pushTimers[key] = entry;
+  pushSyncState();
+  pushSendSchedule(entry);
+}
+
+function pushCancel(kind, id){
+  if(!pushSupported()) return;
+  const key = pushKey(kind, id);
+  if(!pushTimers[key]) return;
+  delete pushTimers[key];
+  pushSyncState();
+  ensurePushSubscription().then(ep => {
+    if(ep) pushPost('/cancel', { endpoint: ep, kind, id: String(id) }).catch(() => {});
+  });
+}
+
+function pushCancelAll(){
+  if(!pushSupported()) return;
+  pushTimers = {};
+  pushSyncState();
+  ensurePushSubscription().then(ep => {
+    if(ep) pushPost('/cancel', { endpoint: ep, all: true }).catch(() => {});
+  });
+}
+
+// разрешение дали уже после старта таймера (окно показали по тапу на «Старт») - досылаем на сервер то, что ждёт
+function pushResyncAll(){
+  if(!pushSupported() || Notification.permission !== 'granted') return;
+  Object.values(pushTimers).forEach(pushSendSchedule);
+  pushSyncState();
+  renderPushStatus();
+}
+
+function isIosDevice(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+function isStandalonePwa(){
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+}
+function renderPushStatus(){
+  const el = document.getElementById('pushStatus');
+  if(!el) return;
+  let text = '';
+  if(PUSH_SERVER_URL){
+    if(isIosDevice() && !isStandalonePwa()) text = t('settings.pushIosHint');
+    else if('Notification' in window && Notification.permission === 'granted' && 'PushManager' in window) text = t('settings.pushOn');
+  }
+  el.textContent = text;
+  el.style.display = text ? '' : 'none';
+}
+
 // --- напоминание по таймеру ожидания на точке (один активный одновременно) ---
 let arrivalReminderTimer = null;
 
@@ -3368,6 +3531,10 @@ function scheduleArrivalReminder(){
   const elapsedMs = Date.now() - activeArrival.startTs;
   const delay = Math.max(0, ARRIVAL_REMINDER_MS - elapsedMs);
   arrivalReminderTimer = setTimeout(arrivalReminderTick, delay);
+  // если вместо прежнего таймера запустили новый - старый на сервере отменяем
+  Object.values(pushTimers).filter(x => x.kind === 'arrival' && x.id !== String(activeArrival.startTs))
+    .forEach(x => pushCancel('arrival', x.id));
+  pushSchedule('arrival', activeArrival.startTs, activeArrival.startTs);
 }
 
 let arrivalLastNotifyTs = 0;
@@ -3405,6 +3572,7 @@ function scheduleRouteReminder(routeId){
   const elapsedMs = Date.now() - route.startTs;
   const delay = Math.max(0, ROUTE_REMINDER_MS - elapsedMs);
   routeReminderTimers[routeId] = setTimeout(() => routeReminderTick(routeId), delay);
+  pushSchedule('route', routeId, route.startTs);
 }
 
 let routeLastNotifyTs = {}; // routeId -> ts последнего системного уведомления
@@ -3459,6 +3627,7 @@ function hideArrivalBar(){
   clearInterval(arrivalInterval);
   arrivalInterval = null;
   clearArrivalReminder();
+  Object.values(pushTimers).filter(x => x.kind === 'arrival').forEach(x => pushCancel('arrival', x.id));
 }
 
 function cancelArrival(){
