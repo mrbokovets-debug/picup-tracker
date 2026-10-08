@@ -3368,7 +3368,7 @@ function sendTestNotification(){
 // а при «Стоп» отменяем. На сервер уходит только адрес пуш-подписки и время - никаких точек и сумм.
 // После развёртывания Worker сюда вставляется его адрес, например 'https://pickup-push.имя.workers.dev'.
 // Пока строка пустая - пуш с сервера выключен, всё остальное работает как раньше.
-const PUSH_SERVER_URL = '';
+const PUSH_SERVER_URL = 'https://pickup-push.mr-bokovets.workers.dev';
 const PUSH_VAPID_PUBLIC_KEY = 'BO7DfE5zSope4v89v4iSIuKxlvy4ABg0Tmw7N-zJy1opR08SMsPfvUnVcjxR5D2eh8pHviU9Hi5lWrH7vwZ-6nQ';
 const PUSH_DB_NAME = 'pickup-push';
 let pushTimers = {};      // 'arrival:<id>' | 'route:<id>' -> { kind, id, startTs, repeatMs, ok }
