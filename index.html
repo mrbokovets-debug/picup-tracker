@@ -986,6 +986,7 @@ const TRANSLATIONS = {
       bannerAge:'Последняя копия была {days} дн. назад. Сохрани новую, чтобы не потерять данные.', bannerSave:'Сохранить', bannerLater:'Позже',
       settingsLabel:'Резервная копия данных', statusNever:'Копия ещё не сохранялась', statusLast:'Последняя копия: {date}', settingsBtn:'💾 Сохранить копию сейчас',
       savedToast:'✅ Копия сохранена' },
+    notifAction:{ arrival:'✅ Забрал заказ', route:'⏹ Стоп', stopped:'✅ Остановлено: {min} мин' },
     reminder:{ arrivalTitle:'⏱ Не забыл забрать заказ?', arrivalBody:'Таймер ожидания идёт уже {min} мин. Если уже забрал — нажми «✅ Забрал заказ».',
       routeTitle:'🚴 Не забыл нажать «Стоп»?', routeBody:'Доставка идёт уже {min} мин. Если уже приехал — останови таймер в приложении.',
       testTitle:'🔔 Проверка уведомлений', testBody:'Всё работает: так будет выглядеть напоминание «не забыл нажать Стоп?».' },
@@ -1096,6 +1097,7 @@ const TRANSLATIONS = {
       bannerAge:'Остання копія була {days} дн. тому. Збережи нову, щоб не втратити дані.', bannerSave:'Зберегти', bannerLater:'Пізніше',
       settingsLabel:'Резервна копія даних', statusNever:'Копію ще не зберігали', statusLast:'Остання копія: {date}', settingsBtn:'💾 Зберегти копію зараз',
       savedToast:'✅ Копію збережено' },
+    notifAction:{ arrival:'✅ Забрав замовлення', route:'⏹ Стоп', stopped:'✅ Зупинено: {min} хв' },
     reminder:{ arrivalTitle:'⏱ Не забув забрати замовлення?', arrivalBody:'Таймер очікування йде вже {min} хв. Якщо вже забрав — натисни «✅ Забрав замовлення».',
       routeTitle:'🚴 Не забув натиснути «Стоп»?', routeBody:'Доставка триває вже {min} хв. Якщо вже приїхав — зупини таймер у застосунку.',
       testTitle:'🔔 Перевірка сповіщень', testBody:'Усе працює: так виглядатиме нагадування «не забув натиснути Стоп?».' },
@@ -1206,6 +1208,7 @@ const TRANSLATIONS = {
       bannerAge:'La última copia fue hace {days} días. Guarda una nueva para no perder tus datos.', bannerSave:'Guardar', bannerLater:'Más tarde',
       settingsLabel:'Copia de seguridad', statusNever:'Aún no se ha guardado ninguna copia', statusLast:'Última copia: {date}', settingsBtn:'💾 Guardar copia ahora',
       savedToast:'✅ Copia guardada' },
+    notifAction:{ arrival:'✅ Pedido recogido', route:'⏹ Parar', stopped:'✅ Detenido: {min} min' },
     reminder:{ arrivalTitle:'⏱ ¿Olvidaste recoger el pedido?', arrivalBody:'El temporizador de espera lleva ya {min} min. Si ya lo recogiste, pulsa «✅ Pedido recogido».',
       routeTitle:'🚴 ¿Olvidaste pulsar «Parar»?', routeBody:'La entrega lleva ya {min} min en marcha. Si ya llegaste, detén el temporizador en la app.',
       testTitle:'🔔 Prueba de notificaciones', testBody:'Todo funciona: así se verá el aviso «¿olvidaste pulsar Parar?».' },
@@ -1316,6 +1319,7 @@ const TRANSLATIONS = {
       bannerAge:'Your last backup was {days} days ago. Save a new one so you don\'t lose your data.', bannerSave:'Save', bannerLater:'Later',
       settingsLabel:'Data backup', statusNever:'No backup saved yet', statusLast:'Last backup: {date}', settingsBtn:'💾 Save a backup now',
       savedToast:'✅ Backup saved' },
+    notifAction:{ arrival:'✅ Picked up', route:'⏹ Stop', stopped:'✅ Stopped: {min} min' },
     reminder:{ arrivalTitle:'⏱ Forgot to mark the pickup?', arrivalBody:'The wait timer has been running for {min} min. If you already got the order, tap "✅ Picked up order".',
       routeTitle:'🚴 Forgot to tap "Stop"?', routeBody:'The delivery timer has been running for {min} min. If you already arrived, stop the timer in the app.',
       testTitle:'🔔 Notification test', testBody:'All good: this is how the "forgot to tap Stop?" reminder will look.' },
@@ -2610,13 +2614,14 @@ function startNewRoute(){
   scheduleRouteReminder(route.id);
 }
 
-function markRouteArrived(routeId){
+function markRouteArrived(routeId, endTs){
   const idx = routeActive.findIndex(r => r.id === routeId);
   if(idx === -1) return;
   const route = routeActive[idx];
-  const durationSec = Math.max(1, Math.floor((Date.now() - route.startTs) / 1000));
+  const endMs = (typeof endTs === 'number' && endTs > route.startTs) ? Math.min(endTs, Date.now()) : Date.now();
+  const durationSec = Math.max(1, Math.floor((endMs - route.startTs) / 1000));
   routeActive.splice(idx, 1);
-  routeLog.push({ id: route.id, startTs: route.startTs, endTs: Date.now(), durationSec });
+  routeLog.push({ id: route.id, startTs: route.startTs, endTs: endMs, durationSec });
   persistRouteActive();
   persistRouteLog();
   clearRouteReminder(routeId);
@@ -3322,14 +3327,14 @@ function flashReminder(elId){
 
 // настоящее системное уведомление - только если разрешение уже дано И приложение свёрнуто/экран заблокирован
 // (пока приложение на экране, вибрации + подсветки достаточно и не нужно дублировать пуш)
-function fireReminderNotification(titleKey, bodyKey, vars){
+function fireReminderNotification(titleKey, bodyKey, vars, data){
   try{
     if(!('Notification' in window)) return;
     if(Notification.permission !== 'granted') return;
     if(!document.hidden) return;
     // если сервер уже взял это напоминание на себя - он пришлёт свой пуш, свой не дублируем
     if(pushCovers(titleKey === 'reminder.arrivalTitle' ? 'arrival' : 'route')) return;
-    showSystemNotification(t(titleKey, vars), t(bodyKey, vars), titleKey);
+    showSystemNotification(t(titleKey, vars), t(bodyKey, vars), titleKey, data);
   }catch(e){}
 }
 
@@ -3337,7 +3342,7 @@ function fireReminderNotification(titleKey, bodyKey, vars){
 // НЕ работает вообще ("Illegal constructor") - только через ServiceWorkerRegistration.showNotification,
 // поэтому ждём именно активный service worker (.ready), а не просто getRegistration().
 // Возвращает Promise<boolean>: получилось ли показать.
-function showSystemNotification(title, body, tag){
+function showSystemNotification(title, body, tag, data){
   const opts = {
     body,
     icon: 'icon-192.png',
@@ -3347,6 +3352,11 @@ function showSystemNotification(title, body, tag){
     requireInteraction: true, // не исчезает само из шторки - висит, пока не смахнут или не нажмут "Стоп"
     vibrate: [200, 100, 200, 100, 400] // вибрация от самого пуша - работает даже когда navigator.vibrate() со страницы уже не может (вкладка в фоне)
   };
+  // кнопка прямо в уведомлении (Android): остановить таймер, не открывая приложение. На iPhone кнопок нет - там просто тап по уведомлению
+  if(data && data.kind){
+    opts.data = data;
+    opts.actions = [{ action: 'stop', title: t('notifAction.' + data.kind) }];
+  }
   const viaConstructor = () => { try{ new Notification(title, opts); return true; }catch(e){ return false; } };
   try{
     if(!('Notification' in window) || Notification.permission !== 'granted') return Promise.resolve(false);
@@ -3473,9 +3483,11 @@ async function pushSyncState(){
   try{
     const state = {
       texts: {
-        arrival: { title: t('reminder.arrivalTitle'), body: t('reminder.arrivalBody') },
-        route: { title: t('reminder.routeTitle'), body: t('reminder.routeBody') }
+        arrival: { title: t('reminder.arrivalTitle'), body: t('reminder.arrivalBody'), action: t('notifAction.arrival') },
+        route: { title: t('reminder.routeTitle'), body: t('reminder.routeBody'), action: t('notifAction.route') },
+        stopped: t('notifAction.stopped')
       },
+      server: PUSH_SERVER_URL,
       timers: Object.values(pushTimers).map(x => ({ kind: x.kind, id: x.id, startTs: x.startTs }))
     };
     const db = await pushDbOpen();
@@ -3538,6 +3550,55 @@ function pushResyncAll(){
   renderPushStatus();
 }
 
+// ====== Остановка таймера кнопкой из уведомления ======
+// Service worker не может менять данные приложения (они в localStorage), поэтому при нажатии кнопки
+// он записывает «остановить такой-то таймер в такое-то время» в IndexedDB. Приложение при открытии
+// (или сразу, если оно уже открыто) применяет эти остановки с НАСТОЯЩИМ временем нажатия.
+function takePendingStops(){
+  return new Promise((resolve) => {
+    try{
+      if(!('indexedDB' in window)) return resolve([]);
+      const rq = indexedDB.open(PUSH_DB_NAME, 1);
+      rq.onupgradeneeded = () => { rq.result.createObjectStore('cfg'); };
+      rq.onerror = () => resolve([]);
+      rq.onsuccess = () => {
+        try{
+          const db = rq.result;
+          const tx = db.transaction('cfg', 'readwrite');
+          const store = tx.objectStore('cfg');
+          const g = store.get('pendingStops');
+          let list = [];
+          g.onsuccess = () => { list = Array.isArray(g.result) ? g.result : []; if(list.length) store.put([], 'pendingStops'); };
+          tx.oncomplete = () => { db.close(); resolve(list); };
+          tx.onerror = tx.onabort = () => { db.close(); resolve([]); };
+        }catch(e){ resolve([]); }
+      };
+    }catch(e){ resolve([]); }
+  });
+}
+
+let applyingStops = false;
+async function applyPendingStops(){
+  if(applyingStops) return;
+  applyingStops = true;
+  try{
+    const list = await takePendingStops();
+    for(const p of list){
+      if(!p || typeof p.ts !== 'number') continue;
+      if(p.kind === 'arrival'){
+        if(activeArrival && String(activeArrival.startTs) === String(p.id)) completeArrival(p.ts);
+      }else if(p.kind === 'route'){
+        if(routeActive.some(r => r.id === p.id)){ markRouteArrived(p.id, p.ts); renderAll(); }
+      }
+    }
+  }catch(e){}
+  applyingStops = false;
+}
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', (e) => { if(e.data && e.data.type === 'apply-stops') applyPendingStops(); });
+}
+document.addEventListener('visibilitychange', () => { if(!document.hidden) applyPendingStops(); });
+
 function isIosDevice(){
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
@@ -3589,7 +3650,7 @@ function arrivalReminderTick(){
   // системное уведомление дублируем не на каждый короткий тик (иначе зальёт шторку), а раз в REMINDER_REPEAT_MS
   if(Date.now() - arrivalLastNotifyTs >= REMINDER_REPEAT_MS){
     arrivalLastNotifyTs = Date.now();
-    fireReminderNotification('reminder.arrivalTitle', 'reminder.arrivalBody', { min: minutes });
+    fireReminderNotification('reminder.arrivalTitle', 'reminder.arrivalBody', { min: minutes }, { kind: 'arrival', id: String(activeArrival.startTs), startTs: activeArrival.startTs });
   }
   arrivalReminderTimer = setTimeout(arrivalReminderTick, REMINDER_PULSE_MS);
 }
@@ -3627,7 +3688,7 @@ function routeReminderTick(routeId){
   flashReminder('quickToggleBtn');
   if(Date.now() - (routeLastNotifyTs[routeId] || 0) >= REMINDER_REPEAT_MS){
     routeLastNotifyTs[routeId] = Date.now();
-    fireReminderNotification('reminder.routeTitle', 'reminder.routeBody', { min: minutes });
+    fireReminderNotification('reminder.routeTitle', 'reminder.routeBody', { min: minutes }, { kind: 'route', id: String(routeId), startTs: route.startTs });
   }
   routeReminderTimers[routeId] = setTimeout(() => routeReminderTick(routeId), REMINDER_PULSE_MS);
 }
@@ -3678,9 +3739,11 @@ function cancelArrival(){
   hideArrivalBar();
 }
 
-function completeArrival(){
+function completeArrival(endTs){
   if(!activeArrival) return;
-  const elapsedSec = Math.max(1, Math.floor((Date.now() - activeArrival.startTs) / 1000));
+  // endTs - реальный момент нажатия «Забрал» в уведомлении, если приложение при этом было закрыто
+  const endMs = (typeof endTs === 'number' && endTs > activeArrival.startTs) ? Math.min(endTs, Date.now()) : Date.now();
+  const elapsedSec = Math.max(1, Math.floor((endMs - activeArrival.startTs) / 1000));
   const s = spots.find(sp => sp.id === activeArrival.spotId);
   const spotName = activeArrival.spotName;
   localStorage.removeItem(ARRIVAL_TIMER_KEY);
@@ -3698,7 +3761,7 @@ function completeArrival(){
   const avgSec = Math.round(s.waitTotalSec / s.waitCount);
 
   s.count += 1;
-  s.lastVisit = new Date().toISOString();
+  s.lastVisit = new Date(endMs).toISOString();
   visitsLog.push({ id: makeVisitId(), spotId: s.id, ts: s.lastVisit, waitSec: elapsedSec, type: 'add' });
   persist();
   persistVisits();
@@ -4157,6 +4220,7 @@ applyStaticI18n();
 loadSpots();
 requestPersistentStorage();
 renderBackupStatus();
+setTimeout(() => { try{ applyPendingStops(); }catch(e){} }, 600);
 // даём приложению загрузиться и только потом (не поверх тура/онбординга) напоминаем про копию
 setTimeout(() => { try{ showBackupBannerIfNeeded(); }catch(e){} }, 4000);
 </script>
