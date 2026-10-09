@@ -2112,6 +2112,7 @@ function startTour(){
 
 // закрываем все экраны поверх главного, чтобы каждый шаг тура стартовал с чистого состояния
 function closeAllTourScreens(){
+  document.querySelectorAll('[data-tourpad]').forEach(e => { e.style.paddingBottom = ''; e.removeAttribute('data-tourpad'); });
   closeDrawer();
   try{ closeOrdersModal(); }catch(e){}
   try{ closeStatsModal(); }catch(e){}
@@ -2232,7 +2233,7 @@ function buildTourSteps(){
     before: tourShowSettings
   });
   steps.push({
-    sel: '#grpNotif',
+    sel: '#grpNotif > summary',
     title: t('tour.notifTitle'),
     text: t('tour.notifText'),
     before: tourShowSettings
@@ -2269,7 +2270,7 @@ function buildTourSteps(){
   });
 
   steps.push({
-    sel: '#grpData',
+    sel: '#grpData > summary',
     title: t('tour.dataTitle'),
     text: t('tour.dataText'),
     before: tourShowSettings
@@ -2444,37 +2445,61 @@ function positionTourStep(step, i){
   }
 
   // если нужный элемент спрятан прокруткой внутри модалки - подкручиваем к нему
-  const scrollParent = target.closest('[id$="ModalScroll"]');
+  // (ищем ближайший прокручиваемый родитель - не только *ModalScroll: окно настроек тоже прокручивается)
+  let scrollParent = null;
+  for(let el = target.parentElement; el && el !== document.body; el = el.parentElement){
+    const oy = getComputedStyle(el).overflowY;
+    if((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 2){ scrollParent = el; break; }
+  }
   if(scrollParent && typeof target.scrollIntoView === 'function'){
-    target.scrollIntoView({ block: 'center' });
+    const trg = target.getBoundingClientRect();
+    // высокий блок выравниваем по верху, невысокий - по центру; подсказка потом сама встанет туда, где больше места
+    target.scrollIntoView({ block: trg.height > window.innerHeight * 0.5 ? 'start' : 'center', behavior: 'instant' });
   }
 
   tooltip.style.transform = 'none';
-  const rect = target.getBoundingClientRect();
   const pad = 8;
+  const tooltipHeight = tooltip.offsetHeight || 180;
+  const need = tooltipHeight + pad + 18;
+  let rect = target.getBoundingClientRect();
+
+  // Подсказка не помещается ни сверху, ни снизу: поднимаем нужный блок к верху окна, чтобы подсказка встала под ним
+  if(scrollParent && window.innerHeight - rect.bottom < need && rect.top < need){
+    // запас снизу, чтобы последний блок тоже можно было поднять к верху
+    scrollParent.style.paddingBottom = '70vh'; scrollParent.setAttribute('data-tourpad', '1');
+    scrollParent.scrollTop += rect.top - 20;
+    rect = target.getBoundingClientRect();
+  }
+
   highlight.style.display = 'block';
   highlight.style.left = Math.max(4, rect.left - pad) + 'px';
   highlight.style.top = Math.max(4, rect.top - pad) + 'px';
   highlight.style.width = Math.min(window.innerWidth - 8, rect.width + pad * 2) + 'px';
   highlight.style.height = Math.min(window.innerHeight - 8, rect.height + pad * 2) + 'px';
 
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+  tooltip.style.bottom = 'auto';
+
   let left = rect.left;
+  let top;
+  if(spaceBelow >= need){
+    top = rect.bottom + pad + 10;
+  } else if(spaceAbove >= need){
+    top = rect.top - pad - 10 - tooltipHeight;
+  } else if(window.innerWidth - rect.right - pad >= tooltipWidth + 24){
+    // сверху и снизу тесно (низкое окно) - ставим подсказку сбоку от блока, чтобы он оставался виден
+    left = rect.right + pad + 12;
+    top = rect.top;
+  } else if(rect.left - pad >= tooltipWidth + 24){
+    left = rect.left - pad - 12 - tooltipWidth;
+    top = rect.top;
+  } else {
+    top = spaceBelow >= spaceAbove ? rect.bottom + pad + 10 : rect.top - pad - 10 - tooltipHeight;
+  }
   if(left + tooltipWidth > window.innerWidth - 16) left = window.innerWidth - tooltipWidth - 16;
   if(left < 16) left = 16;
   tooltip.style.left = left + 'px';
-  tooltip.style.bottom = 'auto';
-
-  // измеряем реальную высоту подсказки (после того как текст и ширина уже применены)
-  const tooltipHeight = tooltip.offsetHeight || 180;
-  const spaceBelow = window.innerHeight - rect.bottom;
-  const spaceAbove = rect.top;
-
-  let top;
-  if(spaceBelow >= tooltipHeight + 18 || spaceBelow >= spaceAbove){
-    top = rect.bottom + pad + 10;
-  } else {
-    top = rect.top - pad - 10 - tooltipHeight;
-  }
   // железно не даём подсказке и кнопкам уехать за пределы экрана, что бы ни показал rect
   top = Math.min(top, window.innerHeight - tooltipHeight - 12);
   top = Math.max(12, top);
