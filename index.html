@@ -74,6 +74,37 @@
     border:1px solid var(--line); color:var(--text); border-radius:10px; padding:9px 10px;
     font-size:16px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4);
   }
+  #mapFilterBtn{
+    position:absolute; right:10px; top:102px; z-index:400; background:var(--card);
+    border:1px solid var(--line); color:var(--text); border-radius:10px; padding:9px 10px; line-height:0;
+    cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  #mapFilterBtn svg{width:18px; height:18px;}
+  #mapFilterDot{display:none; position:absolute; top:-3px; right:-3px; width:11px; height:11px; border-radius:50%;
+    background:var(--signal); border:2px solid var(--card);}
+  #mapFilterBtn.active{border-color:var(--signal); color:var(--signal);}
+  #mapFilterBtn.active #mapFilterDot{display:block;}
+  #mapFilterChip{
+    display:none; position:absolute; left:10px; bottom:26px; z-index:400; background:var(--card); color:var(--text);
+    border:1px solid var(--signal); border-radius:20px; padding:7px 12px; font-size:12px; cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  #mapFilterChip b{color:var(--signal);}
+  #mapFilterChip.show{display:block;}
+  #mapFilterBg{position:fixed; inset:0; background:rgba(10,12,15,0.55); display:none; align-items:flex-end;
+    justify-content:center; z-index:2100;}
+  #mapFilterBg.show{display:flex;}
+  #mapFilterSheet{background:var(--card); width:100%; max-width:520px; border-radius:18px 18px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom));
+    max-height:85vh; overflow-y:auto;}
+  #mapFilterSheet h3{margin:0 0 6px; font-size:17px;}
+  .mfRow{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px;}
+  .mfChip{padding:10px 14px; border-radius:20px; border:2px solid var(--line); background:var(--asphalt-2); color:var(--text);
+    font-size:13px; font-weight:600; cursor:pointer; user-select:none;}
+  .mfChip.active{border-color:var(--signal); color:var(--signal);}
+  .mfBtns{display:flex; gap:10px; margin-top:14px;}
+  .mfBtns button{flex:1; padding:12px; border-radius:10px; border:1px solid var(--line); background:var(--asphalt-2);
+    color:var(--text); font-size:14px; font-weight:700; cursor:pointer;}
+  .mfBtns .mfDone{background:var(--signal); border-color:var(--signal); color:#fff;}
   #modeBadge{
     position:absolute; left:10px; top:10px; z-index:400; background:rgba(20,23,28,0.85);
     color:#ffffff; font-size:11px; padding:6px 10px; border-radius:8px;
@@ -712,6 +743,43 @@
     <div id="peakHourBadge" data-i18n="header.peakHourBadge">🚩 Пиковый час</div>
     <button id="fullscreenBtn" data-i18n-title="header.fullscreenTitle" title="На весь экран" onclick="toggleMapFullscreen(event)">⛶</button>
     <button id="locateBtn" data-i18n-title="header.locateTitle" title="Найти меня">📍</button>
+    <button id="mapFilterBtn" data-i18n-title="mapf.btnTitle" title="Фильтр точек" onclick="openMapFilter(event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M3 5h18l-7 8.5V20l-4-2v-4.5L3 5z"/></svg>
+      <span id="mapFilterDot"></span>
+    </button>
+    <div id="mapFilterChip" onclick="resetMapFilter()"><span id="mapFilterChipText"></span> · <b data-i18n="mapf.resetShort">Сбросить</b></div>
+  </div>
+
+  <div id="mapFilterBg" onclick="if(event.target===this) closeMapFilter()">
+    <div id="mapFilterSheet">
+      <h3 data-i18n="mapf.title">Фильтр точек на карте</h3>
+      <p class="coords" data-i18n="mapf.period">Период</p>
+      <div class="mfRow" id="mfPeriod">
+        <span class="mfChip" data-v="all" data-i18n="mapf.pAll" onclick="setMapFilter('period','all')">Всё время</span>
+        <span class="mfChip" data-v="today" data-i18n="mapf.pToday" onclick="setMapFilter('period','today')">Сегодня</span>
+        <span class="mfChip" data-v="week" data-i18n="mapf.pWeek" onclick="setMapFilter('period','week')">Неделя</span>
+        <span class="mfChip" data-v="month" data-i18n="mapf.pMonth" onclick="setMapFilter('period','month')">Месяц</span>
+      </div>
+      <p class="coords" data-i18n="mapf.tod">Время суток</p>
+      <div class="mfRow" id="mfTod">
+        <span class="mfChip" data-v="all" data-i18n="mapf.tAll" onclick="setMapFilter('tod','all')">Любое</span>
+        <span class="mfChip" data-v="morning" data-i18n="mapf.tMorning" onclick="setMapFilter('tod','morning')">Утро 5–11</span>
+        <span class="mfChip" data-v="lunch" data-i18n="mapf.tLunch" onclick="setMapFilter('tod','lunch')">Обед 11–15</span>
+        <span class="mfChip" data-v="evening" data-i18n="mapf.tEvening" onclick="setMapFilter('tod','evening')">Вечер 15–22</span>
+        <span class="mfChip" data-v="night" data-i18n="mapf.tNight" onclick="setMapFilter('tod','night')">Ночь 22–5</span>
+      </div>
+      <p class="coords" data-i18n="mapf.freq">Какие точки</p>
+      <div class="mfRow" id="mfFreq">
+        <span class="mfChip" data-v="all" data-i18n="mapf.fAll" onclick="setMapFilter('freq','all')">Все</span>
+        <span class="mfChip" data-v="hot" data-i18n="mapf.fHot" onclick="setMapFilter('freq','hot')">Ходовые (3+)</span>
+        <span class="mfChip" data-v="top" data-i18n="mapf.fTop" onclick="setMapFilter('freq','top')">Топ-10</span>
+        <span class="mfChip" data-v="profit" id="mfProfitChip" data-i18n="mapf.fProfit" onclick="setMapFilter('freq','profit')">Прибыльные</span>
+      </div>
+      <div class="mfBtns">
+        <button data-i18n="mapf.reset" onclick="resetMapFilter()">Сбросить</button>
+        <button class="mfDone" data-i18n="mapf.done" onclick="closeMapFilter()">Готово</button>
+      </div>
+    </div>
   </div>
 
   <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
@@ -1047,6 +1115,10 @@ const TRANSLATIONS = {
       restoreBtn:'📂 Восстановить из файла', clearBtn:'🗑 Очистить все данные' },
     wipe:{ title:'Удалить все данные?', text:'Будут удалены все точки, заборы, суммы и история. Это нельзя отменить. Если данные тебе нужны, сначала сохрани копию.',
       hint:'Чтобы подтвердить, введи слово {word}', word:'УДАЛИТЬ', saveFirst:'💾 Сначала сохранить копию', cancel:'Отмена', confirm:'Удалить всё' },
+    mapf:{ btnTitle:'Фильтр точек', title:'Фильтр точек на карте', period:'Период', tod:'Время суток', freq:'Какие точки',
+      pAll:'Всё время', pToday:'Сегодня', pWeek:'Неделя', pMonth:'Месяц',
+      tAll:'Любое', tMorning:'Утро 5–11', tLunch:'Обед 11–15', tEvening:'Вечер 15–22', tNight:'Ночь 22–5',
+      fAll:'Все', fHot:'Ходовые (3+)', fTop:'Топ-10', fProfit:'Прибыльные', reset:'Сбросить', resetShort:'Сбросить', done:'Готово', shown:'Показаны {n} из {m}' },
     reminder:{ arrivalTitle:'⏱ Не забыл забрать заказ?', arrivalBody:'Таймер ожидания идёт уже {min} мин. Если уже забрал — нажми «✅ Забрал заказ».',
       routeTitle:'🚴 Не забыл нажать «Стоп»?', routeBody:'Доставка идёт уже {min} мин. Если уже приехал — останови таймер в приложении.',
       testTitle:'🔔 Проверка уведомлений', testBody:'Всё работает: так будет выглядеть напоминание «не забыл нажать Стоп?».' },
@@ -1091,6 +1163,7 @@ const TRANSLATIONS = {
       mapWaitTitle:'Карта: время ожидания', mapWaitText:'А если на той же точке подержать палец примерно полсекунды не отпуская — точка завибрирует, и запустится отсчёт времени ожидания. Когда получишь заказ, нажми «✅ Забрал заказ» на зелёной полоске внизу экрана — и среднее время ожидания на этой точке посчитается само.',
       locateTitle:'Моё местоположение', locateText:'Нажми — карта сама найдёт тебя по GPS и приблизится к твоей текущей точке. Полезно, когда нужно быстро понять, где ты сейчас относительно отмеченных точек.',
       fullscreenTitle:'Полный экран', fullscreenText:'Разворачивает карту на весь экран без шапки и кнопок — удобно, когда нужно точнее прицелиться в нужную точку перед тапом.',
+      mapFilterTitle:'Фильтр точек', mapFilterText:'Показывает на карте только нужные точки: за сегодня, неделю или месяц, в определённое время суток (например, на обеде), только ходовые, топ-10 или самые прибыльные (для сдельной оплаты). Когда фильтр включён, кнопка подсвечивается, а внизу карты видно «Показаны N из M» и кнопку «Сбросить». Списки и статистика не меняются, а после перезапуска приложения фильтр сбрасывается.',
       zoomTitle:'Масштаб карты', zoomText:'Плюс и минус увеличивают и уменьшают масштаб. На телефоне то же самое делает щипок двумя пальцами или двойной тап по карте.',
       doneTitle:'Готово!', doneText:'Это полный обзор приложения. Всё, что показали, всегда можно найти заново в меню (☰ → «Как пользоваться»). Не забывай время от времени сохранять копию данных. Удачной работы! 🚀',
       notifTitle:'Напоминания «не забыл нажать Стоп?»', notifText:'Если таймер доставки или ожидания идёт больше 10 минут, придёт напоминание — даже при закрытом приложении. Нажми «Включить уведомления» и разреши их. На Android прямо в уведомлении есть кнопка «Забрал заказ» или «Стоп», так что приложение открывать не обязательно. На iPhone добавь приложение на экран «Домой», иначе напоминания при закрытом приложении не придут.',
@@ -1164,6 +1237,10 @@ const TRANSLATIONS = {
       restoreBtn:'📂 Відновити з файлу', clearBtn:'🗑 Очистити всі дані' },
     wipe:{ title:'Видалити всі дані?', text:'Буде видалено всі точки, підбори, суми та історію. Це не можна скасувати. Якщо дані потрібні, спочатку збережи копію.',
       hint:'Щоб підтвердити, введи слово {word}', word:'ВИДАЛИТИ', saveFirst:'💾 Спочатку зберегти копію', cancel:'Скасувати', confirm:'Видалити все' },
+    mapf:{ btnTitle:'Фільтр точок', title:'Фільтр точок на карті', period:'Період', tod:'Час доби', freq:'Які точки',
+      pAll:'Весь час', pToday:'Сьогодні', pWeek:'Тиждень', pMonth:'Місяць',
+      tAll:'Будь-який', tMorning:'Ранок 5–11', tLunch:'Обід 11–15', tEvening:'Вечір 15–22', tNight:'Ніч 22–5',
+      fAll:'Усі', fHot:'Ходові (3+)', fTop:'Топ-10', fProfit:'Прибуткові', reset:'Скинути', resetShort:'Скинути', done:'Готово', shown:'Показано {n} з {m}' },
     reminder:{ arrivalTitle:'⏱ Не забув забрати замовлення?', arrivalBody:'Таймер очікування йде вже {min} хв. Якщо вже забрав — натисни «✅ Забрав замовлення».',
       routeTitle:'🚴 Не забув натиснути «Стоп»?', routeBody:'Доставка триває вже {min} хв. Якщо вже приїхав — зупини таймер у застосунку.',
       testTitle:'🔔 Перевірка сповіщень', testBody:'Усе працює: так виглядатиме нагадування «не забув натиснути Стоп?».' },
@@ -1208,6 +1285,7 @@ const TRANSLATIONS = {
       mapWaitTitle:'Карта: час очікування', mapWaitText:'А якщо на тій же точці потримати палець приблизно півсекунди не відпускаючи — точка завібрує, і запуститься відлік часу очікування. Коли отримаєш замовлення, натисни «✅ Забрав замовлення» на зеленій смужці внизу екрана — і середній час очікування на цій точці порахується сам.',
       locateTitle:'Моє місцезнаходження', locateText:'Натисни — карта сама знайде тебе по GPS і наблизиться до твоєї поточної точки. Корисно, коли потрібно швидко зрозуміти, де ти зараз відносно відмічених точок.',
       fullscreenTitle:'Повний екран', fullscreenText:'Розгортає карту на весь екран без шапки і кнопок — зручно, коли потрібно точніше прицілитись у потрібну точку перед тапом.',
+      mapFilterTitle:'Фільтр точок', mapFilterText:'Показує на карті лише потрібні точки: за сьогодні, тиждень або місяць, у певний час доби (наприклад, на обід), лише ходові, топ-10 або найприбутковіші (для відрядної оплати). Коли фільтр увімкнено, кнопка підсвічується, а внизу карти видно «Показано N з M» і кнопку «Скинути». Списки та статистика не змінюються, а після перезапуску застосунку фільтр скидається.',
       zoomTitle:'Масштаб карти', zoomText:'Плюс і мінус збільшують і зменшують масштаб. На телефоні те саме робить щипок двома пальцями або подвійний тап по карті.',
       doneTitle:'Готово!', doneText:'Це повний огляд застосунку. Усе, що показали, завжди можна знайти знову в меню (☰ → «Як користуватися»). Не забувай час від часу зберігати копію даних. Вдалої роботи! 🚀',
       notifTitle:'Нагадування «не забув натиснути Стоп?»', notifText:'Якщо таймер доставки або очікування йде довше 10 хвилин, прийде нагадування — навіть коли застосунок закрито. Натисни «Увімкнути сповіщення» і дозволь їх. На Android просто в сповіщенні є кнопка «Забрав замовлення» або «Стоп», тож відкривати застосунок не обов’язково. На iPhone додай застосунок на екран «Додому», інакше нагадування при закритому застосунку не прийдуть.',
@@ -1281,6 +1359,10 @@ const TRANSLATIONS = {
       restoreBtn:'📂 Restaurar desde archivo', clearBtn:'🗑 Borrar todos los datos' },
     wipe:{ title:'¿Borrar todos los datos?', text:'Se borrarán todos los puntos, recogidas, importes e historial. No se puede deshacer. Si necesitas los datos, guarda antes una copia.',
       hint:'Para confirmar, escribe la palabra {word}', word:'BORRAR', saveFirst:'💾 Guardar copia primero', cancel:'Cancelar', confirm:'Borrar todo' },
+    mapf:{ btnTitle:'Filtro de puntos', title:'Filtro de puntos en el mapa', period:'Periodo', tod:'Franja horaria', freq:'Qué puntos',
+      pAll:'Siempre', pToday:'Hoy', pWeek:'Semana', pMonth:'Mes',
+      tAll:'Cualquiera', tMorning:'Mañana 5–11', tLunch:'Comida 11–15', tEvening:'Tarde 15–22', tNight:'Noche 22–5',
+      fAll:'Todos', fHot:'Habituales (3+)', fTop:'Top 10', fProfit:'Rentables', reset:'Restablecer', resetShort:'Restablecer', done:'Listo', shown:'Se muestran {n} de {m}' },
     reminder:{ arrivalTitle:'⏱ ¿Olvidaste recoger el pedido?', arrivalBody:'El temporizador de espera lleva ya {min} min. Si ya lo recogiste, pulsa «✅ Pedido recogido».',
       routeTitle:'🚴 ¿Olvidaste pulsar «Parar»?', routeBody:'La entrega lleva ya {min} min en marcha. Si ya llegaste, detén el temporizador en la app.',
       testTitle:'🔔 Prueba de notificaciones', testBody:'Todo funciona: así se verá el aviso «¿olvidaste pulsar Parar?».' },
@@ -1325,6 +1407,7 @@ const TRANSLATIONS = {
       mapWaitTitle:'Mapa: tiempo de espera', mapWaitText:'Y si mantienes el dedo sobre el mismo punto medio segundo sin soltar, el punto vibrará y se iniciará el cronómetro de espera. Cuando recibas el pedido, pulsa «✅ Pedido recogido» en la franja verde de abajo — y el tiempo medio de espera en ese punto se calculará solo.',
       locateTitle:'Mi ubicación', locateText:'Pulsa aquí — el mapa te localizará por GPS y se acercará a tu posición actual. Útil para saber rápido dónde estás respecto a tus puntos marcados.',
       fullscreenTitle:'Pantalla completa', fullscreenText:'Expande el mapa a toda la pantalla sin cabecera ni botones — útil para apuntar con más precisión antes de tocar un punto.',
+      mapFilterTitle:'Filtro de puntos', mapFilterText:'Muestra en el mapa solo los puntos que necesitas: de hoy, la semana o el mes, en una franja horaria (por ejemplo, la comida), solo los habituales, el top 10 o los más rentables (con pago por pedido). Con el filtro activo el botón se resalta y abajo del mapa verás «Se muestran N de M» y «Restablecer». Las listas y estadísticas no cambian, y al reiniciar la app el filtro se borra.',
       zoomTitle:'Zoom del mapa', zoomText:'Más y menos aumentan y reducen el zoom. En el móvil lo mismo se hace pellizcando con dos dedos o con doble toque en el mapa.',
       doneTitle:'¡Listo!', doneText:'Este es el repaso completo de la app. Todo lo mostrado se puede volver a ver en el menú (☰ → «Cómo usar»). No olvides guardar una copia de los datos de vez en cuando. ¡Buen trabajo! 🚀',
       notifTitle:'Avisos «¿olvidaste pulsar Parar?»', notifText:'Si el temporizador de entrega o de espera lleva más de 10 minutos, recibirás un aviso aunque la app esté cerrada. Pulsa «Activar notificaciones» y permítelas. En Android la propia notificación trae un botón «Recogí el pedido» o «Parar», así que no hace falta abrir la app. En iPhone añade la app a la pantalla de inicio; si no, los avisos con la app cerrada no llegan.',
@@ -1398,6 +1481,10 @@ const TRANSLATIONS = {
       restoreBtn:'📂 Restore from file', clearBtn:'🗑 Clear all data' },
     wipe:{ title:'Delete all data?', text:'All spots, pickups, amounts and history will be deleted. This cannot be undone. If you need the data, save a backup first.',
       hint:'To confirm, type the word {word}', word:'DELETE', saveFirst:'💾 Save a backup first', cancel:'Cancel', confirm:'Delete everything' },
+    mapf:{ btnTitle:'Spot filter', title:'Map spot filter', period:'Period', tod:'Time of day', freq:'Which spots',
+      pAll:'All time', pToday:'Today', pWeek:'Week', pMonth:'Month',
+      tAll:'Any', tMorning:'Morning 5–11', tLunch:'Lunch 11–15', tEvening:'Evening 15–22', tNight:'Night 22–5',
+      fAll:'All', fHot:'Busy (3+)', fTop:'Top 10', fProfit:'Most profitable', reset:'Reset', resetShort:'Reset', done:'Done', shown:'Showing {n} of {m}' },
     reminder:{ arrivalTitle:'⏱ Forgot to mark the pickup?', arrivalBody:'The wait timer has been running for {min} min. If you already got the order, tap "✅ Picked up order".',
       routeTitle:'🚴 Forgot to tap "Stop"?', routeBody:'The delivery timer has been running for {min} min. If you already arrived, stop the timer in the app.',
       testTitle:'🔔 Notification test', testBody:'All good: this is how the "forgot to tap Stop?" reminder will look.' },
@@ -1442,6 +1529,7 @@ const TRANSLATIONS = {
       mapWaitTitle:'Map: wait time', mapWaitText:'And if you hold your finger on the same spot for about half a second without lifting it, the spot will vibrate and a wait timer starts. Once you get the order, tap "✅ Picked up order" on the green bar at the bottom — and the average wait time for that spot gets calculated automatically.',
       locateTitle:'My location', locateText:'Tap it — the map finds you via GPS and zooms to your current position. Handy for quickly seeing where you are relative to your marked spots.',
       fullscreenTitle:'Fullscreen', fullscreenText:'Expands the map to fill the whole screen with no header or buttons — handy for aiming more precisely at a spot before tapping.',
+      mapFilterTitle:'Spot filter', mapFilterText:'Shows only the spots you need on the map: from today, this week or this month, at a given time of day (say, lunch), only busy ones, the top 10 or the most profitable (for per-order pay). While the filter is on, the button lights up and the bottom of the map shows “Showing N of M” and a Reset button. Lists and stats don\'t change, and the filter resets when you restart the app.',
       zoomTitle:'Map zoom', zoomText:'Plus and minus zoom in and out. On a phone, the same thing works with a two-finger pinch or a double-tap on the map.',
       doneTitle:'All done!', doneText:'That is the full tour of the app. Everything shown can always be found again in the menu (☰ → “How to use”). Remember to save a backup now and then. Good luck out there! 🚀',
       notifTitle:'“Forgot to tap Stop?” reminders', notifText:'If a delivery or waiting timer runs longer than 10 minutes, you get a reminder even when the app is closed. Tap “Enable notifications” and allow them. On Android the notification itself has a “Picked up” or “Stop” button, so you don\'t have to open the app. On iPhone add the app to your Home Screen, otherwise reminders won\'t arrive while it is closed.',
@@ -1684,7 +1772,7 @@ const map = L.map('map', { zoomControl: true, attributionControl: true })
 // защищаем свои кнопки над картой (лежат вне слоя Leaflet) от того, чтобы тап по ним
 // хоть как-то воспринимался картой как тап по самой карте - иначе после быстрой смены
 // размера (полный экран) на телефоне может проскочить "призрачный" клик по карте
-['fullscreenBtn', 'locateBtn'].forEach(id => {
+['fullscreenBtn', 'locateBtn', 'mapFilterBtn', 'mapFilterChip'].forEach(id => {
   const el = document.getElementById(id);
   if(el){
     L.DomEvent.disableClickPropagation(el);
@@ -1952,6 +2040,76 @@ document.addEventListener('pointerdown', (e) => {
   }
 });
 
+// --- Фильтр точек на карте (влияет только на метки, не на списки и статистику; не сохраняется между запусками) ---
+let mapFilter = { period: 'all', tod: 'all', freq: 'all' };
+const MAP_FILTER_GRACE_MS = 3 * 60 * 1000; // только что добавленная/отмеченная точка не пропадает с карты сразу
+
+function mapFilterActive(){ return mapFilter.period !== 'all' || mapFilter.tod !== 'all' || mapFilter.freq !== 'all'; }
+function todOfHour(h){
+  if(h >= 5 && h < 11) return 'morning';
+  if(h >= 11 && h < 15) return 'lunch';
+  if(h >= 15 && h < 22) return 'evening';
+  return 'night';
+}
+function mapFilterPeriodStart(){
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  if(mapFilter.period === 'week'){ d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); }       // с понедельника
+  else if(mapFilter.period === 'month'){ d.setDate(1); }
+  return d.getTime();
+}
+// множество id точек, подходящих под текущий фильтр (null - фильтр выключен)
+function computeMapFilterSet(){
+  if(!mapFilterActive()) return null;
+  let ids = new Set(spots.map(s => s.id));
+  if(mapFilter.period !== 'all' || mapFilter.tod !== 'all'){
+    const from = mapFilter.period !== 'all' ? mapFilterPeriodStart() : 0;
+    const hit = new Set();
+    visitsLog.forEach(v => {
+      if(v.type === 'remove' || v.reversed) return;
+      const ts = new Date(v.ts).getTime();
+      if(!(ts >= from)) return;
+      if(mapFilter.tod !== 'all' && todOfHour(new Date(ts).getHours()) !== mapFilter.tod) return;
+      hit.add(v.spotId);
+    });
+    ids = new Set([...ids].filter(id => hit.has(id)));
+  }
+  if(mapFilter.freq !== 'all'){
+    const pool = spots.filter(s => ids.has(s.id));
+    let keep;
+    if(mapFilter.freq === 'hot') keep = pool.filter(s => s.count >= 3);
+    else if(mapFilter.freq === 'top') keep = [...pool].sort((a, b) => b.count - a.count).slice(0, 10);
+    else keep = [...pool].filter(s => (s.earned || 0) > 0).sort((a, b) => (b.earned || 0) - (a.earned || 0)).slice(0, 10);
+    ids = new Set(keep.map(s => s.id));
+  }
+  // свежеотмеченные точки оставляем видимыми
+  spots.forEach(s => { if(s.lastVisit && Date.now() - new Date(s.lastVisit).getTime() < MAP_FILTER_GRACE_MS) ids.add(s.id); });
+  return ids;
+}
+function openMapFilter(e){
+  if(e){ e.preventDefault(); e.stopPropagation(); }
+  if(!isPieceRate() && mapFilter.freq === 'profit') mapFilter.freq = 'all';
+  document.getElementById('mfProfitChip').style.display = isPieceRate() ? '' : 'none';
+  renderMapFilterUI();
+  document.getElementById('mapFilterBg').classList.add('show');
+}
+function closeMapFilter(){ document.getElementById('mapFilterBg').classList.remove('show'); }
+function setMapFilter(group, v){ mapFilter[group] = v; renderMapFilterUI(); renderAll(); }
+function resetMapFilter(){ mapFilter = { period: 'all', tod: 'all', freq: 'all' }; renderMapFilterUI(); renderAll(); }
+function renderMapFilterUI(){
+  [['mfPeriod', 'period'], ['mfTod', 'tod'], ['mfFreq', 'freq']].forEach(([id, g]) => {
+    document.querySelectorAll('#' + id + ' .mfChip').forEach(el => el.classList.toggle('active', el.dataset.v === mapFilter[g]));
+  });
+  const on = mapFilterActive();
+  document.getElementById('mapFilterBtn').classList.toggle('active', on);
+  const chip = document.getElementById('mapFilterChip');
+  chip.classList.toggle('show', on);
+  if(on){
+    const set = computeMapFilterSet();
+    document.getElementById('mapFilterChipText').textContent = t('mapf.shown', { n: set ? set.size : spots.length, m: spots.length });
+  }
+}
+
 function renderAll(){
   updateDrawerVisibility();
   updatePeakHourBadge();
@@ -1959,7 +2117,9 @@ function renderAll(){
   markers = {};
   const max = spots.reduce((m,s) => Math.max(m, s.count), 1);
 
+  const filterSet = computeMapFilterSet();
   spots.forEach(s => {
+    if(filterSet && !filterSet.has(s.id)) return; // скрыто фильтром карты
     const marker = L.marker([s.lat, s.lng], { icon: makeIcon(s, max) }).addTo(map);
     marker.bindTooltip(s.name, { permanent: true, direction: 'top', offset: [0, -8], className: 'spotLabel' });
     marker.on('click', (e) => {
@@ -1971,6 +2131,7 @@ function renderAll(){
     markers[s.id] = marker;
   });
   updateLabelVisibility();
+  renderMapFilterUI();
 
   const earningsOn = isPieceRate();
   const effectiveSortMode = earningsOn ? sortMode : 'count';
@@ -2321,6 +2482,12 @@ function buildTourSteps(){
     sel: '#fullscreenBtn',
     title: t('tour.fullscreenTitle'),
     text: t('tour.fullscreenText'),
+    before: tourShowNothing
+  });
+  steps.push({
+    sel: '#mapFilterBtn',
+    title: t('tour.mapFilterTitle'),
+    text: t('tour.mapFilterText'),
     before: tourShowNothing
   });
   steps.push({
