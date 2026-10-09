@@ -128,13 +128,13 @@
   .pinDiv{display:flex; align-items:center; justify-content:center; border-radius:50%;
     font-weight:800; color:var(--signal-text); border:2px solid rgba(255,255,255,0.6);}
 
-  /* пиковый час: самый большой кружок светится так же, как плашка «Пиковый час» */
-  .peakNow .pinDiv.isTop, .peakNow .bagBody.isTop{animation: topSpotGlow 1.6s ease-in-out infinite;}
+  /* самый большой кружок (самая ходовая точка) всегда светится так же, как плашка «Пиковый час» */
+  .pinDiv.isTop, .bagBody.isTop{animation: topSpotGlow 1.6s ease-in-out infinite;}
   @keyframes topSpotGlow{
     0%, 100%{box-shadow:0 0 8px 1px var(--signal);}
     50%{box-shadow:0 0 22px 7px var(--signal);}
   }
-  .peakNow .pinDiv.isTop.longPressing, .peakNow .bagBody.isTop.longPressing{
+  .pinDiv.isTop.longPressing, .bagBody.isTop.longPressing{
     animation: longPressPulse var(--pressDur, 550ms) ease-in forwards;
   }
   .pinDiv.longPressing, .bagBody.longPressing{
@@ -3209,7 +3209,6 @@ function updatePeakHourBadge(){
   const currentHour = new Date().getHours();
   const isPeakNow = peak.some(p => p.h === currentHour);
   badge.classList.toggle('show', isPeakNow);
-  document.body.classList.toggle('peakNow', isPeakNow); // в пиковый час самая ходовая точка на карте тоже светится
 }
 setInterval(updatePeakHourBadge, 30000);
 // на телефоне таймеры замораживаются, пока экран заблокирован или приложение свёрнуто -
