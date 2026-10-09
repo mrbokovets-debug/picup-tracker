@@ -2255,12 +2255,14 @@ function buildTourSteps(){
     text: t('tour.startStopText'),
     before: tourShowNothing
   });
-  steps.push({
-    sel: '#deliveryAvgBar',
-    title: t('tour.avgDeliveryTitle'),
-    text: t('tour.avgDeliveryText'),
-    before: tourShowNothing
-  });
+  if(routeLog.length > 0){ // полоса видна только когда есть данные
+    steps.push({
+      sel: '#deliveryAvgBar',
+      title: t('tour.avgDeliveryTitle'),
+      text: t('tour.avgDeliveryText'),
+      before: tourShowNothing
+    });
+  }
 
   // --- Карта, подробно по каждому действию (можно реально попробовать прямо во время тура) ---
   steps.push({
@@ -2531,7 +2533,7 @@ function saveAmount(){
   const amount = parseFloat(raw);
   const isEdit = amountMode === 'edit';
   if(!pendingAmountSpotId || isNaN(amount) || amount < 0 || (!isEdit && amount === 0)){
-    alert(isEdit ? t('amount.errEditNonNeg') : t('amount.errAddPositive'));
+    showToast(isEdit ? t('amount.errEditNonNeg') : t('amount.errAddPositive'), 3500);
     return;
   }
   const s = spots.find(sp => sp.id === pendingAmountSpotId);
@@ -2612,12 +2614,12 @@ function persistRouteLog(){
 
 // --- Всплывающее уведомление (тост) ---
 let toastTimer = null;
-function showToast(text){
+function showToast(text, ms){
   const el = document.getElementById('toast');
   el.textContent = text;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  toastTimer = setTimeout(() => el.classList.remove('show'), ms || 2200);
 }
 
 // --- Единая кнопка на главном экране: минимум тапов ---
@@ -2671,10 +2673,13 @@ function updateQuickButton(){
 function renderDeliveryAvg(){
   const el = document.getElementById('deliveryAvgValue');
   if(!el) return;
+  const bar = document.getElementById('deliveryAvgBar');
   if(routeLog.length === 0){
     el.textContent = t('header.deliveryAvgDash');
+    if(bar) bar.style.display = 'none'; // пока нет ни одной доставки - пустая полоска только занимает место
     return;
   }
+  if(bar) bar.style.display = '';
   const avgSec = Math.round(routeLog.reduce((a, r) => a + r.durationSec, 0) / routeLog.length);
   el.textContent = formatDuration(avgSec);
 }
@@ -3478,12 +3483,12 @@ function enableNotificationsFromTap(){
 function sendTestNotification(){
   const show = () => {
     showSystemNotification(t('reminder.testTitle'), t('reminder.testBody'), 'pickup-test').then((ok) => {
-      if(!ok) alert(t('settings.notifTestFailed'));
+      if(!ok) showToast(t('settings.notifTestFailed'), 4000);
     });
   };
   if(!('Notification' in window)){ renderNotifStatus(); return; }
   if(Notification.permission === 'granted'){ show(); return; }
-  if(Notification.permission === 'denied'){ alert(t('settings.notifStatusDenied')); return; }
+  if(Notification.permission === 'denied'){ showToast(t('settings.notifStatusDenied'), 5000); return; }
   notificationPermissionRequested = true;
   try{
     const r = Notification.requestPermission();
@@ -3829,7 +3834,7 @@ function completeArrival(endTs){
 
   if(!s){
     // точку успели удалить, пока шёл отсчёт - честно говорим об этом, а не молча проглатываем нажатие
-    alert(t('alerts.spotDeletedDuringWait', { name: spotName, time: formatDuration(elapsedSec) }));
+    showToast(t('alerts.spotDeletedDuringWait', { name: spotName, time: formatDuration(elapsedSec) }), 5000);
     return;
   }
 
@@ -3844,7 +3849,7 @@ function completeArrival(endTs){
   persistVisits();
   renderAll();
 
-  alert(t('alerts.waitResult', { time: formatDuration(elapsedSec), name: spotName, avg: formatDuration(avgSec) }));
+  showToast(t('alerts.waitResult', { time: formatDuration(elapsedSec), name: spotName, avg: formatDuration(avgSec) }), 5000);
 }
 
 // восстанавливаем незавершённый отсчёт, если приложение закрыли во время ожидания
@@ -4085,7 +4090,7 @@ function requestPersistentStorage(){
 
 function exportData(){
   if(!hasAnyData()){
-    alert(t('alerts.nothingToSave'));
+    showToast(t('alerts.nothingToSave'), 3500);
     return;
   }
   const payload = { spots, visitsLog, routeLog, earningsLog };
@@ -4135,7 +4140,7 @@ function importData(event){
       const importedEarnings = Array.isArray(parsed) ? [] : (parsed.earningsLog || []);
       const validSpots = importedSpots.filter(s => s && typeof s.lat === 'number' && typeof s.lng === 'number' && typeof s.name === 'string');
       validSpots.forEach(s => { if(typeof s.earned !== 'number') s.earned = 0; });
-      if(validSpots.length === 0){ alert(t('alerts.noSpotsInFile')); return; }
+      if(validSpots.length === 0){ showToast(t('alerts.noSpotsInFile'), 4000); return; }
 
       // отбрасываем записи с битой/отсутствующей формой (например, из повреждённого или чужого файла) -
       // иначе NaN-даты из них тихо портят статистику по часам/дням на годы вперёд
@@ -4195,9 +4200,9 @@ function importData(event){
         const group = L.featureGroup(Object.values(markers));
         try{ map.fitBounds(group.getBounds().pad(0.3)); }catch(err){}
       }
-      alert(t('alerts.importDone') + (droppedCount > 0 ? t('alerts.importDoneDropped', { n: droppedCount }) : ''));
+      showToast(t('alerts.importDone') + (droppedCount > 0 ? t('alerts.importDoneDropped', { n: droppedCount }) : ''), 5000);
     }catch(err){
-      alert(t('alerts.importFailed'));
+      showToast(t('alerts.importFailed'), 4500);
     }
     event.target.value = '';
   };
@@ -4228,7 +4233,7 @@ function resetAll(){ openWipeModal(); }
 // (routeActive), точки, заборы, суммы и ожидание в ресторанах не трогаем.
 function resetDeliveryAvg(){
   if(routeLog.length === 0){
-    alert(t('alerts.deliveryAvgAlreadyEmpty'));
+    showToast(t('alerts.deliveryAvgAlreadyEmpty'), 3500);
     return;
   }
   const avgSec = Math.round(routeLog.reduce((a, r) => a + r.durationSec, 0) / routeLog.length);
@@ -4284,7 +4289,7 @@ function startGeoWatch(){
 }
 
 document.getElementById('locateBtn').addEventListener('click', () => {
-  if(!navigator.geolocation){ alert(t('header.geoUnavailable')); return; }
+  if(!navigator.geolocation){ showToast(t('header.geoUnavailable'), 4000); return; }
   document.getElementById('modeBadge').textContent = t('header.searching');
   startGeoWatch();
 
