@@ -128,6 +128,15 @@
   .pinDiv{display:flex; align-items:center; justify-content:center; border-radius:50%;
     font-weight:800; color:var(--signal-text); border:2px solid rgba(255,255,255,0.6);}
 
+  /* пиковый час: самый большой кружок светится так же, как плашка «Пиковый час» */
+  .peakNow .pinDiv.isTop, .peakNow .bagBody.isTop{animation: topSpotGlow 1.6s ease-in-out infinite;}
+  @keyframes topSpotGlow{
+    0%, 100%{box-shadow:0 0 8px 1px var(--signal);}
+    50%{box-shadow:0 0 22px 7px var(--signal);}
+  }
+  .peakNow .pinDiv.isTop.longPressing, .peakNow .bagBody.isTop.longPressing{
+    animation: longPressPulse var(--pressDur, 550ms) ease-in forwards;
+  }
   .pinDiv.longPressing, .bagBody.longPressing{
     animation: longPressPulse var(--pressDur, 550ms) ease-in forwards;
   }
@@ -969,7 +978,7 @@
         <div class="markerPreview">
           <div class="bagPin" style="width:34px;">
             <div class="bagStrap" style="border-color:var(--signal);"></div>
-            <div class="bagBody" style="background:var(--signal); box-shadow:none;">3</div>
+            <div class="bagBody${isTop ? ' isTop' : ''}" style="background:var(--signal); box-shadow:none;">3</div>
           </div>
         </div>
         <span data-i18n="settings.markerBag">Сумка курьера</span>
@@ -1880,7 +1889,7 @@ function sizeForCount(count, max){
   return 24 + t * 28;
 }
 
-function makeIcon(spot, max){
+function makeIcon(spot, max, isTop){
   const size = sizeForCount(spot.count, max);
   const color = colorForCount(spot.count, max);
   const style = localStorage.getItem(MARKER_STYLE_KEY) || 'circle';
@@ -1895,7 +1904,7 @@ function makeIcon(spot, max){
     return L.divIcon({ html, className: '', iconSize: [w, h], iconAnchor: [w/2, h] });
   }
 
-  const html = `<div class="pinDiv" style="width:${size}px;height:${size}px;background:${color};box-shadow:0 0 ${size*0.5}px ${color}66;font-size:${size*0.4}px;">${spot.count}</div>`;
+  const html = `<div class="pinDiv${isTop ? ' isTop' : ''}" style="width:${size}px;height:${size}px;background:${color};box-shadow:0 0 ${size*0.5}px ${color}66;font-size:${size*0.4}px;">${spot.count}</div>`;
   return L.divIcon({ html, className: '', iconSize: [size, size], iconAnchor: [size/2, size/2] });
 }
 
@@ -2118,9 +2127,10 @@ function renderAll(){
   const max = spots.reduce((m,s) => Math.max(m, s.count), 1);
 
   const filterSet = computeMapFilterSet();
+  const topSpot = spots.find(sp => sp.count === max && sp.count > 0); // самый большой кружок (первый из равных)
   spots.forEach(s => {
     if(filterSet && !filterSet.has(s.id)) return; // скрыто фильтром карты
-    const marker = L.marker([s.lat, s.lng], { icon: makeIcon(s, max) }).addTo(map);
+    const marker = L.marker([s.lat, s.lng], { icon: makeIcon(s, max, topSpot && topSpot.id === s.id) }).addTo(map);
     marker.bindTooltip(s.name, { permanent: true, direction: 'top', offset: [0, -8], className: 'spotLabel' });
     marker.on('click', (e) => {
       L.DomEvent.stopPropagation(e);
@@ -3199,6 +3209,7 @@ function updatePeakHourBadge(){
   const currentHour = new Date().getHours();
   const isPeakNow = peak.some(p => p.h === currentHour);
   badge.classList.toggle('show', isPeakNow);
+  document.body.classList.toggle('peakNow', isPeakNow); // в пиковый час самая ходовая точка на карте тоже светится
 }
 setInterval(updatePeakHourBadge, 30000);
 // на телефоне таймеры замораживаются, пока экран заблокирован или приложение свёрнуто -
