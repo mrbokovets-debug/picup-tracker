@@ -356,6 +356,30 @@
   }
   .themeOption.active{border-color:var(--signal);}
 
+  .setGroup{border:1px solid var(--line); border-radius:12px; margin-bottom:12px;}
+  .setGroup > summary{list-style:none; cursor:pointer; padding:14px; font-weight:700; font-size:14px;
+    display:flex; justify-content:space-between; align-items:center; color:var(--text);}
+  .setGroup > summary::-webkit-details-marker{display:none;}
+  .setGroup > summary::after{content:'›'; font-size:20px; color:var(--text-dim); transform:rotate(90deg); transition:transform .15s;}
+  .setGroup[open] > summary::after{transform:rotate(-90deg);}
+  .setGroupBody{padding:2px 14px 4px;}
+  #appThemeOptions, #mapThemeOptions{gap:8px !important;}
+  #appThemeOptions .themeOption, #mapThemeOptions .themeOption{padding:12px 4px; font-size:12px;}
+  .dangerBtn{color:var(--danger) !important; border-color:var(--danger) !important; margin-top:6px;}
+  #wipeModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.75); display:none; align-items:center;
+    justify-content:center; z-index:1900; padding:20px;}
+  #wipeModalBg.show{display:flex;}
+  #wipeModal{background:var(--card); width:100%; max-width:420px; border-radius:16px; padding:20px; border:1px solid var(--danger);}
+  #wipeModal h3{margin:0 0 8px; font-size:17px; color:var(--danger);}
+  .wipeText{font-size:13px; line-height:1.4; color:var(--text-dim); margin:0 0 14px;}
+  #wipeInput{width:100%; padding:12px; border-radius:10px; border:2px solid var(--line); background:var(--asphalt-2);
+    color:var(--text); font-size:16px; text-transform:uppercase; margin-bottom:14px;}
+  #wipeInput:focus{outline:none; border-color:var(--danger);}
+  .wipeBtns{display:flex; gap:10px;}
+  .wipeBtns button{flex:1; padding:12px; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer;
+    border:1px solid var(--line); background:var(--asphalt-2); color:var(--text);}
+  #wipeConfirmBtn{background:var(--danger) !important; border-color:var(--danger) !important; color:#fff !important;}
+  #wipeConfirmBtn:disabled{opacity:0.35; cursor:not-allowed;}
   #backupBanner{position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:496px; margin:0 auto;
     z-index:1700; background:var(--card); border:1px solid var(--signal); border-radius:14px; padding:12px 14px;
     box-shadow:0 8px 28px rgba(0,0,0,0.35); display:none;}
@@ -597,6 +621,7 @@
 </style>
 </head>
 <body>
+<script>try{var __t=localStorage.getItem('pickup-app-theme');if(__t==='dark'||((__t!=='light')&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.body.classList.add('app-dark');}catch(e){}</script>
 
 <div id="backupBanner" role="alert">
   <div class="backupBannerTitle" data-i18n="backup.bannerTitle">💾 Сохрани копию данных</div>
@@ -654,24 +679,6 @@
     <div class="drawerItem" onclick="closeDrawer(); startTour();">
       <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 1.9-2.4 3.7"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
       <span class="drawerLabel" data-i18n="drawer.howTo">Как пользоваться</span>
-      <span class="drawerChevron">›</span>
-    </div>
-    <div class="drawerItem" onclick="closeDrawer(); exportData();">
-      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span>
-      <span class="drawerLabel" data-i18n="drawer.backup">Сохранить копию</span>
-      <span class="drawerChevron">›</span>
-    </div>
-    <div class="drawerItem" onclick="closeDrawer(); document.getElementById('importFile').click();">
-      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2Z"/></svg></span>
-      <span class="drawerLabel" data-i18n="drawer.restore">Восстановить из файла</span>
-      <span class="drawerChevron">›</span>
-    </div>
-  </div>
-
-  <div class="drawerGroup">
-    <div class="drawerItem drawerDanger" onclick="closeDrawer(); resetAll();">
-      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></span>
-      <span class="drawerLabel" data-i18n="drawer.clearData">Очистить все данные</span>
       <span class="drawerChevron">›</span>
     </div>
   </div>
@@ -843,6 +850,41 @@
       <div class="themeOption" data-lang="en" onclick="chooseLanguage('en')">English</div>
     </div>
 
+    <details class="setGroup" id="grpNotif">
+      <summary data-i18n="setx.grpNotif">🔔 Уведомления</summary>
+      <div class="setGroupBody">
+    <p class="coords" data-i18n="settings.notifLabel">Уведомления «не забыл нажать Стоп?»</p>
+    <p id="notifStatus" class="coords" style="margin-top:0;"></p>
+    <p id="pushStatus" class="coords" style="margin-top:0;display:none;"></p>
+    <button id="notifEnableBtn" class="settingsActionBtn" data-i18n="settings.notifEnableBtn" onclick="enableNotificationsFromTap()">🔔 Включить уведомления</button>
+    <button id="notifTestBtn" class="settingsActionBtn" data-i18n="settings.notifTestBtn" onclick="sendTestNotification()">📨 Проверить уведомление</button>
+
+      </div>
+    </details>
+
+    <details class="setGroup">
+      <summary data-i18n="setx.grpPay">💰 Оплата</summary>
+      <div class="setGroupBody">
+    <p class="coords" data-i18n="settings.payTypeLabel">Тип оплаты</p>
+    <div id="payTypeOptions">
+      <div class="themeOption" data-paytype="hourly" data-i18n="settings.payTypeHourlyOpt" onclick="choosePayType('hourly')">⏱ Почасовая + премия</div>
+      <div class="themeOption" data-paytype="piece" data-i18n="settings.payTypePieceOpt" onclick="choosePayType('piece')">💰 Сдельная за заказ</div>
+    </div>
+
+    <p class="coords" data-i18n="settings.currencyLabel">Валюта</p>
+    <div id="currencyOptions">
+      <div class="themeOption" data-currency="€" onclick="chooseCurrency('€')">€</div>
+      <div class="themeOption" data-currency="₴" onclick="chooseCurrency('₴')">₴</div>
+      <div class="themeOption" data-currency="$" onclick="chooseCurrency('$')">$</div>
+      <div class="themeOption" data-currency="zł" onclick="chooseCurrency('zł')">zł</div>
+    </div>
+
+      </div>
+    </details>
+
+    <details class="setGroup">
+      <summary data-i18n="setx.grpLook">🎨 Внешний вид</summary>
+      <div class="setGroupBody">
     <p class="coords" data-i18n="settings.markerStyleLabel">Как отмечать точки на карте</p>
     <div id="markerStyleOptions">
       <div class="markerOption" data-style="circle" onclick="chooseMarkerStyle('circle')">
@@ -860,46 +902,54 @@
       </div>
     </div>
 
-    <p class="coords" data-i18n="settings.payTypeLabel">Тип оплаты</p>
-    <div id="payTypeOptions">
-      <div class="themeOption" data-paytype="hourly" data-i18n="settings.payTypeHourlyOpt" onclick="choosePayType('hourly')">⏱ Почасовая + премия</div>
-      <div class="themeOption" data-paytype="piece" data-i18n="settings.payTypePieceOpt" onclick="choosePayType('piece')">💰 Сдельная за заказ</div>
-    </div>
-
-    <p class="coords" data-i18n="settings.currencyLabel">Валюта</p>
-    <div id="currencyOptions">
-      <div class="themeOption" data-currency="€" onclick="chooseCurrency('€')">€</div>
-      <div class="themeOption" data-currency="₴" onclick="chooseCurrency('₴')">₴</div>
-      <div class="themeOption" data-currency="$" onclick="chooseCurrency('$')">$</div>
-      <div class="themeOption" data-currency="zł" onclick="chooseCurrency('zł')">zł</div>
-    </div>
-
-    <p class="coords" data-i18n="settings.appThemeLabel">Оформление приложения</p>
+    <p class="coords" data-i18n="settings.appThemeLabel">Тема приложения</p>
     <div id="appThemeOptions">
+      <div class="themeOption" data-theme="auto" data-i18n="setx.themeAuto" onclick="chooseAppTheme('auto')">🌓 Как в телефоне</div>
       <div class="themeOption" data-theme="light" data-i18n="settings.themeLight" onclick="chooseAppTheme('light')">☀️ Светлая</div>
       <div class="themeOption" data-theme="dark" data-i18n="settings.themeDark" onclick="chooseAppTheme('dark')">🌙 Тёмная</div>
     </div>
 
-    <p class="coords" data-i18n="settings.mapThemeLabel">Оформление карты (можно отдельно от приложения)</p>
+    <p class="coords" data-i18n="settings.mapThemeLabel">Тема карты</p>
     <div id="mapThemeOptions">
+      <div class="themeOption" data-theme="auto" data-i18n="setx.mapFollow" onclick="chooseMapTheme('auto')">🔗 Как приложение</div>
       <div class="themeOption" data-theme="light" data-i18n="settings.themeLight" onclick="chooseMapTheme('light')">☀️ Светлая</div>
       <div class="themeOption" data-theme="dark" data-i18n="settings.themeDark" onclick="chooseMapTheme('dark')">🌙 Тёмная</div>
     </div>
+      </div>
+    </details>
 
-    <p class="coords" data-i18n="settings.notifLabel">Уведомления «не забыл нажать Стоп?»</p>
-    <p id="notifStatus" class="coords" style="margin-top:0;"></p>
-    <p id="pushStatus" class="coords" style="margin-top:0;display:none;"></p>
-    <button id="notifEnableBtn" class="settingsActionBtn" data-i18n="settings.notifEnableBtn" onclick="enableNotificationsFromTap()">🔔 Включить уведомления</button>
-    <button id="notifTestBtn" class="settingsActionBtn" data-i18n="settings.notifTestBtn" onclick="sendTestNotification()">📨 Проверить уведомление</button>
-
+    <details class="setGroup" id="grpData">
+      <summary data-i18n="setx.grpData">💾 Данные</summary>
+      <div class="setGroupBody">
     <p class="coords" data-i18n="backup.settingsLabel">Резервная копия данных</p>
     <p id="backupStatus" class="coords" style="margin-top:0;"></p>
     <button id="backupNowBtn" class="settingsActionBtn" data-i18n="backup.settingsBtn" onclick="exportData()">💾 Сохранить копию сейчас</button>
 
+    <button class="settingsActionBtn" data-i18n="setx.restoreBtn" onclick="closeSettingsModal(); document.getElementById('importFile').click();">📂 Восстановить из файла</button>
+
     <p class="coords" data-i18n="settings.deliveryAvgLabel">Среднее время доставки</p>
     <button id="resetDeliveryAvgBtn" data-i18n="settings.resetDeliveryAvgBtn" onclick="resetDeliveryAvg()">🔄 Обнулить среднее время доставки</button>
 
+
+    <button id="clearAllBtn" class="settingsActionBtn dangerBtn" data-i18n="setx.clearBtn" onclick="closeSettingsModal(); openWipeModal();">🗑 Очистить все данные</button>
+      </div>
+    </details>
+
     <button id="settingsCloseBtn" data-i18n="settings.done" onclick="closeSettingsModal()">Готово</button>
+  </div>
+</div>
+
+<div id="wipeModalBg">
+  <div id="wipeModal">
+    <h3 data-i18n="wipe.title">Удалить все данные?</h3>
+    <p class="wipeText" data-i18n="wipe.text"></p>
+    <button class="settingsActionBtn" data-i18n="wipe.saveFirst" onclick="exportData()">💾 Сначала сохранить копию</button>
+    <p id="wipeHint" class="coords" style="margin:6px 0 8px;"></p>
+    <input id="wipeInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" oninput="onWipeInput()">
+    <div class="wipeBtns">
+      <button data-i18n="wipe.cancel" onclick="closeWipeModal()">Отмена</button>
+      <button id="wipeConfirmBtn" data-i18n="wipe.confirm" disabled onclick="confirmWipe()">Удалить всё</button>
+    </div>
   </div>
 </div>
 
@@ -987,6 +1037,10 @@ const TRANSLATIONS = {
       settingsLabel:'Резервная копия данных', statusNever:'Копия ещё не сохранялась', statusLast:'Последняя копия: {date}', settingsBtn:'💾 Сохранить копию сейчас',
       savedToast:'✅ Копия сохранена' },
     notifAction:{ arrival:'✅ Забрал заказ', route:'⏹ Стоп', stopped:'✅ Остановлено: {min} мин' },
+    setx:{ grpNotif:'🔔 Уведомления', grpPay:'💰 Оплата', grpLook:'🎨 Внешний вид', grpData:'💾 Данные', themeAuto:'🌓 Как в телефоне', mapFollow:'🔗 Как приложение',
+      restoreBtn:'📂 Восстановить из файла', clearBtn:'🗑 Очистить все данные' },
+    wipe:{ title:'Удалить все данные?', text:'Будут удалены все точки, заборы, суммы и история. Это нельзя отменить. Если данные тебе нужны, сначала сохрани копию.',
+      hint:'Чтобы подтвердить, введи слово {word}', word:'УДАЛИТЬ', saveFirst:'💾 Сначала сохранить копию', cancel:'Отмена', confirm:'Удалить всё' },
     reminder:{ arrivalTitle:'⏱ Не забыл забрать заказ?', arrivalBody:'Таймер ожидания идёт уже {min} мин. Если уже забрал — нажми «✅ Забрал заказ».',
       routeTitle:'🚴 Не забыл нажать «Стоп»?', routeBody:'Доставка идёт уже {min} мин. Если уже приехал — останови таймер в приложении.',
       testTitle:'🔔 Проверка уведомлений', testBody:'Всё работает: так будет выглядеть напоминание «не забыл нажать Стоп?».' },
@@ -1049,8 +1103,8 @@ const TRANSLATIONS = {
       topSpotsTitle:'💰 Самые прибыльные точки', topSpotsEmpty:'Пока нет данных о заработке — добавляй суммы за заказы в «Мои заказы».' },
     settings:{ title:'Настройки', markerStyleLabel:'Как отмечать точки на карте', markerCircle:'Кружок', markerBag:'Сумка курьера',
       payTypeLabel:'Тип оплаты', payTypeHourlyOpt:'⏱ Почасовая + премия', payTypePieceOpt:'💰 Сдельная за заказ',
-      currencyLabel:'Валюта', appThemeLabel:'Оформление приложения', themeLight:'☀️ Светлая', themeDark:'🌙 Тёмная',
-      mapThemeLabel:'Оформление карты (можно отдельно от приложения)', done:'Готово', languageLabel:'Язык приложения',
+      currencyLabel:'Валюта', appThemeLabel:'Тема приложения', themeLight:'☀️ Светлая', themeDark:'🌙 Тёмная',
+      mapThemeLabel:'Тема карты', done:'Готово', languageLabel:'Язык приложения',
       deliveryAvgLabel:'Среднее время доставки', resetDeliveryAvgBtn:'🔄 Обнулить среднее время доставки',
       notifLabel:'Уведомления «не забыл нажать Стоп?»', notifEnableBtn:'🔔 Включить уведомления', notifTestBtn:'📨 Проверить уведомление',
       notifStatusGranted:'✅ Включены', notifStatusDefault:'⚪ Ещё не разрешены — нажми «Включить» и подтверди в окне телефона',
@@ -1098,6 +1152,10 @@ const TRANSLATIONS = {
       settingsLabel:'Резервна копія даних', statusNever:'Копію ще не зберігали', statusLast:'Остання копія: {date}', settingsBtn:'💾 Зберегти копію зараз',
       savedToast:'✅ Копію збережено' },
     notifAction:{ arrival:'✅ Забрав замовлення', route:'⏹ Стоп', stopped:'✅ Зупинено: {min} хв' },
+    setx:{ grpNotif:'🔔 Сповіщення', grpPay:'💰 Оплата', grpLook:'🎨 Вигляд', grpData:'💾 Дані', themeAuto:'🌓 Як у телефоні', mapFollow:'🔗 Як застосунок',
+      restoreBtn:'📂 Відновити з файлу', clearBtn:'🗑 Очистити всі дані' },
+    wipe:{ title:'Видалити всі дані?', text:'Буде видалено всі точки, підбори, суми та історію. Це не можна скасувати. Якщо дані потрібні, спочатку збережи копію.',
+      hint:'Щоб підтвердити, введи слово {word}', word:'ВИДАЛИТИ', saveFirst:'💾 Спочатку зберегти копію', cancel:'Скасувати', confirm:'Видалити все' },
     reminder:{ arrivalTitle:'⏱ Не забув забрати замовлення?', arrivalBody:'Таймер очікування йде вже {min} хв. Якщо вже забрав — натисни «✅ Забрав замовлення».',
       routeTitle:'🚴 Не забув натиснути «Стоп»?', routeBody:'Доставка триває вже {min} хв. Якщо вже приїхав — зупини таймер у застосунку.',
       testTitle:'🔔 Перевірка сповіщень', testBody:'Усе працює: так виглядатиме нагадування «не забув натиснути Стоп?».' },
@@ -1160,8 +1218,8 @@ const TRANSLATIONS = {
       topSpotsTitle:'💰 Найприбутковіші точки', topSpotsEmpty:'Поки немає даних про заробіток — додавай суми за замовлення в «Мої замовлення».' },
     settings:{ title:'Налаштування', markerStyleLabel:'Як відмічати точки на карті', markerCircle:'Кружечок', markerBag:'Сумка кур’єра',
       payTypeLabel:'Тип оплати', payTypeHourlyOpt:'⏱ Погодинна + премія', payTypePieceOpt:'💰 Відрядна за замовлення',
-      currencyLabel:'Валюта', appThemeLabel:'Оформлення застосунку', themeLight:'☀️ Світла', themeDark:'🌙 Темна',
-      mapThemeLabel:'Оформлення карти (можна окремо від застосунку)', done:'Готово', languageLabel:'Мова застосунку',
+      currencyLabel:'Валюта', appThemeLabel:'Тема застосунку', themeLight:'☀️ Світла', themeDark:'🌙 Темна',
+      mapThemeLabel:'Тема карти', done:'Готово', languageLabel:'Мова застосунку',
       deliveryAvgLabel:'Середній час доставки', resetDeliveryAvgBtn:'🔄 Обнулити середній час доставки',
       notifLabel:'Сповіщення «не забув натиснути Стоп?»', notifEnableBtn:'🔔 Увімкнути сповіщення', notifTestBtn:'📨 Перевірити сповіщення',
       notifStatusGranted:'✅ Увімкнено', notifStatusDefault:'⚪ Ще не дозволені — натисни «Увімкнути» й підтверди у вікні телефона',
@@ -1209,6 +1267,10 @@ const TRANSLATIONS = {
       settingsLabel:'Copia de seguridad', statusNever:'Aún no se ha guardado ninguna copia', statusLast:'Última copia: {date}', settingsBtn:'💾 Guardar copia ahora',
       savedToast:'✅ Copia guardada' },
     notifAction:{ arrival:'✅ Pedido recogido', route:'⏹ Parar', stopped:'✅ Detenido: {min} min' },
+    setx:{ grpNotif:'🔔 Avisos', grpPay:'💰 Pago', grpLook:'🎨 Apariencia', grpData:'💾 Datos', themeAuto:'🌓 Como el móvil', mapFollow:'🔗 Como la app',
+      restoreBtn:'📂 Restaurar desde archivo', clearBtn:'🗑 Borrar todos los datos' },
+    wipe:{ title:'¿Borrar todos los datos?', text:'Se borrarán todos los puntos, recogidas, importes e historial. No se puede deshacer. Si necesitas los datos, guarda antes una copia.',
+      hint:'Para confirmar, escribe la palabra {word}', word:'BORRAR', saveFirst:'💾 Guardar copia primero', cancel:'Cancelar', confirm:'Borrar todo' },
     reminder:{ arrivalTitle:'⏱ ¿Olvidaste recoger el pedido?', arrivalBody:'El temporizador de espera lleva ya {min} min. Si ya lo recogiste, pulsa «✅ Pedido recogido».',
       routeTitle:'🚴 ¿Olvidaste pulsar «Parar»?', routeBody:'La entrega lleva ya {min} min en marcha. Si ya llegaste, detén el temporizador en la app.',
       testTitle:'🔔 Prueba de notificaciones', testBody:'Todo funciona: así se verá el aviso «¿olvidaste pulsar Parar?».' },
@@ -1271,8 +1333,8 @@ const TRANSLATIONS = {
       topSpotsTitle:'💰 Puntos más rentables', topSpotsEmpty:'Aún no hay datos de ganancias — añade los importes de tus pedidos en «Mis pedidos».' },
     settings:{ title:'Ajustes', markerStyleLabel:'Cómo marcar los puntos en el mapa', markerCircle:'Círculo', markerBag:'Mochila de repartidor',
       payTypeLabel:'Tipo de pago', payTypeHourlyOpt:'⏱ Por horas + bonus', payTypePieceOpt:'💰 Por pedido (destajo)',
-      currencyLabel:'Moneda', appThemeLabel:'Apariencia de la app', themeLight:'☀️ Claro', themeDark:'🌙 Oscuro',
-      mapThemeLabel:'Apariencia del mapa (independiente de la app)', done:'Listo', languageLabel:'Idioma de la app',
+      currencyLabel:'Moneda', appThemeLabel:'Tema de la app', themeLight:'☀️ Claro', themeDark:'🌙 Oscuro',
+      mapThemeLabel:'Tema del mapa', done:'Listo', languageLabel:'Idioma de la app',
       deliveryAvgLabel:'Tiempo medio de entrega', resetDeliveryAvgBtn:'🔄 Reiniciar tiempo medio de entrega',
       notifLabel:'Avisos «¿olvidaste pulsar Parar?»', notifEnableBtn:'🔔 Activar notificaciones', notifTestBtn:'📨 Probar notificación',
       notifStatusGranted:'✅ Activadas', notifStatusDefault:'⚪ Aún sin permiso — pulsa «Activar» y confirma en la ventana del móvil',
@@ -1320,6 +1382,10 @@ const TRANSLATIONS = {
       settingsLabel:'Data backup', statusNever:'No backup saved yet', statusLast:'Last backup: {date}', settingsBtn:'💾 Save a backup now',
       savedToast:'✅ Backup saved' },
     notifAction:{ arrival:'✅ Picked up', route:'⏹ Stop', stopped:'✅ Stopped: {min} min' },
+    setx:{ grpNotif:'🔔 Notifications', grpPay:'💰 Pay', grpLook:'🎨 Appearance', grpData:'💾 Data', themeAuto:'🌓 Match phone', mapFollow:'🔗 Match app',
+      restoreBtn:'📂 Restore from file', clearBtn:'🗑 Clear all data' },
+    wipe:{ title:'Delete all data?', text:'All spots, pickups, amounts and history will be deleted. This cannot be undone. If you need the data, save a backup first.',
+      hint:'To confirm, type the word {word}', word:'DELETE', saveFirst:'💾 Save a backup first', cancel:'Cancel', confirm:'Delete everything' },
     reminder:{ arrivalTitle:'⏱ Forgot to mark the pickup?', arrivalBody:'The wait timer has been running for {min} min. If you already got the order, tap "✅ Picked up order".',
       routeTitle:'🚴 Forgot to tap "Stop"?', routeBody:'The delivery timer has been running for {min} min. If you already arrived, stop the timer in the app.',
       testTitle:'🔔 Notification test', testBody:'All good: this is how the "forgot to tap Stop?" reminder will look.' },
@@ -1382,8 +1448,8 @@ const TRANSLATIONS = {
       topSpotsTitle:'💰 Most profitable spots', topSpotsEmpty:'No earnings data yet — add order amounts in "My orders".' },
     settings:{ title:'Settings', markerStyleLabel:'How to mark spots on the map', markerCircle:'Circle', markerBag:'Courier bag',
       payTypeLabel:'Pay type', payTypeHourlyOpt:'⏱ Hourly + bonus', payTypePieceOpt:'💰 Per-order (piece rate)',
-      currencyLabel:'Currency', appThemeLabel:'App appearance', themeLight:'☀️ Light', themeDark:'🌙 Dark',
-      mapThemeLabel:'Map appearance (independent of the app)', done:'Done', languageLabel:'App language',
+      currencyLabel:'Currency', appThemeLabel:'App theme', themeLight:'☀️ Light', themeDark:'🌙 Dark',
+      mapThemeLabel:'Map theme', done:'Done', languageLabel:'App language',
       deliveryAvgLabel:'Average delivery time', resetDeliveryAvgBtn:'🔄 Reset average delivery time',
       notifLabel:'"Forgot to tap Stop?" notifications', notifEnableBtn:'🔔 Enable notifications', notifTestBtn:'📨 Send test notification',
       notifStatusGranted:'✅ Enabled', notifStatusDefault:'⚪ Not allowed yet — tap "Enable" and confirm in the phone prompt',
@@ -1638,30 +1704,44 @@ const DARK_FILTER = 'invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9)
 function applyMapTheme(isDark){
   document.getElementById('map').style.filter = isDark ? DARK_FILTER : 'none';
 }
-
-function chooseMapTheme(theme){
-  localStorage.setItem(MAP_THEME_KEY, theme);
-  applyMapTheme(theme === 'dark');
-  document.querySelectorAll('#mapThemeOptions .themeOption').forEach(el => {
-    el.classList.toggle('active', el.dataset.theme === theme);
-  });
-}
-
-applyMapTheme((localStorage.getItem(MAP_THEME_KEY) || 'light') === 'dark');
-
 function applyAppTheme(theme){
   document.body.classList.toggle('app-dark', theme === 'dark');
 }
 
-function chooseAppTheme(theme){
-  localStorage.setItem(APP_THEME_KEY, theme);
-  applyAppTheme(theme);
-  document.querySelectorAll('#appThemeOptions .themeOption').forEach(el => {
-    el.classList.toggle('active', el.dataset.theme === theme);
-  });
+// Тема: 'auto' (как в телефоне, по умолчанию) | 'light' | 'dark'. Карта по умолчанию повторяет тему приложения.
+function systemPrefersDark(){
+  try{ return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); }catch(e){ return false; }
 }
+function getAppThemeChoice(){ const v = localStorage.getItem(APP_THEME_KEY); return (v === 'light' || v === 'dark') ? v : 'auto'; }
+function getMapThemeChoice(){ const v = localStorage.getItem(MAP_THEME_KEY); return (v === 'light' || v === 'dark') ? v : 'auto'; }
+function resolveAppTheme(){ const c = getAppThemeChoice(); return c === 'auto' ? (systemPrefersDark() ? 'dark' : 'light') : c; }
+function resolveMapTheme(){ const c = getMapThemeChoice(); return c === 'auto' ? resolveAppTheme() : c; }
 
-applyAppTheme(localStorage.getItem(APP_THEME_KEY) || 'light');
+function applyThemes(){
+  const appTheme = resolveAppTheme();
+  applyAppTheme(appTheme);
+  applyMapTheme(resolveMapTheme() === 'dark');
+  try{ document.querySelector('meta[name="theme-color"]').setAttribute('content', appTheme === 'dark' ? '#14171c' : '#ffffff'); }catch(e){}
+}
+function markThemeOptions(){
+  const a = getAppThemeChoice(), m = getMapThemeChoice();
+  document.querySelectorAll('#appThemeOptions .themeOption').forEach(el => el.classList.toggle('active', el.dataset.theme === a));
+  document.querySelectorAll('#mapThemeOptions .themeOption').forEach(el => el.classList.toggle('active', el.dataset.theme === m));
+}
+function chooseAppTheme(choice){
+  if(choice === 'auto') localStorage.removeItem(APP_THEME_KEY); else localStorage.setItem(APP_THEME_KEY, choice);
+  applyThemes(); markThemeOptions();
+}
+function chooseMapTheme(choice){
+  if(choice === 'auto') localStorage.removeItem(MAP_THEME_KEY); else localStorage.setItem(MAP_THEME_KEY, choice);
+  applyThemes(); markThemeOptions();
+}
+applyThemes();
+try{
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const onChange = () => applyThemes();
+  if(mq.addEventListener) mq.addEventListener('change', onChange); else if(mq.addListener) mq.addListener(onChange);
+}catch(e){}
 
 let suppressNextMapClick = false;
 
@@ -1947,14 +2027,7 @@ function openSettingsModal(){
   document.querySelectorAll('.markerOption').forEach(el => {
     el.classList.toggle('active', el.dataset.style === current);
   });
-  const currentAppTheme = localStorage.getItem(APP_THEME_KEY) || 'light';
-  document.querySelectorAll('#appThemeOptions .themeOption').forEach(el => {
-    el.classList.toggle('active', el.dataset.theme === currentAppTheme);
-  });
-  const currentMapTheme = localStorage.getItem(MAP_THEME_KEY) || 'light';
-  document.querySelectorAll('#mapThemeOptions .themeOption').forEach(el => {
-    el.classList.toggle('active', el.dataset.theme === currentMapTheme);
-  });
+  markThemeOptions();
   const currentPayType = localStorage.getItem(PAY_TYPE_KEY) || 'hourly';
   document.querySelectorAll('#payTypeOptions .themeOption').forEach(el => {
     el.classList.toggle('active', el.dataset.paytype === currentPayType);
@@ -1965,6 +2038,10 @@ function openSettingsModal(){
   });
   updateLangSwitcherUI();
   renderNotifStatus();
+  try{ // если уведомления ещё не включены - сразу раскрываем эту группу, она важная
+    const g = document.getElementById('grpNotif');
+    if(g && 'Notification' in window && Notification.permission !== 'granted') g.open = true;
+  }catch(e){}
   document.getElementById('settingsModalBg').classList.add('show');
 }
 function closeSettingsModal(){
@@ -2037,7 +2114,7 @@ function tourShowOrders(){ closeAllTourScreens(); openOrdersModal(); }
 function tourShowStats(){ closeAllTourScreens(); openStatsModal(); }
 function tourShowHistory(){ closeAllTourScreens(); openHistoryModal(); }
 function tourShowReco(){ closeAllTourScreens(); openRecoModal(); }
-function tourShowSettings(){ closeAllTourScreens(); openSettingsModal(); }
+function tourShowSettings(){ closeAllTourScreens(); openSettingsModal(); document.querySelectorAll('#settingsModal details').forEach(d => { d.open = true; }); }
 function tourShowNothing(){ closeAllTourScreens(); }
 
 function buildTourSteps(){
@@ -4127,10 +4204,25 @@ function importData(event){
   reader.readAsText(file);
 }
 
-function resetAll(){
-  if(!confirm(t('alerts.confirmResetAll'))) return;
+// Полная очистка: не одно нажатие «ОК», а ввод слова - случайно не получится
+function openWipeModal(){
+  document.getElementById('wipeInput').value = '';
+  document.getElementById('wipeHint').textContent = t('wipe.hint', { word: t('wipe.word') });
+  document.getElementById('wipeConfirmBtn').disabled = true;
+  document.getElementById('wipeModalBg').classList.add('show');
+}
+function closeWipeModal(){ document.getElementById('wipeModalBg').classList.remove('show'); }
+function wipeWordMatches(){
+  const v = document.getElementById('wipeInput').value.trim().toLocaleUpperCase();
+  return v.length > 0 && v === t('wipe.word').toLocaleUpperCase();
+}
+function onWipeInput(){ document.getElementById('wipeConfirmBtn').disabled = !wipeWordMatches(); }
+function confirmWipe(){
+  if(!wipeWordMatches()) return;
+  closeWipeModal();
   wipeAllData();
 }
+function resetAll(){ openWipeModal(); }
 
 // Обнуляет ТОЛЬКО счётчик среднего времени доезда до клиента (routeLog). Идущие сейчас доставки
 // (routeActive), точки, заборы, суммы и ожидание в ресторанах не трогаем.
