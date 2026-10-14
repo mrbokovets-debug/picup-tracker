@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="application-name" content="PickupMap">
 <title>PickupMap</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PickupMap">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
@@ -421,6 +423,11 @@
     border:1px solid var(--line); background:var(--asphalt-2); color:var(--text);}
   #wipeConfirmBtn{background:var(--danger) !important; border-color:var(--danger) !important; color:#fff !important;}
   #wipeConfirmBtn:disabled{opacity:0.35; cursor:not-allowed;}
+  #installBanner{position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:496px; margin:0 auto;
+    z-index:1710; background:var(--card); border:1px solid var(--signal); border-radius:14px; padding:12px 14px;
+    box-shadow:0 8px 28px rgba(0,0,0,0.35); display:none;}
+  #installBanner.show{display:block;}
+  #installBanner .backupBannerBtns button:last-child{background:var(--signal); border-color:var(--signal); color:var(--signal-text);}
   #backupBanner{position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:496px; margin:0 auto;
     z-index:1700; background:var(--card); border:1px solid var(--signal); border-radius:14px; padding:12px 14px;
     box-shadow:0 8px 28px rgba(0,0,0,0.35); display:none;}
@@ -668,6 +675,15 @@
 </head>
 <body>
 <script>try{var __t=localStorage.getItem('pickup-app-theme');if(__t==='dark'||((__t!=='light')&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.body.classList.add('app-dark');}catch(e){}</script>
+
+<div id="installBanner" role="dialog">
+  <div class="backupBannerTitle" data-i18n="install.title">📲 Установи как приложение</div>
+  <div id="installBannerText" class="backupBannerText"></div>
+  <div class="backupBannerBtns">
+    <button data-i18n="install.later" onclick="snoozeInstallBanner()">Позже</button>
+    <button id="installBannerGo" data-i18n="install.btn" onclick="installApp()">Установить</button>
+  </div>
+</div>
 
 <div id="backupBanner" role="alert">
   <div class="backupBannerTitle" data-i18n="backup.bannerTitle">💾 Сохрани копию данных</div>
@@ -925,6 +941,7 @@
 <div id="settingsModalBg">
   <div id="settingsModal">
     <h3 data-i18n="settings.title">Настройки</h3>
+    <button id="installNowBtn" class="settingsActionBtn" data-i18n="install.settingsBtn" style="display:none;" onclick="closeSettingsModal(); installApp();">📲 Установить как приложение</button>
     <p class="coords" data-i18n="settings.languageLabel">Язык приложения</p>
     <div id="languageOptions">
       <div class="themeOption" data-lang="ru" onclick="chooseLanguage('ru')">Русский</div>
@@ -1128,6 +1145,7 @@ const TRANSLATIONS = {
       pAll:'Всё время', pToday:'Сегодня', pWeek:'Неделя', pMonth:'Месяц',
       tAll:'Любое', tMorning:'Утро 5–11', tLunch:'Обед 11–15', tEvening:'Вечер 15–22', tNight:'Ночь 22–5',
       fAll:'Все', fHot:'Ходовые (3+)', fTop:'Топ-10', fProfit:'Прибыльные', reset:'Сбросить', resetShort:'Сбросить', done:'Готово', shown:'Показаны {n} из {m}' },
+    install:{ title:'📲 Установи как приложение', text:'Иконка на главном экране, запуск во весь экран без адресной строки и название под иконкой — как обычное приложение.', textIos:'Нажми «Поделиться» (квадрат со стрелкой внизу Safari), затем «На экран “Домой”». Приложение появится с иконкой и откроется во весь экран без адресной строки.', btn:'Установить', ok:'Понятно', later:'Позже', settingsBtn:'📲 Установить как приложение', manual:'В меню браузера (⋮) выбери «Установить приложение» или «Добавить на главный экран».' },
     reminder:{ arrivalTitle:'⏱ Не забыл забрать заказ?', arrivalBody:'Таймер ожидания идёт уже {min} мин. Если уже забрал — нажми «✅ Забрал заказ».',
       routeTitle:'🚴 Не забыл нажать «Стоп»?', routeBody:'Доставка идёт уже {min} мин. Если уже приехал — останови таймер в приложении.',
       testTitle:'🔔 Проверка уведомлений', testBody:'Всё работает: так будет выглядеть напоминание «не забыл нажать Стоп?».' },
@@ -1251,6 +1269,7 @@ const TRANSLATIONS = {
       pAll:'Весь час', pToday:'Сьогодні', pWeek:'Тиждень', pMonth:'Місяць',
       tAll:'Будь-який', tMorning:'Ранок 5–11', tLunch:'Обід 11–15', tEvening:'Вечір 15–22', tNight:'Ніч 22–5',
       fAll:'Усі', fHot:'Ходові (3+)', fTop:'Топ-10', fProfit:'Прибуткові', reset:'Скинути', resetShort:'Скинути', done:'Готово', shown:'Показано {n} з {m}' },
+    install:{ title:'📲 Встанови як застосунок', text:'Іконка на головному екрані, запуск на весь екран без адресного рядка та назва під іконкою — як звичайний застосунок.', textIos:'Натисни «Поділитися» (квадрат зі стрілкою внизу Safari), потім «На екран “Додому”». Застосунок з’явиться з іконкою та відкриватиметься на весь екран без адресного рядка.', btn:'Встановити', ok:'Зрозуміло', later:'Пізніше', settingsBtn:'📲 Встановити як застосунок', manual:'У меню браузера (⋮) обери «Встановити застосунок» або «Додати на головний екран».' },
     reminder:{ arrivalTitle:'⏱ Не забув забрати замовлення?', arrivalBody:'Таймер очікування йде вже {min} хв. Якщо вже забрав — натисни «✅ Забрав замовлення».',
       routeTitle:'🚴 Не забув натиснути «Стоп»?', routeBody:'Доставка триває вже {min} хв. Якщо вже приїхав — зупини таймер у застосунку.',
       testTitle:'🔔 Перевірка сповіщень', testBody:'Усе працює: так виглядатиме нагадування «не забув натиснути Стоп?».' },
@@ -1374,6 +1393,7 @@ const TRANSLATIONS = {
       pAll:'Siempre', pToday:'Hoy', pWeek:'Semana', pMonth:'Mes',
       tAll:'Cualquiera', tMorning:'Mañana 5–11', tLunch:'Comida 11–15', tEvening:'Tarde 15–22', tNight:'Noche 22–5',
       fAll:'Todos', fHot:'Habituales (3+)', fTop:'Top 10', fProfit:'Rentables', reset:'Restablecer', resetShort:'Restablecer', done:'Listo', shown:'Se muestran {n} de {m}' },
+    install:{ title:'📲 Instálala como app', text:'Icono en la pantalla de inicio, se abre a pantalla completa sin barra de direcciones y con su nombre bajo el icono, como una app normal.', textIos:'Pulsa «Compartir» (el cuadrado con flecha en Safari) y luego «Añadir a pantalla de inicio». La app tendrá su icono y se abrirá a pantalla completa sin barra de direcciones.', btn:'Instalar', ok:'Entendido', later:'Luego', settingsBtn:'📲 Instalar como app', manual:'En el menú del navegador (⋮) elige «Instalar aplicación» o «Añadir a pantalla de inicio».' },
     reminder:{ arrivalTitle:'⏱ ¿Olvidaste recoger el pedido?', arrivalBody:'El temporizador de espera lleva ya {min} min. Si ya lo recogiste, pulsa «✅ Pedido recogido».',
       routeTitle:'🚴 ¿Olvidaste pulsar «Parar»?', routeBody:'La entrega lleva ya {min} min en marcha. Si ya llegaste, detén el temporizador en la app.',
       testTitle:'🔔 Prueba de notificaciones', testBody:'Todo funciona: así se verá el aviso «¿olvidaste pulsar Parar?».' },
@@ -1497,6 +1517,7 @@ const TRANSLATIONS = {
       pAll:'All time', pToday:'Today', pWeek:'Week', pMonth:'Month',
       tAll:'Any', tMorning:'Morning 5–11', tLunch:'Lunch 11–15', tEvening:'Evening 15–22', tNight:'Night 22–5',
       fAll:'All', fHot:'Busy (3+)', fTop:'Top 10', fProfit:'Most profitable', reset:'Reset', resetShort:'Reset', done:'Done', shown:'Showing {n} of {m}' },
+    install:{ title:'📲 Install as an app', text:'An icon on your home screen, full-screen launch with no address bar, and the app name under the icon, just like a regular app.', textIos:'Tap “Share” (the square with an arrow in Safari), then “Add to Home Screen”. The app gets its own icon and opens full screen with no address bar.', btn:'Install', ok:'Got it', later:'Later', settingsBtn:'📲 Install as an app', manual:'In the browser menu (⋮) choose “Install app” or “Add to Home screen”.' },
     reminder:{ arrivalTitle:'⏱ Forgot to mark the pickup?', arrivalBody:'The wait timer has been running for {min} min. If you already got the order, tap "✅ Picked up order".',
       routeTitle:'🚴 Forgot to tap "Stop"?', routeBody:'The delivery timer has been running for {min} min. If you already arrived, stop the timer in the app.',
       testTitle:'🔔 Notification test', testBody:'All good: this is how the "forgot to tap Stop?" reminder will look.' },
@@ -2266,6 +2287,7 @@ function openSettingsModal(){
   });
   updateLangSwitcherUI();
   renderNotifStatus();
+  try{ updateInstallUi(); }catch(e){}
   try{ // если уведомления ещё не включены - сразу раскрываем эту группу, она важная
     const g = document.getElementById('grpNotif');
     if(g && 'Notification' in window && Notification.permission !== 'granted') g.open = true;
@@ -3965,6 +3987,66 @@ function isIosDevice(){
 function isStandalonePwa(){
   return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
 }
+// --- Установка как приложение: иконка на главном экране, без адресной строки, название под иконкой ---
+const INSTALL_SNOOZE_KEY = 'pickup-install-snooze';
+const INSTALL_SNOOZE_MS = 14 * 24 * 60 * 60 * 1000;
+let deferredInstallPrompt = null;
+
+function installSnoozed(){ try{ return Date.now() < Number(localStorage.getItem(INSTALL_SNOOZE_KEY) || 0); }catch(e){ return false; } }
+function canOfferInstall(){ return !isStandalonePwa() && (!!deferredInstallPrompt || isIosDevice()); }
+function updateInstallUi(){
+  const btn = document.getElementById('installNowBtn');
+  if(btn) btn.style.display = canOfferInstall() ? '' : 'none';
+}
+function showInstallBanner(force){
+  const el = document.getElementById('installBanner');
+  if(!el || !canOfferInstall()) return;
+  if(!force && installSnoozed()) return;
+  const iosOnly = !deferredInstallPrompt && isIosDevice();
+  document.getElementById('installBannerText').textContent = iosOnly ? t('install.textIos') : t('install.text');
+  const go = document.getElementById('installBannerGo');
+  go.textContent = iosOnly ? t('install.ok') : t('install.btn');
+  go.onclick = iosOnly ? snoozeInstallBanner : installApp;
+  el.classList.add('show');
+}
+function hideInstallBanner(){ const el = document.getElementById('installBanner'); if(el) el.classList.remove('show'); }
+function snoozeInstallBanner(){ try{ localStorage.setItem(INSTALL_SNOOZE_KEY, String(Date.now() + INSTALL_SNOOZE_MS)); }catch(e){} hideInstallBanner(); }
+async function installApp(){
+  if(deferredInstallPrompt){
+    const ev = deferredInstallPrompt;
+    deferredInstallPrompt = null;
+    hideInstallBanner();
+    try{
+      ev.prompt();
+      const res = await ev.userChoice;
+      if(!res || res.outcome !== 'accepted') snoozeInstallBanner();
+    }catch(e){}
+    updateInstallUi();
+    return;
+  }
+  if(isIosDevice()){ showInstallBanner(true); return; }
+  showToast(t('install.manual'), 6000);
+}
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  updateInstallUi();
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  try{ localStorage.setItem(INSTALL_SNOOZE_KEY, String(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000)); }catch(e){}
+  hideInstallBanner(); updateInstallUi();
+});
+// предлагаем один раз спокойно, не поверх тура и не поверх напоминания про копию данных
+setTimeout(() => {
+  try{
+    updateInstallUi();
+    const tourOn = document.getElementById('tourOverlay') && document.getElementById('tourOverlay').classList.contains('show');
+    const backupOn = document.getElementById('backupBanner') && document.getElementById('backupBanner').classList.contains('show');
+    if(!tourOn && !backupOn) showInstallBanner(false);
+  }catch(e){}
+}, 15000);
+
 function renderPushStatus(){
   const el = document.getElementById('pushStatus');
   if(!el) return;
@@ -4636,6 +4718,7 @@ setTimeout(() => { try{ showBackupBannerIfNeeded(); }catch(e){} }, 4000);
     '➖':['','<path d="M5 12h14"/>'],
     '✎':['','<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/>'],
     '☰':['','<path d="M4 7h16M4 12h16M4 17h16"/>'],
+    '📲':['','<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>'],
     '✕':['','<path d="M6 6l12 12M18 6L6 18"/>'],
     '👋':['','<path d="M7 12V6.5a1.5 1.5 0 0 1 3 0V11M10 10V4.5a1.5 1.5 0 0 1 3 0V11M13 10V5.5a1.5 1.5 0 0 1 3 0V13M16 10.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.7-2.3L4.5 15a1.5 1.5 0 0 1 2.3-1.9L7 13.5"/>']
   };

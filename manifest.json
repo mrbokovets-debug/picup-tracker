@@ -1,18 +1,47 @@
 {
-  "id": "./",
+  "id": "./index.html",
   "name": "PickupMap",
   "short_name": "PickupMap",
-  "description": "Rastreador de los lugares donde más recoges pedidos",
-  "lang": "es",
+  "description": "Трекер мест, где чаще всего забираешь заказы",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
+  "lang": "ru",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-  "orientation": "portrait",
-  "categories": ["navigation", "productivity"],
+  "categories": [
+    "navigation",
+    "productivity"
+  ],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
