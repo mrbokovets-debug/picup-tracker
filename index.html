@@ -423,10 +423,11 @@
     border:1px solid var(--line); background:var(--asphalt-2); color:var(--text);}
   #wipeConfirmBtn{background:var(--danger) !important; border-color:var(--danger) !important; color:#fff !important;}
   #wipeConfirmBtn:disabled{opacity:0.35; cursor:not-allowed;}
-  #installBanner{position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:496px; margin:0 auto;
+  #installBanner{position:fixed; left:12px; right:12px; top:calc(10px + env(safe-area-inset-top)); max-width:496px; margin:0 auto;
     z-index:1710; background:var(--card); border:1px solid var(--signal); border-radius:14px; padding:12px 14px;
     box-shadow:0 8px 28px rgba(0,0,0,0.35); display:none;}
   #installBanner.show{display:block;}
+  #installBannerText{white-space:pre-line;}
   #installBanner .backupBannerBtns button:last-child{background:var(--signal); border-color:var(--signal); color:var(--signal-text);}
   #backupBanner{position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:496px; margin:0 auto;
     z-index:1700; background:var(--card); border:1px solid var(--signal); border-radius:14px; padding:12px 14px;
@@ -1145,7 +1146,7 @@ const TRANSLATIONS = {
       pAll:'Всё время', pToday:'Сегодня', pWeek:'Неделя', pMonth:'Месяц',
       tAll:'Любое', tMorning:'Утро 5–11', tLunch:'Обед 11–15', tEvening:'Вечер 15–22', tNight:'Ночь 22–5',
       fAll:'Все', fHot:'Ходовые (3+)', fTop:'Топ-10', fProfit:'Прибыльные', reset:'Сбросить', resetShort:'Сбросить', done:'Готово', shown:'Показаны {n} из {m}' },
-    install:{ title:'📲 Установи как приложение', text:'Иконка на главном экране, запуск во весь экран без адресной строки и название под иконкой — как обычное приложение.', textIos:'Нажми «Поделиться» (квадрат со стрелкой внизу Safari), затем «На экран “Домой”». Приложение появится с иконкой и откроется во весь экран без адресной строки.', btn:'Установить', ok:'Понятно', later:'Позже', settingsBtn:'📲 Установить как приложение', manual:'В меню браузера (⋮) выбери «Установить приложение» или «Добавить на главный экран».' },
+    install:{ title:'📲 Установи PickupMap', text:'Иконка на главном экране, запуск во весь экран без адресной строки и название под иконкой — как обычное приложение.', textIos:'1. Нажми «Поделиться» (квадрат со стрелкой вверх) внизу Safari.\n2. Прокрути вниз и выбери «На экран “Домой”».\n3. Нажми «Добавить». Приложение появится с иконкой и откроется без адресной строки.', btn:'Установить', ok:'Понятно', later:'Позже', settingsBtn:'📲 Установить как приложение', manual:'В меню браузера (⋮) выбери «Установить приложение» или «Добавить на главный экран».' },
     reminder:{ arrivalTitle:'⏱ Не забыл забрать заказ?', arrivalBody:'Таймер ожидания идёт уже {min} мин. Если уже забрал — нажми «✅ Забрал заказ».',
       routeTitle:'🚴 Не забыл нажать «Стоп»?', routeBody:'Доставка идёт уже {min} мин. Если уже приехал — останови таймер в приложении.',
       testTitle:'🔔 Проверка уведомлений', testBody:'Всё работает: так будет выглядеть напоминание «не забыл нажать Стоп?».' },
@@ -1269,7 +1270,7 @@ const TRANSLATIONS = {
       pAll:'Весь час', pToday:'Сьогодні', pWeek:'Тиждень', pMonth:'Місяць',
       tAll:'Будь-який', tMorning:'Ранок 5–11', tLunch:'Обід 11–15', tEvening:'Вечір 15–22', tNight:'Ніч 22–5',
       fAll:'Усі', fHot:'Ходові (3+)', fTop:'Топ-10', fProfit:'Прибуткові', reset:'Скинути', resetShort:'Скинути', done:'Готово', shown:'Показано {n} з {m}' },
-    install:{ title:'📲 Встанови як застосунок', text:'Іконка на головному екрані, запуск на весь екран без адресного рядка та назва під іконкою — як звичайний застосунок.', textIos:'Натисни «Поділитися» (квадрат зі стрілкою внизу Safari), потім «На екран “Додому”». Застосунок з’явиться з іконкою та відкриватиметься на весь екран без адресного рядка.', btn:'Встановити', ok:'Зрозуміло', later:'Пізніше', settingsBtn:'📲 Встановити як застосунок', manual:'У меню браузера (⋮) обери «Встановити застосунок» або «Додати на головний екран».' },
+    install:{ title:'📲 Встанови PickupMap', text:'Іконка на головному екрані, запуск на весь екран без адресного рядка та назва під іконкою — як звичайний застосунок.', textIos:'1. Натисни «Поділитися» (квадрат зі стрілкою вгору) внизу Safari.\n2. Прокрути вниз і обери «На екран “Додому”».\n3. Натисни «Додати». Застосунок з’явиться з іконкою та відкриватиметься без адресного рядка.', btn:'Встановити', ok:'Зрозуміло', later:'Пізніше', settingsBtn:'📲 Встановити як застосунок', manual:'У меню браузера (⋮) обери «Встановити застосунок» або «Додати на головний екран».' },
     reminder:{ arrivalTitle:'⏱ Не забув забрати замовлення?', arrivalBody:'Таймер очікування йде вже {min} хв. Якщо вже забрав — натисни «✅ Забрав замовлення».',
       routeTitle:'🚴 Не забув натиснути «Стоп»?', routeBody:'Доставка триває вже {min} хв. Якщо вже приїхав — зупини таймер у застосунку.',
       testTitle:'🔔 Перевірка сповіщень', testBody:'Усе працює: так виглядатиме нагадування «не забув натиснути Стоп?».' },
@@ -1393,7 +1394,7 @@ const TRANSLATIONS = {
       pAll:'Siempre', pToday:'Hoy', pWeek:'Semana', pMonth:'Mes',
       tAll:'Cualquiera', tMorning:'Mañana 5–11', tLunch:'Comida 11–15', tEvening:'Tarde 15–22', tNight:'Noche 22–5',
       fAll:'Todos', fHot:'Habituales (3+)', fTop:'Top 10', fProfit:'Rentables', reset:'Restablecer', resetShort:'Restablecer', done:'Listo', shown:'Se muestran {n} de {m}' },
-    install:{ title:'📲 Instálala como app', text:'Icono en la pantalla de inicio, se abre a pantalla completa sin barra de direcciones y con su nombre bajo el icono, como una app normal.', textIos:'Pulsa «Compartir» (el cuadrado con flecha en Safari) y luego «Añadir a pantalla de inicio». La app tendrá su icono y se abrirá a pantalla completa sin barra de direcciones.', btn:'Instalar', ok:'Entendido', later:'Luego', settingsBtn:'📲 Instalar como app', manual:'En el menú del navegador (⋮) elige «Instalar aplicación» o «Añadir a pantalla de inicio».' },
+    install:{ title:'📲 Instala PickupMap', text:'Icono en la pantalla de inicio, se abre a pantalla completa sin barra de direcciones y con su nombre bajo el icono, como una app normal.', textIos:'1. Pulsa «Compartir» (el cuadrado con flecha hacia arriba) abajo en Safari.\n2. Desplázate y elige «Añadir a pantalla de inicio».\n3. Pulsa «Añadir». La app tendrá su icono y se abrirá sin barra de direcciones.', btn:'Instalar', ok:'Entendido', later:'Luego', settingsBtn:'📲 Instalar como app', manual:'En el menú del navegador (⋮) elige «Instalar aplicación» o «Añadir a pantalla de inicio».' },
     reminder:{ arrivalTitle:'⏱ ¿Olvidaste recoger el pedido?', arrivalBody:'El temporizador de espera lleva ya {min} min. Si ya lo recogiste, pulsa «✅ Pedido recogido».',
       routeTitle:'🚴 ¿Olvidaste pulsar «Parar»?', routeBody:'La entrega lleva ya {min} min en marcha. Si ya llegaste, detén el temporizador en la app.',
       testTitle:'🔔 Prueba de notificaciones', testBody:'Todo funciona: así se verá el aviso «¿olvidaste pulsar Parar?».' },
@@ -1517,7 +1518,7 @@ const TRANSLATIONS = {
       pAll:'All time', pToday:'Today', pWeek:'Week', pMonth:'Month',
       tAll:'Any', tMorning:'Morning 5–11', tLunch:'Lunch 11–15', tEvening:'Evening 15–22', tNight:'Night 22–5',
       fAll:'All', fHot:'Busy (3+)', fTop:'Top 10', fProfit:'Most profitable', reset:'Reset', resetShort:'Reset', done:'Done', shown:'Showing {n} of {m}' },
-    install:{ title:'📲 Install as an app', text:'An icon on your home screen, full-screen launch with no address bar, and the app name under the icon, just like a regular app.', textIos:'Tap “Share” (the square with an arrow in Safari), then “Add to Home Screen”. The app gets its own icon and opens full screen with no address bar.', btn:'Install', ok:'Got it', later:'Later', settingsBtn:'📲 Install as an app', manual:'In the browser menu (⋮) choose “Install app” or “Add to Home screen”.' },
+    install:{ title:'📲 Install PickupMap', text:'An icon on your home screen, full-screen launch with no address bar, and the app name under the icon, just like a regular app.', textIos:'1. Tap “Share” (the square with an up arrow) at the bottom of Safari.\n2. Scroll down and choose “Add to Home Screen”.\n3. Tap “Add”. The app gets its own icon and opens with no address bar.', btn:'Install', ok:'Got it', later:'Later', settingsBtn:'📲 Install as an app', manual:'In the browser menu (⋮) choose “Install app” or “Add to Home screen”.' },
     reminder:{ arrivalTitle:'⏱ Forgot to mark the pickup?', arrivalBody:'The wait timer has been running for {min} min. If you already got the order, tap "✅ Picked up order".',
       routeTitle:'🚴 Forgot to tap "Stop"?', routeBody:'The delivery timer has been running for {min} min. If you already arrived, stop the timer in the app.',
       testTitle:'🔔 Notification test', testBody:'All good: this is how the "forgot to tap Stop?" reminder will look.' },
@@ -4045,7 +4046,16 @@ setTimeout(() => {
     const backupOn = document.getElementById('backupBanner') && document.getElementById('backupBanner').classList.contains('show');
     if(!tourOn && !backupOn) showInstallBanner(false);
   }catch(e){}
-}, 15000);
+}, 5000);
+  // если в этот момент висит напоминание про копию - вернёмся к подсказке чуть позже
+  setTimeout(() => {
+    try{
+      const el = document.getElementById('installBanner');
+      const tourOn = document.getElementById('tourOverlay') && document.getElementById('tourOverlay').classList.contains('show');
+      const backupOn = document.getElementById('backupBanner') && document.getElementById('backupBanner').classList.contains('show');
+      if(el && !el.classList.contains('show') && !tourOn && !backupOn) showInstallBanner(false);
+    }catch(e){}
+  }, 30000);
 
 function renderPushStatus(){
   const el = document.getElementById('pushStatus');
