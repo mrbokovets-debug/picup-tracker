@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pickup-tracker-v6';
+const CACHE_NAME = 'pickup-tracker-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -160,7 +160,7 @@ self.addEventListener('push', (event) => {
     if (!kinds.length) {
       // таймеров уже нет (остановили, пока пуш летел). iPhone требует показать уведомление на КАЖДЫЙ пуш,
       // поэтому показываем нейтральное и сразу убираем
-      await self.registration.showNotification((texts.route && texts.route.title) || 'PickupMap', { icon: base.icon, badge: base.badge, tag: 'pickup-idle', silent: true });
+      await self.registration.showNotification((texts.arrival && texts.arrival.title) || 'PickupMap', { icon: base.icon, badge: base.badge, tag: 'pickup-idle', silent: true });
       const idle = await self.registration.getNotifications({ tag: 'pickup-idle' });
       idle.forEach((n) => n.close());
       return;

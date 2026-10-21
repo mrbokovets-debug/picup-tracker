@@ -49,10 +49,8 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
   html,body{margin:0;padding:0;height:100%;background:var(--asphalt);color:var(--text);
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;}
-  #app{display:flex; flex-direction:column; height:100vh; max-width:520px; margin:0 auto;}
+  #app{display:flex; flex-direction:column; height:100vh; max-width:520px; margin:0 auto; padding-top:env(safe-area-inset-top);}
 
-  header{padding:14px 16px 6px; flex-shrink:0;}
-  .headerTop{display:flex; align-items:stretch; gap:10px;}
   h1{font-size:20px; font-weight:800; letter-spacing:-0.02em; margin:0; text-align:center; flex:1;}
   .sub{color:var(--text-dim); font-size:12.5px; margin:0; line-height:1.4;}
 
@@ -108,7 +106,7 @@
     color:var(--text); font-size:14px; font-weight:700; cursor:pointer;}
   .mfBtns .mfDone{background:var(--signal); border-color:var(--signal); color:#fff;}
   #modeBadge{
-    position:absolute; left:10px; top:10px; z-index:400; background:rgba(20,23,28,0.85);
+    position:absolute; left:62px; top:10px; z-index:400; background:rgba(20,23,28,0.85);
     color:#ffffff; font-size:11px; padding:6px 10px; border-radius:8px;
     border:1px solid var(--line); pointer-events:none; display:none;
   }
@@ -439,10 +437,9 @@
   .backupBannerBtns button{padding:9px 16px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;
     border:1px solid var(--line); background:var(--asphalt-2); color:var(--text);}
   #backupBannerSave{background:var(--signal) !important; border-color:var(--signal) !important; color:var(--signal-text) !important;}
-  #resetDeliveryAvgBtn, .settingsActionBtn{width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;
+  .settingsActionBtn{width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;
     background:transparent; color:var(--text); border:2px solid var(--line); margin-bottom:12px;}
-  #resetDeliveryAvgBtn{margin-bottom:16px;}
-  #resetDeliveryAvgBtn:active, .settingsActionBtn:active{border-color:var(--signal);}
+  .settingsActionBtn:active{border-color:var(--signal);}
   #settingsCloseBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
     font-weight:700; cursor:pointer; background:var(--signal); color:var(--signal-text);}
 
@@ -580,7 +577,7 @@
   #arrivalCancelBtn{background:rgba(255,255,255,0.2); color:#ffffff;}
 
   /* визуальная подсказка "не забыл выключить таймер?" - используется и на зелёной полоске ожидания,
-     и на кнопке Старт/Стоп, когда соответствующий таймер идёт подозрительно долго */
+     когда таймер идёт подозрительно долго */
   @keyframes reminderPulse{
     0%, 100%{ filter:none; box-shadow:none; }
     50%{ filter:brightness(1.5); box-shadow:0 0 0 4px var(--danger); }
@@ -634,18 +631,10 @@
   .drawerDanger{color:var(--danger);}
   .drawerDanger .drawerChevron{color:var(--danger); opacity:0.6;}
 
-  #quickToggleBtn{
-    flex:1; padding:15px 16px; border-radius:16px; border:none; font-size:15px; font-weight:700;
-    cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.15);
-    background:var(--signal); color:var(--signal-text);
-  }
-  #quickToggleBtn.active{
-    background:var(--card); color:var(--signal); border:2px solid var(--signal);
-  }
-
   #menuBtn{
-    flex-shrink:0; width:48px; border-radius:16px; border:none; cursor:pointer;
-    background:var(--card); color:var(--text); display:flex; align-items:center; justify-content:center;
+    position:absolute; left:10px; top:10px; z-index:400; width:42px; height:40px; border-radius:10px;
+    border:1px solid var(--line); cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4);
+    background:var(--card); color:var(--text); display:flex; align-items:center; justify-content:center; padding:0;
   }
   #menuBtn svg{width:22px; height:22px;}
 
@@ -654,13 +643,6 @@
     width:5px; height:52px; border-radius:4px; background:var(--line);
     z-index:900; opacity:0.7;
   }
-
-  #deliveryAvgBar{
-    margin:8px 14px 0; padding:9px 12px; text-align:center; font-size:12.5px;
-    color:var(--text-dim); background:var(--card); border:1px solid var(--line);
-    border-radius:10px; flex-shrink:0;
-  }
-  #deliveryAvgBar b{color:var(--signal); font-weight:800;}
 
   #toast{
     position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px);
@@ -748,23 +730,15 @@
 </div>
 
 <div id="app">
-  <header>
-    <div class="headerTop">
-      <button id="menuBtn" onclick="openDrawer()" aria-label="Меню" data-i18n-aria="header.menuAria">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
-      </button>
-      <button id="quickToggleBtn" onclick="handleQuickToggle()" data-i18n="header.start">▶ Старт</button>
-    </div>
-  </header>
-
   <div id="edgeGrip" onclick="openDrawer()"></div>
-
-  <div id="deliveryAvgBar"><span data-i18n="header.deliveryAvgLabel">📦 Среднее время доставки:</span> <b id="deliveryAvgValue">—</b></div>
 
   <div id="toast"></div>
 
   <div id="mapOuter">
     <div id="map"></div>
+    <button id="menuBtn" onclick="openDrawer()" aria-label="Меню" data-i18n-aria="header.menuAria">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
     <div id="modeBadge"></div>
     <div id="peakHourBadge" data-i18n="header.peakHourBadge">🚩 Пиковый час</div>
     <button id="fullscreenBtn" data-i18n-title="header.fullscreenTitle" title="На весь экран" onclick="toggleMapFullscreen(event)">⛶</button>
@@ -954,7 +928,7 @@
     <details class="setGroup" id="grpNotif">
       <summary data-i18n="setx.grpNotif">🔔 Уведомления</summary>
       <div class="setGroupBody">
-    <p class="coords" data-i18n="settings.notifLabel">Уведомления «не забыл нажать Стоп?»</p>
+    <p class="coords" data-i18n="settings.notifLabel">Уведомления «не забыл забрать заказ?»</p>
     <p id="notifStatus" class="coords" style="margin-top:0;"></p>
     <p id="pushStatus" class="coords" style="margin-top:0;display:none;"></p>
     <button id="notifEnableBtn" class="settingsActionBtn" data-i18n="settings.notifEnableBtn" onclick="enableNotificationsFromTap()">🔔 Включить уведомления</button>
@@ -1027,9 +1001,6 @@
     <button id="backupNowBtn" class="settingsActionBtn" data-i18n="backup.settingsBtn" onclick="exportData()">💾 Сохранить копию сейчас</button>
 
     <button class="settingsActionBtn" data-i18n="setx.restoreBtn" onclick="closeSettingsModal(); document.getElementById('importFile').click();">📂 Восстановить из файла</button>
-
-    <p class="coords" data-i18n="settings.deliveryAvgLabel">Среднее время доставки</p>
-    <button id="resetDeliveryAvgBtn" data-i18n="settings.resetDeliveryAvgBtn" onclick="resetDeliveryAvg()">🔄 Обнулить среднее время доставки</button>
 
 
     <a id="privacyLink" class="settingsActionBtn" data-i18n="setx.privacy" href="privacy.html" target="_blank" rel="noopener" style="display:block; text-align:center; text-decoration:none;">🔒 Политика конфиденциальности</a>
@@ -1105,7 +1076,6 @@ const SUPPORTED_LANGS = ['ru','uk','es','en'];
 // задают, через сколько после старта считать таймер "подозрительно долгим" и как часто
 // после этого напоминать повторно, пока он не будет остановлен.
 const ARRIVAL_REMINDER_MS = 10 * 60 * 1000; // не нажал "Забрал заказ" дольше 10 мин - напоминаем
-const ROUTE_REMINDER_MS = 10 * 60 * 1000;   // не нажал "Стоп" по доставке дольше 10 мин - напоминаем
 const REMINDER_PULSE_MS = 4 * 1000;         // после этого - вибрация+мигание почти непрерывно, каждые 4 сек, пока не нажмут
 const REMINDER_REPEAT_MS = 10 * 60 * 1000;  // системное уведомление (если свёрнуто) - не чаще раза в 10 мин, чтобы не засыпать шторку
 
@@ -1128,18 +1098,18 @@ const TRANSLATIONS = {
     drawer:{ menu:'Меню', orders:'Мои заказы', stats:'Статистика', history:'История', reco:'Рекомендации',
       settings:'Настройки', howTo:'Как пользоваться', backup:'Сохранить копию', restore:'Восстановить из файла',
       clearData:'Очистить все данные' },
-    header:{ start:'▶ Старт', stop:'⏹ Стоп · {time}{suffix}', searching:'Ищу тебя...', myLocation:'Твоё местоположение',
+    header:{ searching:'Ищу тебя...', myLocation:'Твоё местоположение',
       noGpsAccess:'Доступ к GPS не дан', fullscreenTitle:'На весь экран', locateTitle:'Найти меня',
-      peakHourBadge:'🚩 Пиковый час', deliveryAvgLabel:'📦 Среднее время доставки:', deliveryAvgDash:'—',
-      noActiveDeliveries:'Нет активных доставок', startToast:'▶ Старт', startToastMulti:'▶ Старт (заказов в работе: {n})',
-      deliveredToast:'✅ Доставлено за {time}', geoUnavailable:'Геолокация недоступна в этом браузере',
+      peakHourBadge:'🚩 Пиковый час', deliveryAvgDash:'—',
+      
+      geoUnavailable:'Геолокация недоступна в этом браузере',
       menuAria:'Меню' },
     arrival:{ waitingFor:'⏱ Ждём заказ:', cancel:'Отмена', done:'✅ Забрал заказ' },
     backup:{ bannerTitle:'💾 Сохрани копию данных', bannerNever:'Данные хранятся только в этом телефоне. Если очистить браузер, удалить иконку или сменить телефон, они пропадут.',
       bannerAge:'Последняя копия была {days} дн. назад. Сохрани новую, чтобы не потерять данные.', bannerSave:'Сохранить', bannerLater:'Позже',
       settingsLabel:'Резервная копия данных', statusNever:'Копия ещё не сохранялась', statusLast:'Последняя копия: {date}', settingsBtn:'💾 Сохранить копию сейчас',
       savedToast:'✅ Копия сохранена' },
-    notifAction:{ arrival:'✅ Забрал заказ', route:'⏹ Стоп', stopped:'✅ Остановлено: {min} мин' },
+    notifAction:{ arrival:'✅ Забрал заказ', stopped:'✅ Остановлено: {min} мин' },
     setx:{ grpNotif:'🔔 Уведомления', grpPay:'💰 Оплата', grpLook:'🎨 Внешний вид', grpData:'💾 Данные', themeAuto:'🌓 Как в телефоне', mapFollow:'🔗 Как приложение',
       restoreBtn:'📂 Восстановить из файла', privacy:'🔒 Политика конфиденциальности', clearBtn:'🗑 Очистить все данные' },
     wipe:{ title:'Удалить все данные?', text:'Будут удалены все точки, заборы, суммы и история. Это нельзя отменить. Если данные тебе нужны, сначала сохрани копию.',
@@ -1150,8 +1120,8 @@ const TRANSLATIONS = {
       fAll:'Все', fHot:'Ходовые (3+)', fTop:'Топ-10', fProfit:'Прибыльные', reset:'Сбросить', resetShort:'Сбросить', done:'Готово', shown:'Показаны {n} из {m}' },
     install:{ title:'📲 Установи PickupMap', text:'Иконка на главном экране, запуск во весь экран без адресной строки и название под иконкой — как обычное приложение.', textIos:'1. Нажми «Поделиться» (квадрат со стрелкой вверх) внизу Safari.\n2. Прокрути вниз и выбери «На экран “Домой”».\n3. Нажми «Добавить». Приложение появится с иконкой и откроется без адресной строки.', btn:'Установить', ok:'Понятно', later:'Позже', settingsBtn:'📲 Установить как приложение', manual:'В меню браузера (⋮) выбери «Установить приложение» или «Добавить на главный экран».' },
     reminder:{ arrivalTitle:'⏱ Не забыл забрать заказ?', arrivalBody:'Таймер ожидания идёт уже {min} мин. Если уже забрал — нажми «✅ Забрал заказ».',
-      routeTitle:'🚴 Не забыл нажать «Стоп»?', routeBody:'Доставка идёт уже {min} мин. Если уже приехал — останови таймер в приложении.',
-      testTitle:'🔔 Проверка уведомлений', testBody:'Всё работает: так будет выглядеть напоминание «не забыл нажать Стоп?».' },
+      
+      testTitle:'🔔 Проверка уведомлений', testBody:'Всё работает: так будет выглядеть напоминание «не забыл забрать заказ?».' },
     orders:{ title:'Мои заказы', searchPlaceholder:'Поиск среди своих точек...', sortByCount:'По частоте ▾',
       sortByEarned:'По сумме ▾', totalLabel:'всего заборов: {n}', emptyNoSpots:'Пока пусто. Тапни по карте, где обычно забираешь заказы.',
       emptyNoResults:'Ничего не найдено по запросу «{q}»', rowDelete:'Удалить', rowAvgWait:'⏱ в среднем ждёшь тут: {time}',
@@ -1186,18 +1156,18 @@ const TRANSLATIONS = {
       appThemeTitle:'Оформление приложения', appThemeText:'По умолчанию стоит «Как в телефоне»: приложение само становится тёмным или светлым вслед за телефоном. Если хочешь, закрепи светлую или тёмную тему.',
       mapThemeTitle:'Оформление карты', mapThemeText:'По умолчанию карта повторяет тему приложения («Как приложение»), но её можно задать отдельно — например, оставить карту светлой даже ночью.',
       langTitle:'Язык приложения', langText:'Переключай язык интерфейса в любой момент — изменения применяются сразу, без перезапуска.',
-      startStopTitle:'Старт / Стоп', startStopText:'Нажми, когда принял заказ, — запустится таймер доставки. Довёз — нажми ещё раз, и время запишется в статистику. Если заказов несколько, закрывается самый старый, а рядом с таймером видно «+N». Забыл нажать — через 10 минут придёт напоминание.',
-      avgDeliveryTitle:'Среднее время доставки', avgDeliveryText:'После первой завершённой доставки здесь появится среднее время доставки по всем заказам — удобно прикидывать, сколько слотов успеешь взять. Пока доставок не было, полоска скрыта.',
+      
+      
       mapAddTitle:'Карта: новая точка', mapAddText:'Тапни по пустому месту карты там, где забираешь заказ, — откроется окно, впиши туда название заведения и сохрани.',
       mapBumpTitle:'Карта: забор заказа (+1)', mapBumpText:'Короткий тап прямо по уже существующей точке на карте сразу засчитывает туда ещё один забор — никаких доп. окон. Если точка не совсем под пальцем, откроется список рядом стоящих — выбери нужную.',
       mapWaitTitle:'Карта: время ожидания', mapWaitText:'А если на той же точке подержать палец примерно полсекунды не отпуская — точка завибрирует, и запустится отсчёт времени ожидания. Когда получишь заказ, нажми «✅ Забрал заказ» на зелёной полоске внизу экрана — и среднее время ожидания на этой точке посчитается само.',
       locateTitle:'Моё местоположение', locateText:'Нажми — карта сама найдёт тебя по GPS и приблизится к твоей текущей точке. Полезно, когда нужно быстро понять, где ты сейчас относительно отмеченных точек.',
-      fullscreenTitle:'Полный экран', fullscreenText:'Разворачивает карту на весь экран без шапки и кнопок — удобно, когда нужно точнее прицелиться в нужную точку перед тапом.',
+      fullscreenTitle:'Полный экран', fullscreenText:'Разворачивает карту на весь экран без кнопок — удобно, когда нужно точнее прицелиться в нужную точку перед тапом.',
       mapGlowTitle:'Светящиеся точки', mapGlowText:'Светятся точки, где именно в этот час суток ты забирал заказы чаще всего — по всей твоей истории. Это подсказка, куда ехать прямо сейчас. Если данных за этот час мало, ничего не светится. Когда наступает новый час, подсветка сама переключается.',
       mapFilterTitle:'Фильтр точек', mapFilterText:'Показывает на карте только нужные точки: за сегодня, неделю или месяц, в определённое время суток (например, на обеде), только ходовые, топ-10 или самые прибыльные (для сдельной оплаты). Когда фильтр включён, кнопка подсвечивается, а внизу карты видно «Показаны N из M» и кнопку «Сбросить». Списки и статистика не меняются, а после перезапуска приложения фильтр сбрасывается.',
       zoomTitle:'Масштаб карты', zoomText:'Плюс и минус увеличивают и уменьшают масштаб. На телефоне то же самое делает щипок двумя пальцами или двойной тап по карте.',
       doneTitle:'Готово!', doneText:'Это полный обзор приложения. Всё, что показали, всегда можно найти заново в меню (☰ → «Как пользоваться»). Не забывай время от времени сохранять копию данных. Удачной работы! 🚀',
-      notifTitle:'Напоминания «не забыл нажать Стоп?»', notifText:'Если таймер доставки или ожидания идёт больше 10 минут, придёт напоминание — даже при закрытом приложении. Нажми «Включить уведомления» и разреши их. На Android прямо в уведомлении есть кнопка «Забрал заказ» или «Стоп», так что приложение открывать не обязательно. На iPhone добавь приложение на экран «Домой», иначе напоминания при закрытом приложении не придут.',
+      notifTitle:'Напоминания «не забыл забрать заказ?»', notifText:'Если таймер ожидания идёт больше 10 минут, придёт напоминание — даже при закрытом приложении. Нажми «Включить уведомления» и разреши их. На Android прямо в уведомлении есть кнопка «Забрал заказ», так что приложение открывать не обязательно. На iPhone добавь приложение на экран «Домой», иначе напоминания при закрытом приложении не придут.',
       dataTitle:'Данные и резервная копия', dataText:'Все данные хранятся только в твоём телефоне. Время от времени нажимай «Сохранить копию» — получишь файл, который можно отправить себе или в облако. Из него данные возвращаются кнопкой «Восстановить из файла», в том числе на новом телефоне. Приложение само напомнит про копию. Ниже — «Очистить все данные»: она удаляет всё, поэтому просит ввести слово подтверждения.',
       stepLabel:'Шаг {i} из {n}', next:'Далее', finish:'Готово', skip:'Пропустить'
     },
@@ -1217,8 +1187,8 @@ const TRANSLATIONS = {
       payTypeLabel:'Тип оплаты', payTypeHourlyOpt:'⏱ Почасовая + премия', payTypePieceOpt:'💰 Сдельная за заказ',
       currencyLabel:'Валюта', appThemeLabel:'Тема приложения', themeLight:'☀️ Светлая', themeDark:'🌙 Тёмная',
       mapThemeLabel:'Тема карты', done:'Готово', languageLabel:'Язык приложения',
-      deliveryAvgLabel:'Среднее время доставки', resetDeliveryAvgBtn:'🔄 Обнулить среднее время доставки',
-      notifLabel:'Уведомления «не забыл нажать Стоп?»', notifEnableBtn:'🔔 Включить уведомления', notifTestBtn:'📨 Проверить уведомление',
+      
+      notifLabel:'Уведомления «не забыл забрать заказ?»', notifEnableBtn:'🔔 Включить уведомления', notifTestBtn:'📨 Проверить уведомление',
       notifStatusGranted:'✅ Включены', notifStatusDefault:'⚪ Ещё не разрешены — нажми «Включить» и подтверди в окне телефона',
       notifStatusDenied:'⛔ Запрещены. Открой настройки телефона → Приложения/Chrome → Уведомления и разреши для этого сайта',
       notifStatusUnsupported:'⚠️ Этот браузер не поддерживает уведомления. Открой приложение в Chrome или установи его на экран «Домой»',
@@ -1237,8 +1207,8 @@ const TRANSLATIONS = {
       importDone:'Готово! Точки восстановлены.', importDoneDropped:'\n\n({n} повреждённых записей из истории пропущено.)',
       importFailed:'Не получилось прочитать файл - убедись, что это файл резервной копии из этого приложения.',
       confirmResetAll:'Удалить вообще все данные приложения: все точки, заборы, суммы и историю? Это нельзя отменить.',
-      confirmResetDeliveryAvg:'Обнулить среднее время доставки? Сейчас оно считается по {n} доставкам (в среднем {avg}). Точки, заборы и суммы не изменятся.',
-      deliveryAvgAlreadyEmpty:'Среднее время доставки и так пустое - обнулять нечего.' },
+      
+      },
     units:{ min:'мин', sec:'сек' },
     pickupWord:{ one:'забор', few:'забора', many:'заборов' },
     months:{ nom:['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'],
@@ -1252,18 +1222,18 @@ const TRANSLATIONS = {
     drawer:{ menu:'Меню', orders:'Мої замовлення', stats:'Статистика', history:'Історія', reco:'Рекомендації',
       settings:'Налаштування', howTo:'Як користуватись', backup:'Зберегти копію', restore:'Відновити з файлу',
       clearData:'Очистити всі дані' },
-    header:{ start:'▶ Старт', stop:'⏹ Стоп · {time}{suffix}', searching:'Шукаю тебе...', myLocation:'Твоє місцезнаходження',
+    header:{ searching:'Шукаю тебе...', myLocation:'Твоє місцезнаходження',
       noGpsAccess:'Доступ до GPS не надано', fullscreenTitle:'На весь екран', locateTitle:'Знайти мене',
-      peakHourBadge:'🚩 Пікова година', deliveryAvgLabel:'📦 Середній час доставки:', deliveryAvgDash:'—',
-      noActiveDeliveries:'Немає активних доставок', startToast:'▶ Старт', startToastMulti:'▶ Старт (замовлень у роботі: {n})',
-      deliveredToast:'✅ Доставлено за {time}', geoUnavailable:'Геолокація недоступна в цьому браузері',
+      peakHourBadge:'🚩 Пікова година', deliveryAvgDash:'—',
+      
+      geoUnavailable:'Геолокація недоступна в цьому браузері',
       menuAria:'Меню' },
     arrival:{ waitingFor:'⏱ Чекаємо замовлення:', cancel:'Скасувати', done:'✅ Забрав замовлення' },
     backup:{ bannerTitle:'💾 Збережи копію даних', bannerNever:'Дані зберігаються лише в цьому телефоні. Якщо очистити браузер, видалити іконку або змінити телефон, вони зникнуть.',
       bannerAge:'Остання копія була {days} дн. тому. Збережи нову, щоб не втратити дані.', bannerSave:'Зберегти', bannerLater:'Пізніше',
       settingsLabel:'Резервна копія даних', statusNever:'Копію ще не зберігали', statusLast:'Остання копія: {date}', settingsBtn:'💾 Зберегти копію зараз',
       savedToast:'✅ Копію збережено' },
-    notifAction:{ arrival:'✅ Забрав замовлення', route:'⏹ Стоп', stopped:'✅ Зупинено: {min} хв' },
+    notifAction:{ arrival:'✅ Забрав замовлення', stopped:'✅ Зупинено: {min} хв' },
     setx:{ grpNotif:'🔔 Сповіщення', grpPay:'💰 Оплата', grpLook:'🎨 Вигляд', grpData:'💾 Дані', themeAuto:'🌓 Як у телефоні', mapFollow:'🔗 Як застосунок',
       restoreBtn:'📂 Відновити з файлу', privacy:'🔒 Політика конфіденційності', clearBtn:'🗑 Очистити всі дані' },
     wipe:{ title:'Видалити всі дані?', text:'Буде видалено всі точки, підбори, суми та історію. Це не можна скасувати. Якщо дані потрібні, спочатку збережи копію.',
@@ -1274,8 +1244,8 @@ const TRANSLATIONS = {
       fAll:'Усі', fHot:'Ходові (3+)', fTop:'Топ-10', fProfit:'Прибуткові', reset:'Скинути', resetShort:'Скинути', done:'Готово', shown:'Показано {n} з {m}' },
     install:{ title:'📲 Встанови PickupMap', text:'Іконка на головному екрані, запуск на весь екран без адресного рядка та назва під іконкою — як звичайний застосунок.', textIos:'1. Натисни «Поділитися» (квадрат зі стрілкою вгору) внизу Safari.\n2. Прокрути вниз і обери «На екран “Додому”».\n3. Натисни «Додати». Застосунок з’явиться з іконкою та відкриватиметься без адресного рядка.', btn:'Встановити', ok:'Зрозуміло', later:'Пізніше', settingsBtn:'📲 Встановити як застосунок', manual:'У меню браузера (⋮) обери «Встановити застосунок» або «Додати на головний екран».' },
     reminder:{ arrivalTitle:'⏱ Не забув забрати замовлення?', arrivalBody:'Таймер очікування йде вже {min} хв. Якщо вже забрав — натисни «✅ Забрав замовлення».',
-      routeTitle:'🚴 Не забув натиснути «Стоп»?', routeBody:'Доставка триває вже {min} хв. Якщо вже приїхав — зупини таймер у застосунку.',
-      testTitle:'🔔 Перевірка сповіщень', testBody:'Усе працює: так виглядатиме нагадування «не забув натиснути Стоп?».' },
+      
+      testTitle:'🔔 Перевірка сповіщень', testBody:'Усе працює: так виглядатиме нагадування «не забув забрати замовлення?».' },
     orders:{ title:'Мої замовлення', searchPlaceholder:'Пошук серед своїх точок...', sortByCount:'За частотою ▾',
       sortByEarned:'За сумою ▾', totalLabel:'всього підборів: {n}', emptyNoSpots:'Поки порожньо. Тапни на карті там, де зазвичай забираєш замовлення.',
       emptyNoResults:'Нічого не знайдено за запитом «{q}»', rowDelete:'Видалити', rowAvgWait:'⏱ в середньому чекаєш тут: {time}',
@@ -1310,18 +1280,18 @@ const TRANSLATIONS = {
       appThemeTitle:'Оформлення застосунку', appThemeText:'За замовчуванням стоїть «Як у телефоні»: застосунок сам стає темним або світлим услід за телефоном. За бажанням закріпи світлу або темну тему.',
       mapThemeTitle:'Оформлення карти', mapThemeText:'За замовчуванням карта повторює тему застосунку («Як застосунок»), але її можна задати окремо — наприклад, залишити карту світлою навіть уночі.',
       langTitle:'Мова застосунку', langText:'Перемикай мову інтерфейсу в будь-який момент — зміни застосовуються одразу, без перезапуску.',
-      startStopTitle:'Старт / Стоп', startStopText:'Натисни, коли прийняв замовлення, — запуститься таймер доставки. Довіз — натисни ще раз, і час запишеться в статистику. Якщо замовлень кілька, закривається найстарше, а поруч із таймером видно «+N». Забув натиснути — через 10 хвилин прийде нагадування.',
-      avgDeliveryTitle:'Середній час доставки', avgDeliveryText:'Після першої завершеної доставки тут з’явиться середній час доставки за всіма замовленнями — зручно прикидати, скільки слотів встигнеш узяти. Поки доставок не було, смужку приховано.',
+      
+      
       mapAddTitle:'Карта: нова точка', mapAddText:'Тапни по порожньому місцю карти там, де забираєш замовлення, — відкриється вікно, впиши туди назву закладу і збережи.',
       mapBumpTitle:'Карта: підбір замовлення (+1)', mapBumpText:'Короткий тап прямо по вже існуючій точці на карті одразу зараховує туди ще один підбір — жодних додаткових вікон. Якщо точка не зовсім під пальцем, відкриється список сусідніх — обери потрібну.',
       mapWaitTitle:'Карта: час очікування', mapWaitText:'А якщо на тій же точці потримати палець приблизно півсекунди не відпускаючи — точка завібрує, і запуститься відлік часу очікування. Коли отримаєш замовлення, натисни «✅ Забрав замовлення» на зеленій смужці внизу екрана — і середній час очікування на цій точці порахується сам.',
       locateTitle:'Моє місцезнаходження', locateText:'Натисни — карта сама знайде тебе по GPS і наблизиться до твоєї поточної точки. Корисно, коли потрібно швидко зрозуміти, де ти зараз відносно відмічених точок.',
-      fullscreenTitle:'Повний екран', fullscreenText:'Розгортає карту на весь екран без шапки і кнопок — зручно, коли потрібно точніше прицілитись у потрібну точку перед тапом.',
+      fullscreenTitle:'Повний екран', fullscreenText:'Розгортає карту на весь екран без кнопок — зручно, коли потрібно точніше прицілитись у потрібну точку перед тапом.',
       mapGlowTitle:'Точки, що світяться', mapGlowText:'Світяться точки, де саме в цю годину доби ти забирав замовлення найчастіше — за всією твоєю історією. Це підказка, куди їхати просто зараз. Якщо даних за цю годину мало, нічого не світиться. Коли настає нова година, підсвітка сама перемикається.',
       mapFilterTitle:'Фільтр точок', mapFilterText:'Показує на карті лише потрібні точки: за сьогодні, тиждень або місяць, у певний час доби (наприклад, на обід), лише ходові, топ-10 або найприбутковіші (для відрядної оплати). Коли фільтр увімкнено, кнопка підсвічується, а внизу карти видно «Показано N з M» і кнопку «Скинути». Списки та статистика не змінюються, а після перезапуску застосунку фільтр скидається.',
       zoomTitle:'Масштаб карти', zoomText:'Плюс і мінус збільшують і зменшують масштаб. На телефоні те саме робить щипок двома пальцями або подвійний тап по карті.',
       doneTitle:'Готово!', doneText:'Це повний огляд застосунку. Усе, що показали, завжди можна знайти знову в меню (☰ → «Як користуватися»). Не забувай час від часу зберігати копію даних. Вдалої роботи! 🚀',
-      notifTitle:'Нагадування «не забув натиснути Стоп?»', notifText:'Якщо таймер доставки або очікування йде довше 10 хвилин, прийде нагадування — навіть коли застосунок закрито. Натисни «Увімкнути сповіщення» і дозволь їх. На Android просто в сповіщенні є кнопка «Забрав замовлення» або «Стоп», тож відкривати застосунок не обов’язково. На iPhone додай застосунок на екран «Додому», інакше нагадування при закритому застосунку не прийдуть.',
+      notifTitle:'Нагадування «не забув забрати замовлення?»', notifText:'Якщо таймер очікування йде довше 10 хвилин, прийде нагадування — навіть коли застосунок закрито. Натисни «Увімкнути сповіщення» і дозволь їх. На Android просто в сповіщенні є кнопка «Забрав замовлення», тож відкривати застосунок не обов’язково. На iPhone додай застосунок на екран «Додому», інакше нагадування при закритому застосунку не прийдуть.',
       dataTitle:'Дані та резервна копія', dataText:'Усі дані зберігаються лише в твоєму телефоні. Час від часу натискай «Зберегти копію» — отримаєш файл, який можна надіслати собі або в хмару. З нього дані повертаються кнопкою «Відновити з файлу», зокрема на новому телефоні. Застосунок сам нагадає про копію. Нижче — «Очистити всі дані»: вона видаляє все, тому просить ввести слово підтвердження.',
       stepLabel:'Крок {i} з {n}', next:'Далі', finish:'Готово', skip:'Пропустити'
     },
@@ -1341,8 +1311,8 @@ const TRANSLATIONS = {
       payTypeLabel:'Тип оплати', payTypeHourlyOpt:'⏱ Погодинна + премія', payTypePieceOpt:'💰 Відрядна за замовлення',
       currencyLabel:'Валюта', appThemeLabel:'Тема застосунку', themeLight:'☀️ Світла', themeDark:'🌙 Темна',
       mapThemeLabel:'Тема карти', done:'Готово', languageLabel:'Мова застосунку',
-      deliveryAvgLabel:'Середній час доставки', resetDeliveryAvgBtn:'🔄 Обнулити середній час доставки',
-      notifLabel:'Сповіщення «не забув натиснути Стоп?»', notifEnableBtn:'🔔 Увімкнути сповіщення', notifTestBtn:'📨 Перевірити сповіщення',
+      
+      notifLabel:'Сповіщення «не забув забрати замовлення?»', notifEnableBtn:'🔔 Увімкнути сповіщення', notifTestBtn:'📨 Перевірити сповіщення',
       notifStatusGranted:'✅ Увімкнено', notifStatusDefault:'⚪ Ще не дозволені — натисни «Увімкнути» й підтверди у вікні телефона',
       notifStatusDenied:'⛔ Заборонені. Відкрий налаштування телефона → Застосунки/Chrome → Сповіщення й дозволь для цього сайту',
       notifStatusUnsupported:'⚠️ Цей браузер не підтримує сповіщення. Відкрий застосунок у Chrome або встанови його на екран «Додому»',
@@ -1361,8 +1331,8 @@ const TRANSLATIONS = {
       importDone:'Готово! Точки відновлено.', importDoneDropped:'\n\n({n} пошкоджених записів з історії пропущено.)',
       importFailed:'Не вдалося прочитати файл - переконайся, що це файл резервної копії з цього застосунку.',
       confirmResetAll:'Видалити взагалі всі дані застосунку: всі точки, підбори, суми та історію? Це не можна скасувати.',
-      confirmResetDeliveryAvg:'Обнулити середній час доставки? Зараз він рахується по {n} доставках (в середньому {avg}). Точки, підбори та суми не зміняться.',
-      deliveryAvgAlreadyEmpty:'Середній час доставки і так порожній - обнуляти нічого.' },
+      
+      },
     units:{ min:'хв', sec:'сек' },
     pickupWord:{ one:'підбір', few:'підбори', many:'підборів' },
     months:{ nom:['січень','лютий','березень','квітень','травень','червень','липень','серпень','вересень','жовтень','листопад','грудень'],
@@ -1376,18 +1346,18 @@ const TRANSLATIONS = {
     drawer:{ menu:'Menú', orders:'Mis pedidos', stats:'Estadísticas', history:'Historial', reco:'Recomendaciones',
       settings:'Ajustes', howTo:'Cómo usar la app', backup:'Guardar copia', restore:'Restaurar desde archivo',
       clearData:'Borrar todos los datos' },
-    header:{ start:'▶ Empezar', stop:'⏹ Parar · {time}{suffix}', searching:'Buscándote...', myLocation:'Tu ubicación',
+    header:{ searching:'Buscándote...', myLocation:'Tu ubicación',
       noGpsAccess:'No se concedió acceso al GPS', fullscreenTitle:'Pantalla completa', locateTitle:'Encontrarme',
-      peakHourBadge:'🚩 Hora punta', deliveryAvgLabel:'📦 Tiempo medio de entrega:', deliveryAvgDash:'—',
-      noActiveDeliveries:'No hay entregas activas', startToast:'▶ Empezar', startToastMulti:'▶ Empezar (pedidos en curso: {n})',
-      deliveredToast:'✅ Entregado en {time}', geoUnavailable:'La geolocalización no está disponible en este navegador',
+      peakHourBadge:'🚩 Hora punta', deliveryAvgDash:'—',
+      
+      geoUnavailable:'La geolocalización no está disponible en este navegador',
       menuAria:'Menú' },
     arrival:{ waitingFor:'⏱ Esperando pedido:', cancel:'Cancelar', done:'✅ Pedido recogido' },
     backup:{ bannerTitle:'💾 Guarda una copia de tus datos', bannerNever:'Los datos se guardan solo en este móvil. Si borras el navegador, eliminas el icono o cambias de móvil, se perderán.',
       bannerAge:'La última copia fue hace {days} días. Guarda una nueva para no perder tus datos.', bannerSave:'Guardar', bannerLater:'Más tarde',
       settingsLabel:'Copia de seguridad', statusNever:'Aún no se ha guardado ninguna copia', statusLast:'Última copia: {date}', settingsBtn:'💾 Guardar copia ahora',
       savedToast:'✅ Copia guardada' },
-    notifAction:{ arrival:'✅ Pedido recogido', route:'⏹ Parar', stopped:'✅ Detenido: {min} min' },
+    notifAction:{ arrival:'✅ Pedido recogido', stopped:'✅ Detenido: {min} min' },
     setx:{ grpNotif:'🔔 Avisos', grpPay:'💰 Pago', grpLook:'🎨 Apariencia', grpData:'💾 Datos', themeAuto:'🌓 Como el móvil', mapFollow:'🔗 Como la app',
       restoreBtn:'📂 Restaurar desde archivo', privacy:'🔒 Política de privacidad', clearBtn:'🗑 Borrar todos los datos' },
     wipe:{ title:'¿Borrar todos los datos?', text:'Se borrarán todos los puntos, recogidas, importes e historial. No se puede deshacer. Si necesitas los datos, guarda antes una copia.',
@@ -1398,8 +1368,8 @@ const TRANSLATIONS = {
       fAll:'Todos', fHot:'Habituales (3+)', fTop:'Top 10', fProfit:'Rentables', reset:'Restablecer', resetShort:'Restablecer', done:'Listo', shown:'Se muestran {n} de {m}' },
     install:{ title:'📲 Instala PickupMap', text:'Icono en la pantalla de inicio, se abre a pantalla completa sin barra de direcciones y con su nombre bajo el icono, como una app normal.', textIos:'1. Pulsa «Compartir» (el cuadrado con flecha hacia arriba) abajo en Safari.\n2. Desplázate y elige «Añadir a pantalla de inicio».\n3. Pulsa «Añadir». La app tendrá su icono y se abrirá sin barra de direcciones.', btn:'Instalar', ok:'Entendido', later:'Luego', settingsBtn:'📲 Instalar como app', manual:'En el menú del navegador (⋮) elige «Instalar aplicación» o «Añadir a pantalla de inicio».' },
     reminder:{ arrivalTitle:'⏱ ¿Olvidaste recoger el pedido?', arrivalBody:'El temporizador de espera lleva ya {min} min. Si ya lo recogiste, pulsa «✅ Pedido recogido».',
-      routeTitle:'🚴 ¿Olvidaste pulsar «Parar»?', routeBody:'La entrega lleva ya {min} min en marcha. Si ya llegaste, detén el temporizador en la app.',
-      testTitle:'🔔 Prueba de notificaciones', testBody:'Todo funciona: así se verá el aviso «¿olvidaste pulsar Parar?».' },
+      
+      testTitle:'🔔 Prueba de notificaciones', testBody:'Todo funciona: así se verá el aviso «¿olvidaste recoger el pedido?».' },
     orders:{ title:'Mis pedidos', searchPlaceholder:'Buscar entre tus puntos...', sortByCount:'Por frecuencia ▾',
       sortByEarned:'Por ganancias ▾', totalLabel:'total de recogidas: {n}', emptyNoSpots:'Aún no hay nada. Toca el mapa donde sueles recoger pedidos.',
       emptyNoResults:'No se encontró nada para «{q}»', rowDelete:'Eliminar', rowAvgWait:'⏱ espera media aquí: {time}',
@@ -1434,18 +1404,18 @@ const TRANSLATIONS = {
       appThemeTitle:'Apariencia de la app', appThemeText:'Por defecto está «Como el móvil»: la app pasa a oscura o clara según el móvil. Si quieres, fija el tema claro u oscuro.',
       mapThemeTitle:'Apariencia del mapa', mapThemeText:'Por defecto el mapa sigue el tema de la app («Como la app»), pero puedes elegirlo aparte, por ejemplo mapa claro incluso de noche.',
       langTitle:'Idioma de la app', langText:'Cambia el idioma de la interfaz cuando quieras — los cambios se aplican al instante, sin reiniciar.',
-      startStopTitle:'Empezar / Parar', startStopText:'Púlsalo cuando aceptes un pedido: arranca el temporizador de entrega. Al entregarlo, púlsalo otra vez y el tiempo se guarda en las estadísticas. Si hay varios pedidos, se cierra el más antiguo y junto al temporizador verás «+N». Si olvidas pulsar, a los 10 minutos llega un aviso.',
-      avgDeliveryTitle:'Tiempo medio de entrega', avgDeliveryText:'Tras la primera entrega completada aparecerá aquí el tiempo medio de entrega de todos tus pedidos, útil para calcular cuántos turnos te caben. Mientras no haya entregas, la barra está oculta.',
+      
+      
       mapAddTitle:'Mapa: punto nuevo', mapAddText:'Toca una zona vacía del mapa donde recoges pedidos — se abrirá una ventana, escribe el nombre del local y guárdalo.',
       mapBumpTitle:'Mapa: recogida de pedido (+1)', mapBumpText:'Un toque corto directamente sobre un punto ya existente en el mapa registra ahí otra recogida — sin ventanas extra. Si el punto no queda justo bajo tu dedo, se abrirá una lista de los cercanos — elige el correcto.',
       mapWaitTitle:'Mapa: tiempo de espera', mapWaitText:'Y si mantienes el dedo sobre el mismo punto medio segundo sin soltar, el punto vibrará y se iniciará el cronómetro de espera. Cuando recibas el pedido, pulsa «✅ Pedido recogido» en la franja verde de abajo — y el tiempo medio de espera en ese punto se calculará solo.',
       locateTitle:'Mi ubicación', locateText:'Pulsa aquí — el mapa te localizará por GPS y se acercará a tu posición actual. Útil para saber rápido dónde estás respecto a tus puntos marcados.',
-      fullscreenTitle:'Pantalla completa', fullscreenText:'Expande el mapa a toda la pantalla sin cabecera ni botones — útil para apuntar con más precisión antes de tocar un punto.',
+      fullscreenTitle:'Pantalla completa', fullscreenText:'Expande el mapa a toda la pantalla sin botones — útil para apuntar con más precisión antes de tocar un punto.',
       mapGlowTitle:'Puntos que brillan', mapGlowText:'Brillan los puntos donde más pedidos has recogido justo a esta hora del día, según todo tu historial. Es una pista de adónde ir ahora mismo. Si hay pocos datos de esta hora, no brilla nada. Cuando empieza una hora nueva, el brillo cambia solo.',
       mapFilterTitle:'Filtro de puntos', mapFilterText:'Muestra en el mapa solo los puntos que necesitas: de hoy, la semana o el mes, en una franja horaria (por ejemplo, la comida), solo los habituales, el top 10 o los más rentables (con pago por pedido). Con el filtro activo el botón se resalta y abajo del mapa verás «Se muestran N de M» y «Restablecer». Las listas y estadísticas no cambian, y al reiniciar la app el filtro se borra.',
       zoomTitle:'Zoom del mapa', zoomText:'Más y menos aumentan y reducen el zoom. En el móvil lo mismo se hace pellizcando con dos dedos o con doble toque en el mapa.',
       doneTitle:'¡Listo!', doneText:'Este es el repaso completo de la app. Todo lo mostrado se puede volver a ver en el menú (☰ → «Cómo usar»). No olvides guardar una copia de los datos de vez en cuando. ¡Buen trabajo! 🚀',
-      notifTitle:'Avisos «¿olvidaste pulsar Parar?»', notifText:'Si el temporizador de entrega o de espera lleva más de 10 minutos, recibirás un aviso aunque la app esté cerrada. Pulsa «Activar notificaciones» y permítelas. En Android la propia notificación trae un botón «Recogí el pedido» o «Parar», así que no hace falta abrir la app. En iPhone añade la app a la pantalla de inicio; si no, los avisos con la app cerrada no llegan.',
+      notifTitle:'Avisos «¿olvidaste recoger el pedido?»', notifText:'Si el temporizador de espera lleva más de 10 minutos, recibirás un aviso aunque la app esté cerrada. Pulsa «Activar notificaciones» y permítelas. En Android la propia notificación trae un botón «Recogí el pedido», así que no hace falta abrir la app. En iPhone añade la app a la pantalla de inicio; si no, los avisos con la app cerrada no llegan.',
       dataTitle:'Datos y copia de seguridad', dataText:'Todos los datos se guardan solo en tu móvil. De vez en cuando pulsa «Guardar copia»: obtendrás un archivo que puedes enviarte o subir a la nube. Con «Restaurar desde archivo» los datos vuelven, también en un móvil nuevo. La app te recordará hacer la copia. Más abajo está «Borrar todos los datos»: elimina todo, por eso pide escribir una palabra de confirmación.',
       stepLabel:'Paso {i} de {n}', next:'Siguiente', finish:'Listo', skip:'Omitir'
     },
@@ -1465,8 +1435,8 @@ const TRANSLATIONS = {
       payTypeLabel:'Tipo de pago', payTypeHourlyOpt:'⏱ Por horas + bonus', payTypePieceOpt:'💰 Por pedido (destajo)',
       currencyLabel:'Moneda', appThemeLabel:'Tema de la app', themeLight:'☀️ Claro', themeDark:'🌙 Oscuro',
       mapThemeLabel:'Tema del mapa', done:'Listo', languageLabel:'Idioma de la app',
-      deliveryAvgLabel:'Tiempo medio de entrega', resetDeliveryAvgBtn:'🔄 Reiniciar tiempo medio de entrega',
-      notifLabel:'Avisos «¿olvidaste pulsar Parar?»', notifEnableBtn:'🔔 Activar notificaciones', notifTestBtn:'📨 Probar notificación',
+      
+      notifLabel:'Avisos «¿olvidaste recoger el pedido?»', notifEnableBtn:'🔔 Activar notificaciones', notifTestBtn:'📨 Probar notificación',
       notifStatusGranted:'✅ Activadas', notifStatusDefault:'⚪ Aún sin permiso — pulsa «Activar» y confirma en la ventana del móvil',
       notifStatusDenied:'⛔ Bloqueadas. Abre Ajustes del móvil → Apps/Chrome → Notificaciones y permítelas para este sitio',
       notifStatusUnsupported:'⚠️ Este navegador no admite notificaciones. Abre la app en Chrome o instálala en la pantalla de inicio',
@@ -1485,8 +1455,8 @@ const TRANSLATIONS = {
       importDone:'¡Listo! Puntos restaurados.', importDoneDropped:'\n\n({n} registros dañados del historial fueron omitidos.)',
       importFailed:'No se pudo leer el archivo - asegúrate de que sea un archivo de copia de seguridad de esta app.',
       confirmResetAll:'¿Eliminar absolutamente todos los datos de la app: todos los puntos, recogidas, importes e historial? Esto no se puede deshacer.',
-      confirmResetDeliveryAvg:'¿Reiniciar el tiempo medio de entrega? Ahora se calcula con {n} entregas (media: {avg}). Los puntos, recogidas e importes no cambian.',
-      deliveryAvgAlreadyEmpty:'El tiempo medio de entrega ya está vacío - no hay nada que reiniciar.' },
+      
+      },
     units:{ min:'min', sec:'s' },
     pickupWord:{ one:'recogida', few:'recogidas', many:'recogidas' },
     months:{ nom:['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'],
@@ -1500,18 +1470,18 @@ const TRANSLATIONS = {
     drawer:{ menu:'Menu', orders:'My orders', stats:'Stats', history:'History', reco:'Recommendations',
       settings:'Settings', howTo:'How to use', backup:'Save a backup', restore:'Restore from file',
       clearData:'Clear all data' },
-    header:{ start:'▶ Start', stop:'⏹ Stop · {time}{suffix}', searching:'Locating you...', myLocation:'Your location',
+    header:{ searching:'Locating you...', myLocation:'Your location',
       noGpsAccess:'GPS access not granted', fullscreenTitle:'Fullscreen', locateTitle:'Find me',
-      peakHourBadge:'🚩 Peak hour', deliveryAvgLabel:'📦 Average delivery time:', deliveryAvgDash:'—',
-      noActiveDeliveries:'No active deliveries', startToast:'▶ Started', startToastMulti:'▶ Started (orders in progress: {n})',
-      deliveredToast:'✅ Delivered in {time}', geoUnavailable:'Geolocation is not available in this browser',
+      peakHourBadge:'🚩 Peak hour', deliveryAvgDash:'—',
+      
+      geoUnavailable:'Geolocation is not available in this browser',
       menuAria:'Menu' },
     arrival:{ waitingFor:'⏱ Waiting on order:', cancel:'Cancel', done:'✅ Picked up order' },
     backup:{ bannerTitle:'💾 Save a backup of your data', bannerNever:'Your data is stored only on this phone. If you clear the browser, delete the icon or change phones, it will be lost.',
       bannerAge:'Your last backup was {days} days ago. Save a new one so you don\'t lose your data.', bannerSave:'Save', bannerLater:'Later',
       settingsLabel:'Data backup', statusNever:'No backup saved yet', statusLast:'Last backup: {date}', settingsBtn:'💾 Save a backup now',
       savedToast:'✅ Backup saved' },
-    notifAction:{ arrival:'✅ Picked up', route:'⏹ Stop', stopped:'✅ Stopped: {min} min' },
+    notifAction:{ arrival:'✅ Picked up', stopped:'✅ Stopped: {min} min' },
     setx:{ grpNotif:'🔔 Notifications', grpPay:'💰 Pay', grpLook:'🎨 Appearance', grpData:'💾 Data', themeAuto:'🌓 Match phone', mapFollow:'🔗 Match app',
       restoreBtn:'📂 Restore from file', privacy:'🔒 Privacy policy', clearBtn:'🗑 Clear all data' },
     wipe:{ title:'Delete all data?', text:'All spots, pickups, amounts and history will be deleted. This cannot be undone. If you need the data, save a backup first.',
@@ -1522,8 +1492,8 @@ const TRANSLATIONS = {
       fAll:'All', fHot:'Busy (3+)', fTop:'Top 10', fProfit:'Most profitable', reset:'Reset', resetShort:'Reset', done:'Done', shown:'Showing {n} of {m}' },
     install:{ title:'📲 Install PickupMap', text:'An icon on your home screen, full-screen launch with no address bar, and the app name under the icon, just like a regular app.', textIos:'1. Tap “Share” (the square with an up arrow) at the bottom of Safari.\n2. Scroll down and choose “Add to Home Screen”.\n3. Tap “Add”. The app gets its own icon and opens with no address bar.', btn:'Install', ok:'Got it', later:'Later', settingsBtn:'📲 Install as an app', manual:'In the browser menu (⋮) choose “Install app” or “Add to Home screen”.' },
     reminder:{ arrivalTitle:'⏱ Forgot to mark the pickup?', arrivalBody:'The wait timer has been running for {min} min. If you already got the order, tap "✅ Picked up order".',
-      routeTitle:'🚴 Forgot to tap "Stop"?', routeBody:'The delivery timer has been running for {min} min. If you already arrived, stop the timer in the app.',
-      testTitle:'🔔 Notification test', testBody:'All good: this is how the "forgot to tap Stop?" reminder will look.' },
+      
+      testTitle:'🔔 Notification test', testBody:'All good: this is how the "forgot to pick up?" reminder will look.' },
     orders:{ title:'My orders', searchPlaceholder:'Search your spots...', sortByCount:'By frequency ▾',
       sortByEarned:'By earnings ▾', totalLabel:'total pickups: {n}', emptyNoSpots:"Nothing here yet. Tap the map where you usually pick up orders.",
       emptyNoResults:'No results for "{q}"', rowDelete:'Delete', rowAvgWait:'⏱ average wait here: {time}',
@@ -1558,18 +1528,18 @@ const TRANSLATIONS = {
       appThemeTitle:'App appearance', appThemeText:'The default is “Match phone”: the app turns dark or light together with your phone. If you like, pin the light or dark theme.',
       mapThemeTitle:'Map appearance', mapThemeText:'By default the map follows the app theme (“Match app”), but you can set it separately, for example keep the map light even at night.',
       langTitle:'App language', langText:'Switch the interface language any time — changes apply instantly, no restart needed.',
-      startStopTitle:'Start / Stop', startStopText:'Tap it when you accept an order and the delivery timer starts. When you deliver, tap again and the time is saved to your stats. With several orders the oldest one closes first and you see “+N” next to the timer. If you forget, a reminder arrives after 10 minutes.',
-      avgDeliveryTitle:'Average delivery time', avgDeliveryText:'After your first completed delivery the average delivery time across all orders shows up here, handy for judging how many slots you can take. Until then the bar stays hidden.',
+      
+      
       mapAddTitle:'Map: a new spot', mapAddText:'Tap an empty spot on the map where you pick up orders — a window opens, type the place\'s name in it and save.',
       mapBumpTitle:'Map: picking up an order (+1)', mapBumpText:'A quick tap right on an existing spot on the map counts another pickup there instantly — no extra windows. If the spot isn\'t quite under your finger, a list of nearby ones opens — pick the right one.',
       mapWaitTitle:'Map: wait time', mapWaitText:'And if you hold your finger on the same spot for about half a second without lifting it, the spot will vibrate and a wait timer starts. Once you get the order, tap "✅ Picked up order" on the green bar at the bottom — and the average wait time for that spot gets calculated automatically.',
       locateTitle:'My location', locateText:'Tap it — the map finds you via GPS and zooms to your current position. Handy for quickly seeing where you are relative to your marked spots.',
-      fullscreenTitle:'Fullscreen', fullscreenText:'Expands the map to fill the whole screen with no header or buttons — handy for aiming more precisely at a spot before tapping.',
+      fullscreenTitle:'Fullscreen', fullscreenText:'Expands the map to fill the whole screen with no buttons — handy for aiming more precisely at a spot before tapping.',
       mapGlowTitle:'Glowing spots', mapGlowText:'Spots glow where you picked up the most orders at exactly this hour of the day, across your whole history. It is a hint of where to head right now. If there is little data for this hour, nothing glows. When a new hour starts, the glow switches by itself.',
       mapFilterTitle:'Spot filter', mapFilterText:'Shows only the spots you need on the map: from today, this week or this month, at a given time of day (say, lunch), only busy ones, the top 10 or the most profitable (for per-order pay). While the filter is on, the button lights up and the bottom of the map shows “Showing N of M” and a Reset button. Lists and stats don\'t change, and the filter resets when you restart the app.',
       zoomTitle:'Map zoom', zoomText:'Plus and minus zoom in and out. On a phone, the same thing works with a two-finger pinch or a double-tap on the map.',
       doneTitle:'All done!', doneText:'That is the full tour of the app. Everything shown can always be found again in the menu (☰ → “How to use”). Remember to save a backup now and then. Good luck out there! 🚀',
-      notifTitle:'“Forgot to tap Stop?” reminders', notifText:'If a delivery or waiting timer runs longer than 10 minutes, you get a reminder even when the app is closed. Tap “Enable notifications” and allow them. On Android the notification itself has a “Picked up” or “Stop” button, so you don\'t have to open the app. On iPhone add the app to your Home Screen, otherwise reminders won\'t arrive while it is closed.',
+      notifTitle:'“Forgot to pick up?” reminders', notifText:'If the waiting timer runs longer than 10 minutes, you get a reminder even when the app is closed. Tap “Enable notifications” and allow them. On Android the notification itself has a “Picked up” button, so you don\'t have to open the app. On iPhone add the app to your Home Screen, otherwise reminders won\'t arrive while it is closed.',
       dataTitle:'Data and backup', dataText:'All data is stored only on your phone. Tap “Save a backup” now and then to get a file you can send to yourself or put in the cloud. “Restore from file” brings the data back, even on a new phone. The app will remind you to back up. Below is “Clear all data”: it deletes everything, so it asks you to type a confirmation word.',
       stepLabel:'Step {i} of {n}', next:'Next', finish:'Done', skip:'Skip'
     },
@@ -1589,8 +1559,8 @@ const TRANSLATIONS = {
       payTypeLabel:'Pay type', payTypeHourlyOpt:'⏱ Hourly + bonus', payTypePieceOpt:'💰 Per-order (piece rate)',
       currencyLabel:'Currency', appThemeLabel:'App theme', themeLight:'☀️ Light', themeDark:'🌙 Dark',
       mapThemeLabel:'Map theme', done:'Done', languageLabel:'App language',
-      deliveryAvgLabel:'Average delivery time', resetDeliveryAvgBtn:'🔄 Reset average delivery time',
-      notifLabel:'"Forgot to tap Stop?" notifications', notifEnableBtn:'🔔 Enable notifications', notifTestBtn:'📨 Send test notification',
+      
+      notifLabel:'"Forgot to pick up?" notifications', notifEnableBtn:'🔔 Enable notifications', notifTestBtn:'📨 Send test notification',
       notifStatusGranted:'✅ Enabled', notifStatusDefault:'⚪ Not allowed yet — tap "Enable" and confirm in the phone prompt',
       notifStatusDenied:'⛔ Blocked. Open phone Settings → Apps/Chrome → Notifications and allow them for this site',
       notifStatusUnsupported:'⚠️ This browser does not support notifications. Open the app in Chrome or install it to the home screen',
@@ -1609,8 +1579,8 @@ const TRANSLATIONS = {
       importDone:'Done! Spots restored.', importDoneDropped:'\n\n({n} corrupted records from the history were skipped.)',
       importFailed:'Couldn\'t read the file - make sure it\'s a backup file from this app.',
       confirmResetAll:'Delete absolutely all app data: all spots, pickups, amounts and history? This cannot be undone.',
-      confirmResetDeliveryAvg:'Reset the average delivery time? It is currently based on {n} deliveries (average {avg}). Spots, pickups and amounts stay untouched.',
-      deliveryAvgAlreadyEmpty:'The average delivery time is already empty - nothing to reset.' },
+      
+      },
     units:{ min:'min', sec:'sec' },
     pickupWord:{ one:'pickup', few:'pickups', many:'pickups' },
     months:{ nom:['January','February','March','April','May','June','July','August','September','October','November','December'],
@@ -1711,8 +1681,6 @@ function refreshOpenScreens(){
     const sortLabelEl = document.getElementById('sortModeLabel');
     if(sortLabelEl) sortLabelEl.textContent = (isPieceRate() && sortMode === 'earned') ? t('orders.sortByEarned') : t('orders.sortByCount');
   }catch(e){}
-  try{ updateQuickButton(); }catch(e){}
-  try{ renderDeliveryAvg(); }catch(e){}
   try{ renderNotifStatus(); }catch(e){}
   try{
     if(document.getElementById('historyDateFilterBar')){
@@ -1781,9 +1749,7 @@ function unlockMapInteractions(){
   if(map.doubleClickZoom) map.doubleClickZoom.enable();
 }
 
-const ROUTE_ACTIVE_KEY = 'pickup-route-active'; // [{ id, startTs }] - заказы в пути прямо сейчас
 const ROUTE_LOG_KEY = 'pickup-route-log'; // [{ id, startTs, endTs, durationSec }] - завершённые доезды
-let routeActive = [];
 
 const PAY_TYPE_KEY = 'pickup-pay-type'; // 'hourly' (почасовая + премия) или 'piece' (сдельная за заказ)
 const CURRENCY_KEY = 'pickup-currency'; // символ валюты, по умолчанию €
@@ -1947,14 +1913,7 @@ function loadSpots(){
     const rawVisits = localStorage.getItem(VISITS_KEY);
     visitsLog = rawVisits ? JSON.parse(rawVisits) : [];
   }catch(e){ visitsLog = []; }
-  try{
-    const rawRouteActive = localStorage.getItem(ROUTE_ACTIVE_KEY);
-    routeActive = rawRouteActive ? JSON.parse(rawRouteActive) : [];
-  }catch(e){ routeActive = []; }
-  // если доезды к клиенту остались активными после перезагрузки страницы - пересчитываем
-  // напоминания от их реальных startTs, а не запускаем отсчёт заново
-  clearAllRouteReminders();
-  routeActive.forEach(r => scheduleRouteReminder(r.id));
+  try{ localStorage.removeItem('pickup-route-active'); }catch(e){} // старые незавершённые доезды больше не нужны
   try{
     const rawRouteLog = localStorage.getItem(ROUTE_LOG_KEY);
     routeLog = rawRouteLog ? JSON.parse(rawRouteLog) : [];
@@ -1963,8 +1922,6 @@ function loadSpots(){
     const rawEarnings = localStorage.getItem(EARNINGS_LOG_KEY);
     earningsLog = rawEarnings ? JSON.parse(rawEarnings) : [];
   }catch(e){ earningsLog = []; }
-  renderDeliveryAvg();
-  updateQuickButton();
   renderAll();
   if(spots.length){
     const group = L.featureGroup(Object.values(markers));
@@ -2517,21 +2474,6 @@ function buildTourSteps(){
   });
 
   // --- Главный экран ---
-  steps.push({
-    sel: '#quickToggleBtn',
-    title: t('tour.startStopTitle'),
-    text: t('tour.startStopText'),
-    before: tourShowNothing
-  });
-  if(routeLog.length > 0){ // полоса видна только когда есть данные
-    steps.push({
-      sel: '#deliveryAvgBar',
-      title: t('tour.avgDeliveryTitle'),
-      text: t('tour.avgDeliveryText'),
-      before: tourShowNothing
-    });
-  }
-
   // --- Карта, подробно по каждому действию (можно реально попробовать прямо во время тура) ---
   steps.push({
     sel: '#mapOuter',
@@ -2614,18 +2556,15 @@ window.addEventListener('resize', () => {
 // используется и после автоматического тура, и вручную через «Очистить все данные» в меню
 function wipeAllData(){
   try{ cancelArrival(); }catch(e){}
-  try{ clearAllRouteReminders(); }catch(e){}
   try{ pushCancelAll(); }catch(e){}
   try{ [LAST_BACKUP_KEY, BACKUP_SINCE_KEY, BACKUP_SNOOZE_KEY].forEach(k => localStorage.removeItem(k)); hideBackupBanner(); }catch(e){}
   spots = [];
   visitsLog = [];
   earningsLog = [];
-  routeActive = [];
   routeLog = [];
   try{ persist(); }catch(e){}
   try{ persistVisits(); }catch(e){}
   try{ persistEarnings(); }catch(e){}
-  try{ persistRouteActive(); }catch(e){}
   try{ persistRouteLog(); }catch(e){}
   renderAll();
 }
@@ -2909,9 +2848,6 @@ function anyOverlayOpen(){
 
 // --- История заборов с точечной отменой ---
 // --- Время от получения заказа до приезда в заведение (несколько параллельно) ---
-function persistRouteActive(){
-  try{ localStorage.setItem(ROUTE_ACTIVE_KEY, JSON.stringify(routeActive)); }catch(e){}
-}
 function persistRouteLog(){
   try{ localStorage.setItem(ROUTE_LOG_KEY, JSON.stringify(routeLog)); }catch(e){}
 }
@@ -2924,94 +2860,6 @@ function showToast(text, ms){
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), ms || 2200);
-}
-
-// --- Единая кнопка на главном экране: минимум тапов ---
-let quickBtnInterval = null;
-
-function handleQuickToggle(){
-  if(routeActive.length === 0){
-    quickOrderReceived();
-  } else {
-    quickArrived();
-  }
-}
-
-function quickOrderReceived(){
-  startNewRoute();
-  const n = routeActive.length;
-  showToast(n > 1 ? t('header.startToastMulti', { n }) : t('header.startToast'));
-  updateQuickButton();
-}
-
-function quickArrived(){
-  if(routeActive.length === 0){
-    showToast(t('header.noActiveDeliveries'));
-    return;
-  }
-  // закрываем самый старый из активных (тот, что приняли раньше всех)
-  const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
-  const durationSec = Math.max(1, Math.floor((Date.now() - oldest.startTs) / 1000));
-  markRouteArrived(oldest.id);
-  showToast(t('header.deliveredToast', { time: formatDuration(durationSec) }));
-  updateQuickButton();
-  renderDeliveryAvg();
-}
-
-function updateQuickButton(){
-  const btn = document.getElementById('quickToggleBtn');
-  if(!btn) return;
-  if(routeActive.length === 0){
-    btn.classList.remove('active');
-    btn.textContent = t('header.start');
-  } else {
-    btn.classList.add('active');
-    const oldest = [...routeActive].sort((a, b) => a.startTs - b.startTs)[0];
-    const elapsed = Math.floor((Date.now() - oldest.startTs) / 1000);
-    const suffix = routeActive.length > 1 ? ` (+${routeActive.length - 1})` : '';
-    btn.textContent = t('header.stop', { time: formatTimer(elapsed), suffix });
-  }
-}
-
-// --- Среднее время доставки за всё время, показывается прямо над картой ---
-function renderDeliveryAvg(){
-  const el = document.getElementById('deliveryAvgValue');
-  if(!el) return;
-  const bar = document.getElementById('deliveryAvgBar');
-  if(routeLog.length === 0){
-    el.textContent = t('header.deliveryAvgDash');
-    if(bar) bar.style.display = 'none'; // пока нет ни одной доставки - пустая полоска только занимает место
-    return;
-  }
-  if(bar) bar.style.display = '';
-  const avgSec = Math.round(routeLog.reduce((a, r) => a + r.durationSec, 0) / routeLog.length);
-  el.textContent = formatDuration(avgSec);
-}
-
-// тикаем каждую секунду, чтобы таймер на кнопке шёл в реальном времени
-clearInterval(quickBtnInterval);
-quickBtnInterval = setInterval(updateQuickButton, 1000);
-
-function startNewRoute(){
-  const route = { id: 'route_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), startTs: Date.now() };
-  routeActive.push(route);
-  persistRouteActive();
-  ensureNotificationPermission();
-  scheduleRouteReminder(route.id);
-}
-
-function markRouteArrived(routeId, endTs){
-  const idx = routeActive.findIndex(r => r.id === routeId);
-  if(idx === -1) return;
-  const route = routeActive[idx];
-  const endMs = (typeof endTs === 'number' && endTs > route.startTs) ? Math.min(endTs, Date.now()) : Date.now();
-  const durationSec = Math.max(1, Math.floor((endMs - route.startTs) / 1000));
-  routeActive.splice(idx, 1);
-  routeLog.push({ id: route.id, startTs: route.startTs, endTs: endMs, durationSec });
-  persistRouteActive();
-  persistRouteLog();
-  clearRouteReminder(routeId);
-  pushCancel('route', routeId);
 }
 
 // --- Календарь для выбора даты/диапазона дат в истории ---
@@ -3719,7 +3567,7 @@ function fireReminderNotification(titleKey, bodyKey, vars, data){
     if(Notification.permission !== 'granted') return;
     if(!document.hidden) return;
     // если сервер уже взял это напоминание на себя - он пришлёт свой пуш, свой не дублируем
-    if(pushCovers(titleKey === 'reminder.arrivalTitle' ? 'arrival' : 'route')) return;
+    if(pushCovers('arrival')) return;
     showSystemNotification(t(titleKey, vars), t(bodyKey, vars), titleKey, data);
   }catch(e){}
 }
@@ -3870,7 +3718,6 @@ async function pushSyncState(){
     const state = {
       texts: {
         arrival: { title: t('reminder.arrivalTitle'), body: t('reminder.arrivalBody'), action: t('notifAction.arrival') },
-        route: { title: t('reminder.routeTitle'), body: t('reminder.routeBody'), action: t('notifAction.route') },
         stopped: t('notifAction.stopped')
       },
       server: PUSH_SERVER_URL,
@@ -3890,7 +3737,7 @@ async function pushSendSchedule(entry){
   try{
     const ep = await ensurePushSubscription();
     if(!ep) return;
-    const wait = entry.kind === 'arrival' ? ARRIVAL_REMINDER_MS : ROUTE_REMINDER_MS;
+    const wait = ARRIVAL_REMINDER_MS;
     entry.ok = await pushPost('/schedule', {
       subscription: { endpoint: ep }, kind: entry.kind, id: String(entry.id),
       delayMs: Math.max(0, wait - (Date.now() - entry.startTs)), repeatMs: entry.repeatMs
@@ -3973,8 +3820,6 @@ async function applyPendingStops(){
       if(!p || typeof p.ts !== 'number') continue;
       if(p.kind === 'arrival'){
         if(activeArrival && String(activeArrival.startTs) === String(p.id)) completeArrival(p.ts);
-      }else if(p.kind === 'route'){
-        if(routeActive.some(r => r.id === p.id)){ markRouteArrived(p.id, p.ts); renderAll(); }
       }
     }
   }catch(e){}
@@ -4108,44 +3953,6 @@ function arrivalReminderTick(){
     fireReminderNotification('reminder.arrivalTitle', 'reminder.arrivalBody', { min: minutes }, { kind: 'arrival', id: String(activeArrival.startTs), startTs: activeArrival.startTs });
   }
   arrivalReminderTimer = setTimeout(arrivalReminderTick, REMINDER_PULSE_MS);
-}
-
-// --- напоминание по таймеру доезда к клиенту (может идти несколько параллельно - свой на каждый id) ---
-let routeReminderTimers = {}; // routeId -> handle setTimeout
-
-function clearRouteReminder(routeId){
-  if(routeReminderTimers[routeId]){ clearTimeout(routeReminderTimers[routeId]); delete routeReminderTimers[routeId]; }
-  delete routeLastNotifyTs[routeId];
-  noteReminderInactive('route:' + routeId);
-}
-
-function clearAllRouteReminders(){
-  Object.keys(routeReminderTimers).forEach(clearRouteReminder);
-}
-
-function scheduleRouteReminder(routeId){
-  clearRouteReminder(routeId);
-  const route = routeActive.find(r => r.id === routeId);
-  if(!route) return;
-  const elapsedMs = Date.now() - route.startTs;
-  const delay = Math.max(0, ROUTE_REMINDER_MS - elapsedMs);
-  routeReminderTimers[routeId] = setTimeout(() => routeReminderTick(routeId), delay);
-  pushSchedule('route', routeId, route.startTs);
-}
-
-let routeLastNotifyTs = {}; // routeId -> ts последнего системного уведомления
-function routeReminderTick(routeId){
-  const route = routeActive.find(r => r.id === routeId);
-  if(!route){ clearRouteReminder(routeId); noteReminderInactive('route:' + routeId); return; } // уже остановили этот доезд
-  noteReminderActive('route:' + routeId);
-  const minutes = Math.round((Date.now() - route.startTs) / 60000);
-  vibrateReminder();
-  flashReminder('quickToggleBtn');
-  if(Date.now() - (routeLastNotifyTs[routeId] || 0) >= REMINDER_REPEAT_MS){
-    routeLastNotifyTs[routeId] = Date.now();
-    fireReminderNotification('reminder.routeTitle', 'reminder.routeBody', { min: minutes }, { kind: 'route', id: String(routeId), startTs: route.startTs });
-  }
-  routeReminderTimers[routeId] = setTimeout(() => routeReminderTick(routeId), REMINDER_PULSE_MS);
 }
 
 function startArrival(spotId){
@@ -4601,20 +4408,6 @@ function confirmWipe(){
   wipeAllData();
 }
 function resetAll(){ openWipeModal(); }
-
-// Обнуляет ТОЛЬКО счётчик среднего времени доезда до клиента (routeLog). Идущие сейчас доставки
-// (routeActive), точки, заборы, суммы и ожидание в ресторанах не трогаем.
-function resetDeliveryAvg(){
-  if(routeLog.length === 0){
-    showToast(t('alerts.deliveryAvgAlreadyEmpty'), 3500);
-    return;
-  }
-  const avgSec = Math.round(routeLog.reduce((a, r) => a + r.durationSec, 0) / routeLog.length);
-  if(!confirm(t('alerts.confirmResetDeliveryAvg', { n: routeLog.length, avg: formatDuration(avgSec) }))) return;
-  routeLog = [];
-  persistRouteLog();
-  renderDeliveryAvg();
-}
 
 // регистрируем service worker для офлайн-работы (сработает только когда сайт открыт по HTTPS)
 if('serviceWorker' in navigator){
