@@ -1995,6 +1995,8 @@ function loadSpots(){
     const group = L.featureGroup(Object.values(markers));
     try{ map.fitBounds(group.getBounds().pad(0.3)); }catch(e){}
   }
+  try{ renderCloud(); }catch(e){} // показать, что вход уже выполнен (иначе блок «Облако» всегда выглядел бы как без входа)
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){} // просим браузер не чистить данные приложения
   if(loginGateNeeded()){ openLoginGate(); } else { maybeShowOnboarding(); }
 }
 
@@ -2299,6 +2301,7 @@ function toggleSortMode(){
 }
 
 function openSettingsModal(){
+  try{ renderCloud(); }catch(e){}
   try{ renderBackupStatus(); }catch(e){}
   const current = localStorage.getItem(MARKER_STYLE_KEY) || 'circle';
   document.querySelectorAll('.markerOption').forEach(el => {
