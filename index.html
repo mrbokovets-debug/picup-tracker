@@ -1835,8 +1835,10 @@ let routeLog = [];
 // Стартовая точка - примерное местоположение, потом попробуем уточнить через GPS браузера
 const DEFAULT_CENTER = [39.49061425228292, -0.34876301013819333];
 
-const map = L.map('map', { zoomControl: true, attributionControl: true })
+const map = L.map('map', { zoomControl: false, attributionControl: true })
   .setView(DEFAULT_CENTER, 14);
+// кнопки зума справа внизу: слева сверху теперь кнопка меню
+try{ L.control.zoom({ position: 'bottomright' }).addTo(map); }catch(e){}
 
 // защищаем свои кнопки над картой (лежат вне слоя Leaflet) от того, чтобы тап по ним
 // хоть как-то воспринимался картой как тап по самой карте - иначе после быстрой смены
