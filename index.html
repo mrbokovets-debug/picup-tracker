@@ -1208,8 +1208,8 @@ const TRANSLATIONS = {
       historyIntroTitle:'История заказов', historyIntroText:'Полная хроника каждого забора — открой, покажу.',
       historyDateTitle:'Поиск по дате', historyDateText:'Нажми, чтобы открыть календарь и посмотреть заказы только за конкретный день.',
       historyBodyTitle:'Полная хроника', historyBodyText:'Ниже — список всех заказов по дням и времени: где забрал, сколько ждал, и отдельно отмечены случайные отмены (−1), если промахнулся мимо нужной точки.',
-      recoIntroTitle:'Рекомендации', recoIntroText:'Отдельный раздел для сдельной оплаты — открой, покажу.',
-      recoBodyTitle:'Советы по слотам', recoBodyText:'Здесь приложение само подсказывает, в какие часы и дни недели у тебя обычно больше всего заказов — удобно бронировать слоты именно на это время. Ниже — твои самые прибыльные точки.',
+      recoIntroTitle:'Рекомендации', recoIntroText:'Подсказки по слотам и лучшим точкам — открой, покажу.',
+      recoBodyTitle:'Советы по слотам', recoBodyText:'Здесь приложение само подсказывает, в какие часы и дни недели у тебя обычно больше всего заказов — удобно бронировать слоты именно на это время. Ниже — твои лучшие точки: самые прибыльные при сдельной оплате или самые частые при почасовой.',
       settingsIntroTitle:'Настройки', settingsIntroText:'Настройки собраны в 4 группы: уведомления, оплата, внешний вид и данные. Каждую можно раскрыть и свернуть — сейчас покажу всё по порядку.',
       payTypeTitle:'Тип оплаты', payTypeText:'Переключай между почасовой с премией и сдельной за заказ — от этого зависит, какие разделы видны в меню.',
       currencyTitle:'Валюта', currencyText:'Выбери валюту, в которой тебе платят — она сразу появится на кнопке суммы в разделе «Мои заказы».',
@@ -1239,11 +1239,11 @@ const TRANSLATIONS = {
       peakHoursTitle:'🕐 Часы пик', hourChartNoData:'Пока нет данных за этот период.',
       hourChartPeakSummary:'Пик активности: {hours} ({count})', hourTrendTitle:'Как менялся пик по дням',
       hourTrendPeakLabel:'пик в {hours}', deletedSpot:'(точка удалена)' },
-    reco:{ title:'Рекомендации', intro:'Советы на основе твоей статистики: когда выгоднее бронировать слоты и где ты зарабатываешь больше всего.',
+    reco:{ title:'Рекомендации', intro:'Советы на основе твоей статистики: когда выгоднее бронировать слоты и какие точки приносят тебе больше всего.',
       bestHoursTitle:'🕐 Лучшие часы для слотов', bestHoursEmpty:'Пока мало данных. Отмечай заборы — здесь появится совет по часам.',
       bestHoursText:'По твоей истории заборов чаще всего заказы идут в: {hours}. Стоит бронировать слоты именно на это время.',
       bestDaysTitle:'📅 Лучшие дни недели', bestDaysText:'Больше всего заказов обычно бывает в: {days}. Старайся планировать смены на эти дни.',
-      topSpotsTitle:'💰 Самые прибыльные точки', topSpotsEmpty:'Пока нет данных о заработке — добавляй суммы за заказы в «Мои заказы».' },
+      topSpotsCountTitle:'📍 Самые частые точки', topSpotsCountEmpty:'Пока нет заборов — отмечай заборы на карте.', topSpotsTitle:'💰 Самые прибыльные точки', topSpotsEmpty:'Пока нет данных о заработке — добавляй суммы за заказы в «Мои заказы».' },
     settings:{ title:'Настройки', markerStyleLabel:'Как отмечать точки на карте', markerCircle:'Кружок', markerBag:'Сумка курьера',
       payTypeLabel:'Тип оплаты', payTypeHourlyOpt:'⏱ Почасовая + премия', payTypePieceOpt:'💰 Сдельная за заказ',
       currencyLabel:'Валюта', appThemeLabel:'Тема приложения', themeLight:'☀️ Светлая', themeDark:'🌙 Тёмная',
@@ -1333,8 +1333,8 @@ const TRANSLATIONS = {
       historyIntroTitle:'Історія замовлень', historyIntroText:'Повна хроніка кожного підбору — відкрий, покажу.',
       historyDateTitle:'Пошук за датою', historyDateText:'Натисни, щоб відкрити календар і подивитись замовлення лише за конкретний день.',
       historyBodyTitle:'Повна хроніка', historyBodyText:'Нижче — список усіх замовлень по днях і часу: де забрав, скільки чекав, і окремо відмічені випадкові скасування (−1), якщо промахнувся повз потрібну точку.',
-      recoIntroTitle:'Рекомендації', recoIntroText:'Окремий розділ для відрядної оплати — відкрий, покажу.',
-      recoBodyTitle:'Поради щодо слотів', recoBodyText:'Тут застосунок сам підказує, в які години та дні тижня у тебе зазвичай найбільше замовлень — зручно бронювати слоти саме на цей час. Нижче — твої найприбутковіші точки.',
+      recoIntroTitle:'Рекомендації', recoIntroText:'Підказки щодо слотів і найкращих точок — відкрий, покажу.',
+      recoBodyTitle:'Поради щодо слотів', recoBodyText:'Тут застосунок сам підказує, в які години та дні тижня у тебе зазвичай найбільше замовлень — зручно бронювати слоти саме на цей час. Нижче — твої найкращі точки: найприбутковіші при відрядній оплаті або найчастіші при погодинній.',
       settingsIntroTitle:'Налаштування', settingsIntroText:'Налаштування зібрано в 4 групи: сповіщення, оплата, вигляд і дані. Кожну можна розгорнути та згорнути — зараз покажу все по порядку.',
       payTypeTitle:'Тип оплати', payTypeText:'Перемикай між погодинною з премією та відрядною за замовлення — від цього залежить, які розділи видно в меню.',
       currencyTitle:'Валюта', currencyText:'Обери валюту, в якій тобі платять — вона одразу з’явиться на кнопці суми в розділі «Мої замовлення».',
@@ -1364,11 +1364,11 @@ const TRANSLATIONS = {
       peakHoursTitle:'🕐 Пікові години', hourChartNoData:'Поки немає даних за цей період.',
       hourChartPeakSummary:'Пік активності: {hours} ({count})', hourTrendTitle:'Як змінювався пік по днях',
       hourTrendPeakLabel:'пік о {hours}', deletedSpot:'(точку видалено)' },
-    reco:{ title:'Рекомендації', intro:'Поради на основі твоєї статистики: коли вигідніше бронювати слоти і де ти заробляєш найбільше.',
+    reco:{ title:'Рекомендації', intro:'Поради на основі твоєї статистики: коли вигідніше бронювати слоти і які точки приносять тобі найбільше.',
       bestHoursTitle:'🕐 Найкращі години для слотів', bestHoursEmpty:'Поки замало даних. Відмічай підбори — тут з’явиться порада по годинах.',
       bestHoursText:'За твоєю історією підборів найчастіше замовлення йдуть о: {hours}. Варто бронювати слоти саме на цей час.',
       bestDaysTitle:'📅 Найкращі дні тижня', bestDaysText:'Найбільше замовлень зазвичай буває у: {days}. Намагайся планувати зміни на ці дні.',
-      topSpotsTitle:'💰 Найприбутковіші точки', topSpotsEmpty:'Поки немає даних про заробіток — додавай суми за замовлення в «Мої замовлення».' },
+      topSpotsCountTitle:'📍 Найчастіші точки', topSpotsCountEmpty:'Поки немає підборів — відмічай підбори на карті.', topSpotsTitle:'💰 Найприбутковіші точки', topSpotsEmpty:'Поки немає даних про заробіток — додавай суми за замовлення в «Мої замовлення».' },
     settings:{ title:'Налаштування', markerStyleLabel:'Як відмічати точки на карті', markerCircle:'Кружечок', markerBag:'Сумка кур’єра',
       payTypeLabel:'Тип оплати', payTypeHourlyOpt:'⏱ Погодинна + премія', payTypePieceOpt:'💰 Відрядна за замовлення',
       currencyLabel:'Валюта', appThemeLabel:'Тема застосунку', themeLight:'☀️ Світла', themeDark:'🌙 Темна',
@@ -1458,8 +1458,8 @@ const TRANSLATIONS = {
       historyIntroTitle:'Historial de pedidos', historyIntroText:'El registro completo de cada recogida — ábrelo y te lo muestro.',
       historyDateTitle:'Buscar por fecha', historyDateText:'Toca aquí para abrir el calendario y ver los pedidos de un día concreto.',
       historyBodyTitle:'Registro completo', historyBodyText:'Abajo: la lista de todos los pedidos por día y hora: dónde recogiste, cuánto esperaste, y marcadas aparte las cancelaciones accidentales (−1) si tocaste el punto equivocado.',
-      recoIntroTitle:'Recomendaciones', recoIntroText:'Una sección aparte para el pago por pedido (destajo) — ábrela y te la muestro.',
-      recoBodyTitle:'Consejos sobre horarios', recoBodyText:'Aquí la app te sugiere en qué horas y días de la semana sueles tener más pedidos — útil para reservar turnos justo en esos momentos. Abajo están tus puntos más rentables.',
+      recoIntroTitle:'Recomendaciones', recoIntroText:'Consejos sobre turnos y mejores puntos — ábrela y te los muestro.',
+      recoBodyTitle:'Consejos sobre horarios', recoBodyText:'Aquí la app te sugiere en qué horas y días de la semana sueles tener más pedidos — útil para reservar turnos justo en esos momentos. Abajo están tus mejores puntos: los más rentables con pago por pedido o los más frecuentes con pago por horas.',
       settingsIntroTitle:'Ajustes', settingsIntroText:'Los ajustes están en 4 grupos: avisos, pago, apariencia y datos. Cada uno se puede abrir y cerrar; ahora te los muestro en orden.',
       payTypeTitle:'Tipo de pago', payTypeText:'Cambia entre pago por horas con bonus y pago por pedido — de esto depende qué secciones se ven en el menú.',
       currencyTitle:'Moneda', currencyText:'Elige la moneda en la que te pagan — aparecerá enseguida en el botón de importe en «Mis pedidos».',
@@ -1489,11 +1489,11 @@ const TRANSLATIONS = {
       peakHoursTitle:'🕐 Horas punta', hourChartNoData:'Aún no hay datos de este periodo.',
       hourChartPeakSummary:'Pico de actividad: {hours} ({count})', hourTrendTitle:'Cómo cambió el pico por día',
       hourTrendPeakLabel:'pico a las {hours}', deletedSpot:'(punto eliminado)' },
-    reco:{ title:'Recomendaciones', intro:'Consejos basados en tus estadísticas: cuándo conviene más reservar turnos y dónde ganas más.',
+    reco:{ title:'Recomendaciones', intro:'Consejos basados en tus estadísticas: cuándo conviene más reservar turnos y qué puntos te dan más.',
       bestHoursTitle:'🕐 Mejores horas para reservar turnos', bestHoursEmpty:'Aún hay pocos datos. Marca recogidas — aquí aparecerá un consejo sobre horarios.',
       bestHoursText:'Según tu historial de recogidas, la mayoría de pedidos llegan a las: {hours}. Conviene reservar turnos justo en esas horas.',
       bestDaysTitle:'📅 Mejores días de la semana', bestDaysText:'La mayoría de pedidos suelen caer en: {days}. Intenta planear tus turnos esos días.',
-      topSpotsTitle:'💰 Puntos más rentables', topSpotsEmpty:'Aún no hay datos de ganancias — añade los importes de tus pedidos en «Mis pedidos».' },
+      topSpotsCountTitle:'📍 Puntos más frecuentes', topSpotsCountEmpty:'Aún no hay recogidas: márcalas en el mapa.', topSpotsTitle:'💰 Puntos más rentables', topSpotsEmpty:'Aún no hay datos de ganancias — añade los importes de tus pedidos en «Mis pedidos».' },
     settings:{ title:'Ajustes', markerStyleLabel:'Cómo marcar los puntos en el mapa', markerCircle:'Círculo', markerBag:'Mochila de repartidor',
       payTypeLabel:'Tipo de pago', payTypeHourlyOpt:'⏱ Por horas + bonus', payTypePieceOpt:'💰 Por pedido (destajo)',
       currencyLabel:'Moneda', appThemeLabel:'Tema de la app', themeLight:'☀️ Claro', themeDark:'🌙 Oscuro',
@@ -1583,8 +1583,8 @@ const TRANSLATIONS = {
       historyIntroTitle:'Order history', historyIntroText:'A full log of every pickup — open it and I\'ll show you.',
       historyDateTitle:'Search by date', historyDateText:'Tap here to open the calendar and view orders for one specific day.',
       historyBodyTitle:'Full log', historyBodyText:'Below: a list of every order by day and time — where you picked it up, how long you waited, with accidental cancellations (−1) marked separately if you tapped the wrong spot.',
-      recoIntroTitle:'Recommendations', recoIntroText:'A separate section for per-order pay — open it and I\'ll show you.',
-      recoBodyTitle:'Slot tips', recoBodyText:'The app figures out which hours and days of the week usually bring you the most orders — handy for booking slots at just the right time. Below that are your most profitable spots.',
+      recoIntroTitle:'Recommendations', recoIntroText:'Tips on slots and your best spots — open it and I\'ll show you.',
+      recoBodyTitle:'Slot tips', recoBodyText:'The app figures out which hours and days of the week usually bring you the most orders — handy for booking slots at just the right time. Below that are your best spots: the most profitable with per-order pay, or the most frequent with hourly pay.',
       settingsIntroTitle:'Settings', settingsIntroText:'Settings are split into 4 groups: notifications, pay, appearance and data. You can open and close each one; I\'ll show them in order.',
       payTypeTitle:'Pay type', payTypeText:'Switch between hourly-plus-bonus and per-order pay — this controls which sections show up in the menu.',
       currencyTitle:'Currency', currencyText:'Pick the currency you get paid in — it shows up right away on the amount button in "My orders".',
@@ -1614,11 +1614,11 @@ const TRANSLATIONS = {
       peakHoursTitle:'🕐 Peak hours', hourChartNoData:'No data for this period yet.',
       hourChartPeakSummary:'Peak activity: {hours} ({count})', hourTrendTitle:'How the peak changed by day',
       hourTrendPeakLabel:'peak at {hours}', deletedSpot:'(spot deleted)' },
-    reco:{ title:'Recommendations', intro:'Tips based on your stats: when it pays off to book slots and where you earn the most.',
+    reco:{ title:'Recommendations', intro:'Tips based on your stats: when it pays off to book slots and which spots bring you the most.',
       bestHoursTitle:'🕐 Best hours for slots', bestHoursEmpty:'Not enough data yet. Log pickups and an hourly tip will show up here.',
       bestHoursText:'Based on your pickup history, orders most often come in at: {hours}. It\'s worth booking slots for that time.',
       bestDaysTitle:'📅 Best days of the week', bestDaysText:'Most orders usually come in on: {days}. Try to schedule your shifts on these days.',
-      topSpotsTitle:'💰 Most profitable spots', topSpotsEmpty:'No earnings data yet — add order amounts in "My orders".' },
+      topSpotsCountTitle:'📍 Most frequent spots', topSpotsCountEmpty:'No pickups yet — mark pickups on the map.', topSpotsTitle:'💰 Most profitable spots', topSpotsEmpty:'No earnings data yet — add order amounts in "My orders".' },
     settings:{ title:'Settings', markerStyleLabel:'How to mark spots on the map', markerCircle:'Circle', markerBag:'Courier bag',
       payTypeLabel:'Pay type', payTypeHourlyOpt:'⏱ Hourly + bonus', payTypePieceOpt:'💰 Per-order (piece rate)',
       currencyLabel:'Currency', appThemeLabel:'App theme', themeLight:'☀️ Light', themeDark:'🌙 Dark',
@@ -2467,7 +2467,7 @@ function buildTourSteps(){
     before: tourShowHistory
   });
 
-  // --- Рекомендации (только для сдельной оплаты) ---
+  // --- Рекомендации (при любом типе оплаты) ---
   const reco = document.getElementById('recoDrawerItem');
   if(reco && reco.style.display !== 'none'){
     steps.push({
@@ -3212,7 +3212,7 @@ window.addEventListener('pageshow', updatePeakHourBadge);
 
 function updateDrawerVisibility(){
   const recoItem = document.getElementById('recoDrawerItem');
-  if(recoItem) recoItem.style.display = isPieceRate() ? 'flex' : 'none';
+  if(recoItem) recoItem.style.display = 'flex'; // рекомендации полезны при любом типе оплаты
 }
 
 function openRecoModal(){
@@ -3252,21 +3252,25 @@ function renderRecommendations(){
     `;
   }
 
-  const topSpots = [...spots].filter(s => (s.earned || 0) > 0).sort((a, b) => b.earned - a.earned).slice(0, 3);
+  // сдельная оплата: лучшие точки по заработку; почасовая: по числу заборов
+  const byEarnings = isPieceRate();
+  const topSpots = byEarnings
+    ? [...spots].filter(s => (s.earned || 0) > 0).sort((a, b) => b.earned - a.earned).slice(0, 3)
+    : [...spots].filter(s => (s.count || 0) > 0).sort((a, b) => b.count - a.count).slice(0, 3);
   const spotsHtml = `
-    <div class="statsChartTitle" style="margin-top:18px;">${t('reco.topSpotsTitle')}</div>
+    <div class="statsChartTitle" style="margin-top:18px;">${t(byEarnings ? 'reco.topSpotsTitle' : 'reco.topSpotsCountTitle')}</div>
     ${topSpots.length ? `
     <div id="recoTopSpots">
       ${topSpots.map((s, i) => `
         <div class="waitRow">
           <div class="waitRowMain">
             <span class="waitName">${i === 0 ? '🏆 ' : ''}${escapeHtml(s.name)}</span>
-            <span class="waitTime">${formatMoney(s.earned)}</span>
+            <span class="waitTime">${byEarnings ? formatMoney(s.earned) : formatZaboros(s.count)}</span>
           </div>
         </div>
       `).join('')}
     </div>` : `
-    <div class="statsEmpty" style="padding:10px 0;">${t('reco.topSpotsEmpty')}</div>
+    <div class="statsEmpty" style="padding:10px 0;">${t(byEarnings ? 'reco.topSpotsEmpty' : 'reco.topSpotsCountEmpty')}</div>
     `}
   `;
 
