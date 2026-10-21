@@ -413,6 +413,21 @@
   #wipeModal{background:var(--card); width:100%; max-width:420px; border-radius:16px; padding:20px; border:1px solid var(--danger);}
   #wipeModal h3{margin:0 0 8px; font-size:17px; color:var(--danger);}
   .wipeText{font-size:13px; line-height:1.4; color:var(--text-dim); margin:0 0 14px;}
+  .cloudBox{border:1px solid var(--line); border-radius:12px; padding:12px; margin:0 0 14px; background:var(--asphalt-2);}
+  .cloudBox .coords{margin:4px 0 8px;}
+  .cloudInput{width:100%; box-sizing:border-box; padding:12px; border-radius:10px; border:2px solid var(--line); background:var(--card);
+    color:var(--text); font-size:16px; margin-bottom:8px;}
+  .cloudInput:focus{outline:none; border-color:var(--signal);}
+  .cloudLink{background:none; border:none; color:var(--text-dim); font-size:12.5px; text-decoration:underline; cursor:pointer; padding:6px 0;}
+  #loginGate{position:fixed; inset:0; z-index:2400; background:var(--asphalt); display:none; overflow-y:auto;
+    align-items:center; justify-content:center; padding:24px 20px;}
+  #loginGate.show{display:flex;}
+  #loginGateInner{width:100%; max-width:380px; margin:auto;}
+  #loginGateInner h2{margin:0 0 8px; font-size:22px; font-weight:800; text-align:center; color:var(--text);}
+  #loginGateInner .gateEmoji{font-size:44px; text-align:center; margin-bottom:6px;}
+  #gateLangOptions{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:0 0 18px;}
+  #gateLangOptions .themeOption{padding:7px 12px; font-size:12.5px; flex:0 0 auto;}
+  .cloudDanger{color:var(--danger) !important;}
   #wipeInput{width:100%; padding:12px; border-radius:10px; border:2px solid var(--line); background:var(--asphalt-2);
     color:var(--text); font-size:16px; text-transform:uppercase; margin-bottom:14px;}
   #wipeInput:focus{outline:none; border-color:var(--danger);}
@@ -847,6 +862,28 @@
   </div>
 </div>
 
+<div id="loginGate">
+  <div id="loginGateInner">
+    <div class="gateEmoji">📍</div>
+    <h2 data-i18n="cloud.gateTitle">Вход в PickupMap</h2>
+    <div id="gateLangOptions">
+      <div class="themeOption" data-lang="ru" onclick="chooseLanguage('ru')">Русский</div>
+      <div class="themeOption" data-lang="uk" onclick="chooseLanguage('uk')">Українська</div>
+      <div class="themeOption" data-lang="es" onclick="chooseLanguage('es')">Español</div>
+      <div class="themeOption" data-lang="en" onclick="chooseLanguage('en')">English</div>
+    </div>
+    <p class="coords" style="text-align:center;" data-i18n="cloud.gateSub"></p>
+    <input id="gateEmail" class="cloudInput" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" data-i18n-ph="cloud.emailPh" placeholder="Твой e-mail">
+    <button id="gateSendBtn" class="settingsActionBtn" data-i18n="cloud.sendBtn" onclick="cloudSendCode('gate')">Получить код</button>
+    <div id="gateCodeRow" style="display:none;">
+      <p class="coords" id="gateSentMsg"></p>
+      <input id="gateCode" class="cloudInput" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" data-i18n-ph="cloud.codePh" placeholder="Код из письма">
+      <button id="gateVerifyBtn" class="settingsActionBtn" data-i18n="cloud.verifyBtn" onclick="cloudVerify('gate')">Войти</button>
+    </div>
+    <p class="coords" style="text-align:center; margin-top:14px;"><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--text-dim);" data-i18n="cloud.gatePrivacy">Политика конфиденциальности</a></p>
+  </div>
+</div>
+
 <div id="onboardModalBg">
   <div id="onboardModal">
     <div class="onboardHeader">
@@ -1020,7 +1057,8 @@
         <button class="settingsActionBtn" data-i18n="cloud.saveBtn" onclick="cloudUpload(true)">☁️ Сохранить в облако</button>
         <button class="settingsActionBtn" data-i18n="cloud.restoreBtn" onclick="cloudRestore()">⬇️ Восстановить из облака</button>
         <p class="coords" data-i18n="cloud.auto"></p>
-        <button class="cloudLink" data-i18n="cloud.signOut" onclick="cloudSignOut()">Выйти</button>
+        <button class="cloudLink" data-i18n="cloud.signOut" onclick="cloudSignOut()">Выйти</button><br>
+        <button class="cloudLink cloudDanger" data-i18n="cloud.deleteBtn" onclick="cloudDeleteAccount()">🗑 Удалить аккаунт и облачные данные</button>
       </div>
     </div>
 
@@ -1131,7 +1169,7 @@ const TRANSLATIONS = {
       bannerAge:'Последняя копия была {days} дн. назад. Сохрани новую, чтобы не потерять данные.', bannerSave:'Сохранить', bannerLater:'Позже',
       settingsLabel:'Резервная копия данных', statusNever:'Копия ещё не сохранялась', statusLast:'Последняя копия: {date}', settingsBtn:'💾 Сохранить копию сейчас',
       savedToast:'✅ Копия сохранена' },
-    cloud:{ title:'☁️ Облачная копия', desc:'Войди по e-mail, и копия данных будет в облаке: не пропадёт при смене или потере телефона.', emailPh:'Твой e-mail', sendBtn:'Получить код', codePh:'Код из письма', verifyBtn:'Войти', sent:'Код отправлен на {email}. Проверь почту (и «Спам»).', signedAs:'Вход выполнен: {email}', last:'Копия в облаке: {date}', none:'В облаке копии ещё нет', saveBtn:'☁️ Сохранить в облако', restoreBtn:'⬇️ Восстановить из облака', signOut:'Выйти', saved:'✅ Сохранено в облако', restored:'✅ Данные восстановлены из облака', empty:'В облаке пока нет копии', errEmail:'Введи правильный e-mail', errCode:'Код не подошёл. Проверь и попробуй ещё раз', errNet:'Нет связи с облаком. Попробуй позже', errLimit:'Слишком много писем. Подожди несколько минут', auto:'После первого сохранения копия обновляется сама.', nothing:'Пока нечего сохранять' },
+    cloud:{ gateTitle:'Вход в PickupMap', gateSub:'Войди по e-mail: так твои точки и история не пропадут при смене телефона. Придёт короткий код, пароль не нужен.', deleteBtn:'🗑 Удалить аккаунт и облачные данные', deleteConfirm:'Удалить аккаунт и облачную копию навсегда? Данные на этом телефоне останутся.', deleted:'Аккаунт и облачные данные удалены', errDelete:'Не получилось удалить. Попробуй позже', restoredAuto:'✅ Данные восстановлены из облака', gatePrivacy:'Политика конфиденциальности', title:'☁️ Облачная копия', desc:'Войди по e-mail, и копия данных будет в облаке: не пропадёт при смене или потере телефона.', emailPh:'Твой e-mail', sendBtn:'Получить код', codePh:'Код из письма', verifyBtn:'Войти', sent:'Код отправлен на {email}. Проверь почту (и «Спам»).', signedAs:'Вход выполнен: {email}', last:'Копия в облаке: {date}', none:'В облаке копии ещё нет', saveBtn:'☁️ Сохранить в облако', restoreBtn:'⬇️ Восстановить из облака', signOut:'Выйти', saved:'✅ Сохранено в облако', restored:'✅ Данные восстановлены из облака', empty:'В облаке пока нет копии', errEmail:'Введи правильный e-mail', errCode:'Код не подошёл. Проверь и попробуй ещё раз', errNet:'Нет связи с облаком. Попробуй позже', errLimit:'Слишком много писем. Подожди несколько минут', auto:'После первого сохранения копия обновляется сама.', nothing:'Пока нечего сохранять' },
     notifAction:{ arrival:'✅ Забрал заказ', stopped:'✅ Остановлено: {min} мин' },
     setx:{ grpNotif:'🔔 Уведомления', grpPay:'💰 Оплата', grpLook:'🎨 Внешний вид', grpData:'💾 Данные', themeAuto:'🌓 Как в телефоне', mapFollow:'🔗 Как приложение',
       restoreBtn:'📂 Восстановить из файла', privacy:'🔒 Политика конфиденциальности', clearBtn:'🗑 Очистить все данные' },
@@ -1256,7 +1294,7 @@ const TRANSLATIONS = {
       bannerAge:'Остання копія була {days} дн. тому. Збережи нову, щоб не втратити дані.', bannerSave:'Зберегти', bannerLater:'Пізніше',
       settingsLabel:'Резервна копія даних', statusNever:'Копію ще не зберігали', statusLast:'Остання копія: {date}', settingsBtn:'💾 Зберегти копію зараз',
       savedToast:'✅ Копію збережено' },
-    cloud:{ title:'☁️ Хмарна копія', desc:'Увійди за e-mail, і копія даних буде в хмарі: не зникне при зміні чи втраті телефона.', emailPh:'Твій e-mail', sendBtn:'Отримати код', codePh:'Код з листа', verifyBtn:'Увійти', sent:'Код надіслано на {email}. Перевір пошту (і «Спам»).', signedAs:'Вхід виконано: {email}', last:'Копія в хмарі: {date}', none:'У хмарі копії ще немає', saveBtn:'☁️ Зберегти в хмару', restoreBtn:'⬇️ Відновити з хмари', signOut:'Вийти', saved:'✅ Збережено в хмару', restored:'✅ Дані відновлено з хмари', empty:'У хмарі поки немає копії', errEmail:'Введи правильний e-mail', errCode:'Код не підійшов. Перевір і спробуй ще раз', errNet:'Немає зв’язку з хмарою. Спробуй пізніше', errLimit:'Забагато листів. Зачекай кілька хвилин', auto:'Після першого збереження копія оновлюється сама.', nothing:'Поки нічого зберігати' },
+    cloud:{ gateTitle:'Вхід у PickupMap', gateSub:'Увійди за e-mail: так твої точки й історія не зникнуть при зміні телефона. Прийде короткий код, пароль не потрібен.', deleteBtn:'🗑 Видалити акаунт і хмарні дані', deleteConfirm:'Видалити акаунт і хмарну копію назавжди? Дані на цьому телефоні залишаться.', deleted:'Акаунт і хмарні дані видалено', errDelete:'Не вдалося видалити. Спробуй пізніше', restoredAuto:'✅ Дані відновлено з хмари', gatePrivacy:'Політика конфіденційності', title:'☁️ Хмарна копія', desc:'Увійди за e-mail, і копія даних буде в хмарі: не зникне при зміні чи втраті телефона.', emailPh:'Твій e-mail', sendBtn:'Отримати код', codePh:'Код з листа', verifyBtn:'Увійти', sent:'Код надіслано на {email}. Перевір пошту (і «Спам»).', signedAs:'Вхід виконано: {email}', last:'Копія в хмарі: {date}', none:'У хмарі копії ще немає', saveBtn:'☁️ Зберегти в хмару', restoreBtn:'⬇️ Відновити з хмари', signOut:'Вийти', saved:'✅ Збережено в хмару', restored:'✅ Дані відновлено з хмари', empty:'У хмарі поки немає копії', errEmail:'Введи правильний e-mail', errCode:'Код не підійшов. Перевір і спробуй ще раз', errNet:'Немає зв’язку з хмарою. Спробуй пізніше', errLimit:'Забагато листів. Зачекай кілька хвилин', auto:'Після першого збереження копія оновлюється сама.', nothing:'Поки нічого зберігати' },
     notifAction:{ arrival:'✅ Забрав замовлення', stopped:'✅ Зупинено: {min} хв' },
     setx:{ grpNotif:'🔔 Сповіщення', grpPay:'💰 Оплата', grpLook:'🎨 Вигляд', grpData:'💾 Дані', themeAuto:'🌓 Як у телефоні', mapFollow:'🔗 Як застосунок',
       restoreBtn:'📂 Відновити з файлу', privacy:'🔒 Політика конфіденційності', clearBtn:'🗑 Очистити всі дані' },
@@ -1381,7 +1419,7 @@ const TRANSLATIONS = {
       bannerAge:'La última copia fue hace {days} días. Guarda una nueva para no perder tus datos.', bannerSave:'Guardar', bannerLater:'Más tarde',
       settingsLabel:'Copia de seguridad', statusNever:'Aún no se ha guardado ninguna copia', statusLast:'Última copia: {date}', settingsBtn:'💾 Guardar copia ahora',
       savedToast:'✅ Copia guardada' },
-    cloud:{ title:'☁️ Copia en la nube', desc:'Entra con tu e-mail y tu copia quedará en la nube: no se pierde si cambias o pierdes el móvil.', emailPh:'Tu e-mail', sendBtn:'Recibir código', codePh:'Código del correo', verifyBtn:'Entrar', sent:'Código enviado a {email}. Revisa tu correo (y el spam).', signedAs:'Sesión iniciada: {email}', last:'Copia en la nube: {date}', none:'Aún no hay copia en la nube', saveBtn:'☁️ Guardar en la nube', restoreBtn:'⬇️ Restaurar desde la nube', signOut:'Salir', saved:'✅ Guardado en la nube', restored:'✅ Datos restaurados desde la nube', empty:'Todavía no hay copia en la nube', errEmail:'Escribe un e-mail válido', errCode:'El código no es correcto. Compruébalo e inténtalo de nuevo', errNet:'Sin conexión con la nube. Inténtalo más tarde', errLimit:'Demasiados correos. Espera unos minutos', auto:'Tras el primer guardado, la copia se actualiza sola.', nothing:'Aún no hay nada que guardar' },
+    cloud:{ gateTitle:'Entrar en PickupMap', gateSub:'Entra con tu e-mail: así tus puntos y tu historial no se pierden al cambiar de móvil. Recibirás un código corto, sin contraseña.', deleteBtn:'🗑 Eliminar cuenta y datos en la nube', deleteConfirm:'¿Eliminar la cuenta y la copia en la nube para siempre? Los datos de este móvil se conservan.', deleted:'Cuenta y datos en la nube eliminados', errDelete:'No se pudo eliminar. Inténtalo más tarde', restoredAuto:'✅ Datos restaurados desde la nube', gatePrivacy:'Política de privacidad', title:'☁️ Copia en la nube', desc:'Entra con tu e-mail y tu copia quedará en la nube: no se pierde si cambias o pierdes el móvil.', emailPh:'Tu e-mail', sendBtn:'Recibir código', codePh:'Código del correo', verifyBtn:'Entrar', sent:'Código enviado a {email}. Revisa tu correo (y el spam).', signedAs:'Sesión iniciada: {email}', last:'Copia en la nube: {date}', none:'Aún no hay copia en la nube', saveBtn:'☁️ Guardar en la nube', restoreBtn:'⬇️ Restaurar desde la nube', signOut:'Salir', saved:'✅ Guardado en la nube', restored:'✅ Datos restaurados desde la nube', empty:'Todavía no hay copia en la nube', errEmail:'Escribe un e-mail válido', errCode:'El código no es correcto. Compruébalo e inténtalo de nuevo', errNet:'Sin conexión con la nube. Inténtalo más tarde', errLimit:'Demasiados correos. Espera unos minutos', auto:'Tras el primer guardado, la copia se actualiza sola.', nothing:'Aún no hay nada que guardar' },
     notifAction:{ arrival:'✅ Pedido recogido', stopped:'✅ Detenido: {min} min' },
     setx:{ grpNotif:'🔔 Avisos', grpPay:'💰 Pago', grpLook:'🎨 Apariencia', grpData:'💾 Datos', themeAuto:'🌓 Como el móvil', mapFollow:'🔗 Como la app',
       restoreBtn:'📂 Restaurar desde archivo', privacy:'🔒 Política de privacidad', clearBtn:'🗑 Borrar todos los datos' },
@@ -1506,7 +1544,7 @@ const TRANSLATIONS = {
       bannerAge:'Your last backup was {days} days ago. Save a new one so you don\'t lose your data.', bannerSave:'Save', bannerLater:'Later',
       settingsLabel:'Data backup', statusNever:'No backup saved yet', statusLast:'Last backup: {date}', settingsBtn:'💾 Save a backup now',
       savedToast:'✅ Backup saved' },
-    cloud:{ title:'☁️ Cloud backup', desc:'Sign in with your e-mail and a copy of your data lives in the cloud: it survives a lost or changed phone.', emailPh:'Your e-mail', sendBtn:'Get code', codePh:'Code from the e-mail', verifyBtn:'Sign in', sent:'Code sent to {email}. Check your inbox (and spam).', signedAs:'Signed in: {email}', last:'Cloud copy: {date}', none:'No cloud copy yet', saveBtn:'☁️ Save to cloud', restoreBtn:'⬇️ Restore from cloud', signOut:'Sign out', saved:'✅ Saved to the cloud', restored:'✅ Data restored from the cloud', empty:'No cloud copy yet', errEmail:'Enter a valid e-mail', errCode:'That code didn\'t work. Check it and try again', errNet:'Can\'t reach the cloud. Try again later', errLimit:'Too many e-mails. Wait a few minutes', auto:'After the first save, the copy updates by itself.', nothing:'Nothing to save yet' },
+    cloud:{ gateTitle:'Sign in to PickupMap', gateSub:'Sign in with your e-mail so your spots and history survive a phone change. You get a short code, no password.', deleteBtn:'🗑 Delete account and cloud data', deleteConfirm:'Delete your account and cloud copy permanently? Data on this phone stays.', deleted:'Account and cloud data deleted', errDelete:'Couldn\'t delete. Try again later', restoredAuto:'✅ Data restored from the cloud', gatePrivacy:'Privacy policy', title:'☁️ Cloud backup', desc:'Sign in with your e-mail and a copy of your data lives in the cloud: it survives a lost or changed phone.', emailPh:'Your e-mail', sendBtn:'Get code', codePh:'Code from the e-mail', verifyBtn:'Sign in', sent:'Code sent to {email}. Check your inbox (and spam).', signedAs:'Signed in: {email}', last:'Cloud copy: {date}', none:'No cloud copy yet', saveBtn:'☁️ Save to cloud', restoreBtn:'⬇️ Restore from cloud', signOut:'Sign out', saved:'✅ Saved to the cloud', restored:'✅ Data restored from the cloud', empty:'No cloud copy yet', errEmail:'Enter a valid e-mail', errCode:'That code didn\'t work. Check it and try again', errNet:'Can\'t reach the cloud. Try again later', errLimit:'Too many e-mails. Wait a few minutes', auto:'After the first save, the copy updates by itself.', nothing:'Nothing to save yet' },
     notifAction:{ arrival:'✅ Picked up', stopped:'✅ Stopped: {min} min' },
     setx:{ grpNotif:'🔔 Notifications', grpPay:'💰 Pay', grpLook:'🎨 Appearance', grpData:'💾 Data', themeAuto:'🌓 Match phone', mapFollow:'🔗 Match app',
       restoreBtn:'📂 Restore from file', privacy:'🔒 Privacy policy', clearBtn:'🗑 Clear all data' },
@@ -1724,7 +1762,7 @@ function refreshOpenScreens(){
 }
 
 function updateLangSwitcherUI(){
-  document.querySelectorAll('#languageOptions .themeOption').forEach(el => {
+  document.querySelectorAll('#languageOptions .themeOption, #gateLangOptions .themeOption').forEach(el => {
     el.classList.toggle('active', el.dataset.lang === currentLang);
   });
 }
@@ -1955,7 +1993,7 @@ function loadSpots(){
     const group = L.featureGroup(Object.values(markers));
     try{ map.fitBounds(group.getBounds().pad(0.3)); }catch(e){}
   }
-  maybeShowOnboarding();
+  if(loginGateNeeded()){ openLoginGate(); } else { maybeShowOnboarding(); }
 }
 
 function persist(){
@@ -4469,24 +4507,26 @@ async function cloudToken(){
 function cloudErrToast(r){
   showToast(t(r && r.status === 429 ? 'cloud.errLimit' : 'cloud.errNet'), 4000);
 }
-async function cloudSendCode(){
+async function cloudSendCode(pre){
+  pre = pre || 'cloud';
   if(cloudBusy) return;
-  const email = document.getElementById('cloudEmail').value.trim().toLowerCase();
+  const email = document.getElementById(pre + 'Email').value.trim().toLowerCase();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showToast(t('cloud.errEmail'), 3500); return; }
   cloudBusy = true;
   try{
     const r = await sbFetch('/auth/v1/otp', { method: 'POST', body: JSON.stringify({ email, create_user: true }) });
     if(!r.ok){ cloudErrToast(r); return; }
     cloudPendingEmail = email;
-    document.getElementById('cloudSentMsg').textContent = t('cloud.sent', { email });
-    document.getElementById('cloudCodeRow').style.display = '';
-    document.getElementById('cloudCode').focus();
+    document.getElementById(pre + 'SentMsg').textContent = t('cloud.sent', { email });
+    document.getElementById(pre + 'CodeRow').style.display = '';
+    document.getElementById(pre + 'Code').focus();
   }catch(e){ showToast(t('cloud.errNet'), 4000); }
   finally{ cloudBusy = false; }
 }
-async function cloudVerify(){
+async function cloudVerify(pre){
+  pre = pre || 'cloud';
   if(cloudBusy) return;
-  const token = document.getElementById('cloudCode').value.replace(/\s+/g, '');
+  const token = document.getElementById(pre + 'Code').value.replace(/\s+/g, '');
   if(!token || !cloudPendingEmail){ showToast(t('cloud.errCode'), 3500); return; }
   cloudBusy = true;
   try{
@@ -4496,17 +4536,20 @@ async function cloudVerify(){
       return;
     }
     cloudSaveSession(r, cloudPendingEmail);
-    document.getElementById('cloudCode').value = '';
-    document.getElementById('cloudCodeRow').style.display = 'none';
+    ['cloud', 'gate'].forEach(x => { const c = document.getElementById(x + 'Code'), row = document.getElementById(x + 'CodeRow'); if(c) c.value = ''; if(row) row.style.display = 'none'; });
     cloudPendingEmail = '';
-    await cloudRefreshInfo();
-    renderCloud();
+    cloudBusy = false;
+    await cloudAfterLogin();
   }catch(e){ showToast(t('cloud.errNet'), 4000); }
   finally{ cloudBusy = false; }
 }
-function cloudSignOut(){ cloudLocalSignOut(); }
+function cloudSignOut(){ cloudLocalSignOut(); if(loginGateNeeded()) openLoginGate(); }
 
-function cloudPayload(){ return { spots, visitsLog, routeLog, earningsLog }; }
+function cloudPayload(){
+  const prefs = {};
+  try{ prefs.payType = localStorage.getItem(PAY_TYPE_KEY) || ''; prefs.currency = localStorage.getItem(CURRENCY_KEY) || ''; }catch(e){}
+  return { spots, visitsLog, routeLog, earningsLog, prefs };
+}
 function cloudHash(str){
   let h = 5381;
   for(let i = 0; i < str.length; i++){ h = ((h << 5) + h + str.charCodeAt(i)) | 0; }
@@ -4553,7 +4596,9 @@ async function cloudRestore(){
     if(!r.ok){ cloudErrToast(r); return; }
     if(!Array.isArray(r.body) || !r.body[0] || !r.body[0].data){ showToast(t('cloud.empty'), 3500); return; }
     closeSettingsModal();
+    const wasFresh = !localStorage.getItem(ONBOARDED_KEY) && spots.length === 0;
     if(applyImportedPayload(r.body[0].data)){
+      cloudApplyPrefs(r.body[0].data.prefs, wasFresh);
       localStorage.setItem(CLOUD_READY_KEY, '1');
       localStorage.setItem(CLOUD_TS_KEY, String(new Date(r.body[0].updated_at).getTime()));
       localStorage.setItem(CLOUD_HASH_KEY, cloudHash(JSON.stringify(cloudPayload())));
@@ -4562,11 +4607,93 @@ async function cloudRestore(){
   }catch(e){ showToast(t('cloud.errNet'), 4000); }
   finally{ cloudBusy = false; }
 }
+// настройки (тип оплаты, валюта) переносим на новый телефон; на уже настроенном устройстве ничего не перезаписываем
+function cloudApplyPrefs(prefs, wasFresh){
+  try{
+    // данные восстановлены - демо-тур в конце стёр бы их, поэтому для свежей установки тур не запускаем
+    if(wasFresh) localStorage.setItem(TOUR_DONE_KEY, '1');
+    if(!prefs || !wasFresh) return;
+    if(prefs.currency) localStorage.setItem(CURRENCY_KEY, prefs.currency);
+    if(prefs.payType === 'piece' || prefs.payType === 'hourly'){
+      localStorage.setItem(PAY_TYPE_KEY, prefs.payType);
+      localStorage.setItem(ONBOARDED_KEY, '1');
+    }
+    renderAll();
+  }catch(e){}
+}
+// что делать сразу после входа: первое включение облака на этом устройстве
+async function cloudAfterLogin(){
+  const tok = await cloudToken();
+  const gateWasOpen = document.getElementById('loginGate').classList.contains('show');
+  let cloudData = null, cloudTs = 0, failed = false;
+  if(tok){
+    try{
+      const r = await sbFetch('/rest/v1/backups?select=data,updated_at', { method: 'GET' }, tok);
+      if(r.ok && Array.isArray(r.body)){ if(r.body[0]){ cloudData = r.body[0].data; cloudTs = new Date(r.body[0].updated_at).getTime(); } }
+      else failed = true;
+    }catch(e){ failed = true; }
+  }
+  if(failed){ showToast(t('cloud.errNet'), 4000); }
+  else if(cloudData && Array.isArray(cloudData.spots) && cloudData.spots.length){
+    // в облаке уже есть копия: на пустом телефоне восстанавливаем молча, иначе спросит «добавить или заменить»
+    const wasFresh = !localStorage.getItem(ONBOARDED_KEY) && spots.length === 0;
+    if(applyImportedPayload(cloudData)){
+      cloudApplyPrefs(cloudData.prefs, wasFresh);
+      try{ localStorage.setItem(CLOUD_READY_KEY, '1'); localStorage.setItem(CLOUD_TS_KEY, String(cloudTs)); }catch(e){}
+      cloudBusy = false;
+      await cloudUpload(false); // если выбрали «добавить» - в облако уходит объединённая копия
+    }
+  } else {
+    try{ localStorage.setItem(CLOUD_READY_KEY, '1'); }catch(e){}
+    cloudBusy = false;
+    if(hasAnyData()) await cloudUpload(false); // старые данные телефона сразу уходят в облако
+  }
+  try{ await cloudRefreshInfo(); }catch(e){}
+  renderCloud();
+  if(gateWasOpen){
+    closeLoginGate();
+    maybeShowOnboarding();
+  }
+}
+// --- обязательный вход для новых установок (старые пользователи входят по желанию в настройках) ---
+const LOGIN_REQUIRED_KEY = 'pickup-login-required';
+function loginGateNeeded(){
+  try{
+    if(cloudSession) return false;
+    if(localStorage.getItem(LOGIN_REQUIRED_KEY) === '1') return true;
+    // новая установка: нет ни выбранной оплаты, ни точек
+    if(!localStorage.getItem(ONBOARDED_KEY) && spots.length === 0){
+      localStorage.setItem(LOGIN_REQUIRED_KEY, '1');
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+function openLoginGate(){
+  document.getElementById('loginGate').classList.add('show');
+  try{ updateLangSwitcherUI(); }catch(e){}
+}
+function closeLoginGate(){ document.getElementById('loginGate').classList.remove('show'); }
+async function cloudDeleteAccount(){
+  if(!cloudSession || cloudBusy) return;
+  if(!confirm(t('cloud.deleteConfirm'))) return;
+  cloudBusy = true;
+  try{
+    const tok = await cloudToken(); if(!tok) return;
+    const r = await sbFetch('/rest/v1/rpc/delete_my_account', { method: 'POST', body: '{}' }, tok);
+    if(!r.ok){ showToast(t('cloud.errDelete'), 4000); return; }
+    cloudLocalSignOut();
+    showToast(t('cloud.deleted'), 4000);
+    if(loginGateNeeded()) openLoginGate();
+  }catch(e){ showToast(t('cloud.errDelete'), 4000); }
+  finally{ cloudBusy = false; }
+}
 // автокопия: только после первого осознанного сохранения/восстановления на этом устройстве
 // (чтобы новый пустой телефон не затёр хорошую копию), и только если данные изменились
 function cloudAutoSync(){
   try{
     if(!cloudSession || localStorage.getItem(CLOUD_READY_KEY) !== '1' || !hasAnyData() || !navigator.onLine) return;
+    if(document.getElementById('tourOverlay').classList.contains('show')) return; // демо-данные тура в облако не отправляем
     if(cloudHash(JSON.stringify(cloudPayload())) === localStorage.getItem(CLOUD_HASH_KEY)) return;
     cloudUpload(false);
   }catch(e){}
