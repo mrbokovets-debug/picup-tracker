@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pickup-tracker-v7';
+const CACHE_NAME = 'pickup-tracker-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -31,6 +31,8 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // POST и прочее (например запросы к push-серверу) не трогаем - пусть идут напрямую
   if (event.request.method !== 'GET') return;
+  // облако (Supabase) не кэшируем: там личные данные, и они должны быть всегда свежими
+  if (event.request.url.includes('.supabase.co')) return;
   const isMapTile = event.request.url.includes('tile.openstreetmap.org');
   if (isMapTile) {
     // карту без сети всё равно не подгрузить, просто пробуем сеть и падаем тихо
