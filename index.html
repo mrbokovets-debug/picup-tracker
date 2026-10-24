@@ -474,10 +474,11 @@
   #ordersModalScroll{padding:20px; max-height:85vh; overflow-y:auto; overscroll-behavior:contain;}
   #ordersModal h3{margin:0; font-size:16px;}
   #historyModal h3{margin:0; font-size:16px;}
+  #ordersModalScroll, #statsModalScroll, #recoModalScroll, #historyModalScroll{padding-top:0;} /* отступ сверху даёт сама липкая шапка */
   .stickyHeader{
     position:sticky; top:0; z-index:50; background:var(--card);
     display:flex; align-items:center; justify-content:space-between;
-    padding:0 0 10px; margin:0 0 4px;
+    padding:20px 0 10px; margin:0 0 4px;
     box-shadow:0 6px 8px -4px rgba(0,0,0,0.25);
     -webkit-transform:translateZ(0); transform:translateZ(0);
     isolation:isolate;
@@ -2325,6 +2326,7 @@ function openSettingsModal(){
     if(g && 'Notification' in window && Notification.permission !== 'granted') g.open = true;
   }catch(e){}
   document.getElementById('settingsModalBg').classList.add('show');
+  scrollModalTop('settingsModal');
 }
 function closeSettingsModal(){
   document.getElementById('settingsModalBg').classList.remove('show');
@@ -3057,9 +3059,11 @@ function renderCalendar(){
   });
 }
 
+function scrollModalTop(id){ const el = document.getElementById(id); if(el) el.scrollTop = 0; }
 function openOrdersModal(){
   renderAll();
   document.getElementById('ordersModalBg').classList.add('show');
+  scrollModalTop('ordersModalScroll');
 }
 function closeOrdersModal(){
   document.getElementById('ordersModalBg').classList.remove('show');
@@ -3084,6 +3088,7 @@ function goToSpotOnMap(spotId){
 function openHistoryModal(){
   renderHistory();
   document.getElementById('historyModalBg').classList.add('show');
+  scrollModalTop('historyModalScroll');
 }
 function closeHistoryModal(){
   document.getElementById('historyModalBg').classList.remove('show');
@@ -3153,6 +3158,7 @@ function renderHistory(){
 function openStatsModal(){
   renderStats();
   document.getElementById('statsModalBg').classList.add('show');
+  scrollModalTop('statsModalScroll');
   lockMapInteractions();
 }
 function closeStatsModal(){
@@ -3221,6 +3227,7 @@ function updateDrawerVisibility(){
 function openRecoModal(){
   renderRecommendations();
   document.getElementById('recoModalBg').classList.add('show');
+  scrollModalTop('recoModalScroll');
   lockMapInteractions();
 }
 function closeRecoModal(){
