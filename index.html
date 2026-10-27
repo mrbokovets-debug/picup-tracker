@@ -2714,6 +2714,8 @@ function showTourStep(i){
   if(typeof step.before === 'function') step.before();
   // ждём, пока откроется/закроется боковое меню или модалка (CSS-анимация), прежде чем замерять позицию элемента
   setTimeout(() => positionTourStep(step, i), 280);
+  // повторно через паузу: когда анимация окна и прокрутка закончились, подсветка встаёт точно на элемент
+  setTimeout(() => { if(tourIndex === i && document.getElementById('tourOverlay').classList.contains('show')) positionTourStep(step, i); }, 750);
 }
 
 function findTourTarget(step){
@@ -2759,7 +2761,13 @@ function positionTourStep(step, i){
     const oy = getComputedStyle(el).overflowY;
     if((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 2){ scrollParent = el; break; }
   }
-  if(scrollParent && typeof target.scrollIntoView === 'function'){
+  // поля прокрутки: цель не должна оказаться под липкой шапкой окна
+  const boxEl = target.closest('#sideDrawer, [id$="Modal"]');
+  if(boxEl){
+    const stk = Array.from(boxEl.querySelectorAll('*')).find(e => { const cs = getComputedStyle(e); return cs.position === 'sticky' && cs.top !== 'auto'; });
+    target.style.scrollMarginTop = (stk && !stk.contains(target) && !target.contains(stk)) ? (stk.offsetHeight + 16) + 'px' : '';
+  }
+  if(typeof target.scrollIntoView === 'function' && (scrollParent || boxEl)){
     const trg = target.getBoundingClientRect();
     // высокий блок выравниваем по верху, невысокий - по центру; подсказка потом сама встанет туда, где больше места
     target.scrollIntoView({ block: trg.height > window.innerHeight * 0.5 ? 'start' : 'center', behavior: 'instant' });
@@ -2774,7 +2782,7 @@ function positionTourStep(step, i){
       stickyBottom = sticky.getBoundingClientRect().bottom;
       const tr = target.getBoundingClientRect();
       if(scrollParent && tr.top < stickyBottom + 12){
-        scrollParent.scrollTop -= (stickyBottom + 12 - tr.top);
+        scrollParent.scrollTo({ top: Math.max(0, scrollParent.scrollTop - (stickyBottom + 12 - tr.top)), behavior: 'instant' });
       }
     }
   }
@@ -2789,7 +2797,7 @@ function positionTourStep(step, i){
   if(scrollParent && window.innerHeight - rect.bottom < need && rect.top < need){
     // запас снизу, чтобы последний блок тоже можно было поднять к верху
     scrollParent.style.paddingBottom = '70vh'; scrollParent.setAttribute('data-tourpad', '1');
-    scrollParent.scrollTop += rect.top - 20;
+    scrollParent.scrollTo({ top: scrollParent.scrollTop + rect.top - 20, behavior: 'instant' });
     rect = target.getBoundingClientRect();
   }
 
@@ -2802,6 +2810,10 @@ function positionTourStep(step, i){
     bT = Math.max(bT, br.top + 4); bB = Math.min(bB, br.bottom - 4);
   }
   if(stickyBottom) bT = Math.max(bT, stickyBottom + 2);
+  if(box && (rect.top < bT || rect.bottom > bB) && rect.height < (bB - bT) && typeof target.scrollIntoView === 'function'){
+    target.scrollIntoView({ block: 'center', behavior: 'instant' });
+    rect = target.getBoundingClientRect();
+  }
   const hl = Math.max(bL, rect.left - pad), ht = Math.max(bT, rect.top - pad);
   const hr = Math.min(bR, rect.right + pad), hb = Math.min(bB, rect.bottom + pad);
   highlight.style.display = 'block';
