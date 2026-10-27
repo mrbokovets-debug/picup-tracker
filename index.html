@@ -3384,27 +3384,28 @@ function renderRecommendations(){
     `;
   }
 
-  // сдельная оплата: лучшие точки по заработку; почасовая: по числу заборов
+  // сдельная оплата: лучшие точки по заработку; при почасовой блок точек не показываем
   const byEarnings = isPieceRate();
-  const topSpots = byEarnings
-    ? [...spots].filter(s => (s.earned || 0) > 0).sort((a, b) => b.earned - a.earned).slice(0, 3)
-    : [...spots].filter(s => (s.count || 0) > 0).sort((a, b) => b.count - a.count).slice(0, 3);
-  const spotsHtml = `
-    <div class="statsChartTitle" style="margin-top:18px;">${t(byEarnings ? 'reco.topSpotsTitle' : 'reco.topSpotsCountTitle')}</div>
+  let spotsHtml = '';
+  if(byEarnings){
+    const topSpots = [...spots].filter(s => (s.earned || 0) > 0).sort((a, b) => b.earned - a.earned).slice(0, 3);
+    spotsHtml = `
+    <div class="statsChartTitle" style="margin-top:18px;">${t('reco.topSpotsTitle')}</div>
     ${topSpots.length ? `
     <div id="recoTopSpots">
       ${topSpots.map((s, i) => `
         <div class="waitRow">
           <div class="waitRowMain">
             <span class="waitName">${i === 0 ? '🏆 ' : ''}${escapeHtml(s.name)}</span>
-            <span class="waitTime">${byEarnings ? formatMoney(s.earned) : formatZaboros(s.count)}</span>
+            <span class="waitTime">${formatMoney(s.earned)}</span>
           </div>
         </div>
       `).join('')}
     </div>` : `
-    <div class="statsEmpty" style="padding:10px 0;">${t(byEarnings ? 'reco.topSpotsEmpty' : 'reco.topSpotsCountEmpty')}</div>
+    <div class="statsEmpty" style="padding:10px 0;">${t('reco.topSpotsEmpty')}</div>
     `}
   `;
+  }
 
   body.innerHTML = hoursHtml + daysHtml + spotsHtml + renderTimeValueHtml();
 }
