@@ -3327,7 +3327,9 @@ function formatHM(sec){
 
 // «Сколько стоит твоё время»: данные за последние 30 дней
 function computeTimeValue(){
-  const cutoff = Date.now() - 30 * 86400000;
+  // окно по целым дням: 29 прошлых дней + сегодня, граница сдвигается только в полночь, а не каждый час
+  const cd = new Date(); cd.setHours(0, 0, 0, 0); cd.setDate(cd.getDate() - 29);
+  const cutoff = cd.getTime();
   const visits = visitsLog.filter(v => v.type !== 'remove' && !v.reversed && new Date(v.ts).getTime() >= cutoff);
   const earns = earningsLog.filter(e => new Date(e.ts).getTime() >= cutoff);
   // смены: события с паузой больше 90 минут начинают новую смену; к смене прибавляем 10 минут на последний заказ
