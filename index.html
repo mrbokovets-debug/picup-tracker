@@ -318,6 +318,16 @@
   #teamModalScroll{padding:20px; padding-top:0; max-height:85vh; overflow-y:auto; overscroll-behavior:contain;}
   #teamModal h3{margin:0; font-size:16px;}
   #teamBody .settingsActionBtn{margin-top:4px;}
+  #weekCardModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1000;}
+  #weekCardModalBg.show{display:flex;}
+  #weekCardModal{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0; overflow:hidden;}
+  #weekCardScroll{padding:20px; padding-top:0; max-height:90vh; overflow-y:auto; overscroll-behavior:contain;}
+  #weekCardModal h3{margin:0; font-size:16px;}
+  #weekCardCanvas{width:100%; height:auto; border-radius:14px; display:block; margin:8px 0 12px; background:#0f1319;}
+  .weekCardRow{display:flex; align-items:center; gap:10px; margin:0 0 10px; font-size:13.5px;}
+  .weekCardBtns{display:flex; gap:10px;}
+  .weekCardBtns .settingsActionBtn{margin:0;}
   #recoModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
     align-items:flex-end; justify-content:center; z-index:1000;}
   #recoModalBg.show{display:flex;}
@@ -968,6 +978,26 @@
   </div>
 </div>
 
+<div id="weekCardModalBg">
+  <div id="weekCardModal">
+    <div id="weekCardScroll">
+      <div class="stickyHeader">
+        <h3 data-i18n="weekcard.title">Итог недели</h3>
+        <button class="modalXBtn" onclick="closeWeekCard()">✕</button>
+      </div>
+      <canvas id="weekCardCanvas" width="1080" height="1350"></canvas>
+      <label class="weekCardRow" id="weekCardEarnedRow" style="display:none;">
+        <input type="checkbox" id="weekCardShowEarned" checked onchange="drawWeekCard()">
+        <span data-i18n="weekcard.showEarned">Показывать заработок</span>
+      </label>
+      <div class="weekCardBtns">
+        <button class="settingsActionBtn" id="weekCardShareBtn" onclick="shareWeekCard()">📤 <span data-i18n="weekcard.share">Поделиться</span></button>
+        <button class="settingsActionBtn" onclick="saveWeekCard()">💾 <span data-i18n="weekcard.save">Сохранить картинку</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="recoModalBg">
   <div id="recoModal">
     <div id="recoModalScroll">
@@ -1271,6 +1301,7 @@ const TRANSLATIONS = {
       peakHoursTitle:'🕐 Часы пик', hourChartNoData:'Пока нет данных за этот период.',
       hourChartPeakSummary:'Пик активности: {hours} ({count})', hourTrendTitle:'Как менялся пик по дням',
       hourTrendPeakLabel:'пик в {hours}', deletedSpot:'(точка удалена)' },
+    weekcard:{ btn:'Итог недели', title:'Итог недели', empty:'На этой неделе пока нет заборов.', hdr:'Моя неделя', waited:'ждал заказы', bestDay:'лучший день', topSpot:'любимая точка', earned:'заработано', longest:'самое долгое ожидание', showEarned:'Показывать заработок', share:'Поделиться', save:'Сохранить картинку', saved:'Картинка сохранена', tagline:'Считаю заборы в PickupMap', shareText:'Моя неделя курьера в PickupMap', fail:'Не получилось создать картинку' },
     reco:{ title:'Рекомендации', intro:'Советы на основе твоей статистики: когда выгоднее бронировать слоты и какие точки приносят тебе больше всего.',
       bestHoursTitle:'🕐 Лучшие часы для слотов', bestHoursEmpty:'Пока мало данных. Отмечай заборы — здесь появится совет по часам.',
       bestHoursText:'По твоей истории заборов чаще всего заказы идут в: {hours}. Стоит бронировать слоты именно на это время.',
@@ -1397,6 +1428,7 @@ const TRANSLATIONS = {
       peakHoursTitle:'🕐 Пікові години', hourChartNoData:'Поки немає даних за цей період.',
       hourChartPeakSummary:'Пік активності: {hours} ({count})', hourTrendTitle:'Як змінювався пік по днях',
       hourTrendPeakLabel:'пік о {hours}', deletedSpot:'(точку видалено)' },
+    weekcard:{ btn:'Підсумок тижня', title:'Підсумок тижня', empty:'Цього тижня ще немає підборів.', hdr:'Мій тиждень', waited:'чекав замовлення', bestDay:'найкращий день', topSpot:'улюблена точка', earned:'зароблено', longest:'найдовше очікування', showEarned:'Показувати заробіток', share:'Поділитися', save:'Зберегти картинку', saved:'Картинку збережено', tagline:'Рахую підбори в PickupMap', shareText:'Мій тиждень кур’єра в PickupMap', fail:'Не вдалося створити картинку' },
     reco:{ title:'Рекомендації', intro:'Поради на основі твоєї статистики: коли вигідніше бронювати слоти і які точки приносять тобі найбільше.',
       bestHoursTitle:'🕐 Найкращі години для слотів', bestHoursEmpty:'Поки замало даних. Відмічай підбори — тут з’явиться порада по годинах.',
       bestHoursText:'За твоєю історією підборів найчастіше замовлення йдуть о: {hours}. Варто бронювати слоти саме на цей час.',
@@ -1523,6 +1555,7 @@ const TRANSLATIONS = {
       peakHoursTitle:'🕐 Horas punta', hourChartNoData:'Aún no hay datos de este periodo.',
       hourChartPeakSummary:'Pico de actividad: {hours} ({count})', hourTrendTitle:'Cómo cambió el pico por día',
       hourTrendPeakLabel:'pico a las {hours}', deletedSpot:'(punto eliminado)' },
+    weekcard:{ btn:'Resumen semanal', title:'Resumen semanal', empty:'Esta semana aún no hay recogidas.', hdr:'Mi semana', waited:'esperando pedidos', bestDay:'mejor día', topSpot:'punto favorito', earned:'ganado', longest:'espera más larga', showEarned:'Mostrar ganancias', share:'Compartir', save:'Guardar imagen', saved:'Imagen guardada', tagline:'Cuento mis recogidas en PickupMap', shareText:'Mi semana de repartidor en PickupMap', fail:'No se pudo crear la imagen' },
     reco:{ title:'Recomendaciones', intro:'Consejos basados en tus estadísticas: cuándo conviene más reservar turnos y qué puntos te dan más.',
       bestHoursTitle:'🕐 Mejores horas para reservar turnos', bestHoursEmpty:'Aún hay pocos datos. Marca recogidas — aquí aparecerá un consejo sobre horarios.',
       bestHoursText:'Según tu historial de recogidas, la mayoría de pedidos llegan a las: {hours}. Conviene reservar turnos justo en esas horas.',
@@ -1649,6 +1682,7 @@ const TRANSLATIONS = {
       peakHoursTitle:'🕐 Peak hours', hourChartNoData:'No data for this period yet.',
       hourChartPeakSummary:'Peak activity: {hours} ({count})', hourTrendTitle:'How the peak changed by day',
       hourTrendPeakLabel:'peak at {hours}', deletedSpot:'(spot deleted)' },
+    weekcard:{ btn:'Weekly summary', title:'Weekly summary', empty:'No pickups this week yet.', hdr:'My week', waited:'waiting for orders', bestDay:'best day', topSpot:'favorite spot', earned:'earned', longest:'longest wait', showEarned:'Show earnings', share:'Share', save:'Save image', saved:'Image saved', tagline:'Counting pickups in PickupMap', shareText:'My courier week in PickupMap', fail:'Could not create the image' },
     reco:{ title:'Recommendations', intro:'Tips based on your stats: when it pays off to book slots and which spots bring you the most.',
       bestHoursTitle:'🕐 Best hours for slots', bestHoursEmpty:'Not enough data yet. Log pickups and an hourly tip will show up here.',
       bestHoursText:'Based on your pickup history, orders most often come in at: {hours}. It\'s worth booking slots for that time.',
@@ -2966,7 +3000,7 @@ function closeDrawer(){
 // любой экран поверх главного (меню, модалки, тур) сейчас открыт?
 function anyOverlayOpen(){
   const ids = ['sideDrawer', 'ordersModalBg', 'modalBg', 'choiceModalBg', 'amountModalBg', 'rowActionModalBg',
-    'onboardModalBg', 'statsModalBg', 'recoModalBg', 'teamModalBg', 'settingsModalBg', 'historyModalBg', 'calendarModalBg', 'tourOverlay'];
+    'onboardModalBg', 'statsModalBg', 'weekCardModalBg', 'recoModalBg', 'teamModalBg', 'settingsModalBg', 'historyModalBg', 'calendarModalBg', 'tourOverlay'];
   return ids.some(id => {
     const el = document.getElementById(id);
     return el && el.classList.contains('show');
@@ -3448,6 +3482,123 @@ function renderRecommendations(){
   body.innerHTML = hoursHtml + daysHtml + spotsHtml + renderTimeValueHtml();
 }
 
+// --- Итог недели: картинка для отправки друзьям ---
+function computeWeekSummary(){
+  const now = new Date();
+  const dow = now.getDay();
+  const monday = new Date(now); monday.setDate(monday.getDate() - ((dow === 0) ? 6 : dow - 1)); monday.setHours(0,0,0,0);
+  const sunday = new Date(monday); sunday.setDate(sunday.getDate() + 6);
+  const days = [];
+  for(let i = 0; i < 7; i++){ const d = new Date(monday); d.setDate(d.getDate() + i); days.push({ key: dayKey(d), label: weekdaysMon()[i], count: 0 }); }
+  const map = {}; days.forEach(d => map[d.key] = d);
+  let waitSec = 0, longest = 0;
+  const perSpot = {};
+  visitsLog.forEach(v => {
+    const k = dayKey(new Date(v.ts)); const d = map[k]; if(!d) return;
+    const delta = v.type === 'remove' ? -1 : 1;
+    d.count += delta;
+    perSpot[v.spotId] = (perSpot[v.spotId] || 0) + delta;
+    if(delta > 0 && !v.reversed && v.waitSec != null){ waitSec += v.waitSec; longest = Math.max(longest, v.waitSec); }
+  });
+  days.forEach(d => { d.count = Math.max(0, d.count); });
+  const total = days.reduce((a, d) => a + d.count, 0);
+  const bestDay = days.reduce((b, d) => d.count > b.count ? d : b, days[0]);
+  let topSpot = null, topN = 0;
+  Object.keys(perSpot).forEach(id => { if(perSpot[id] > topN){ const sp = spots.find(x => String(x.id) === String(id)); if(sp){ topN = perSpot[id]; topSpot = sp.name; } } });
+  const earned = earningsLog.filter(e => { const k = dayKey(new Date(e.ts)); return !!map[k]; }).reduce((a, e) => a + (+e.amount || 0), 0);
+  return { monday, sunday, days, total, bestDay, topSpot, topN, waitSec, longest, earned };
+}
+
+function drawWeekCard(){
+  const c = document.getElementById('weekCardCanvas'); if(!c) return;
+  const g = c.getContext('2d'); const W = 1080, H = 1350;
+  const d = computeWeekSummary();
+  const piece = isPieceRate() && d.earned > 0;
+  document.getElementById('weekCardEarnedRow').style.display = piece ? 'flex' : 'none';
+  const showEarned = piece && document.getElementById('weekCardShowEarned').checked;
+  const GREEN = '#00c98d', TEXT = '#f3f6f9', DIM = '#8d98a6';
+  const font = '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#141b24'); bg.addColorStop(1, '#0b0f14');
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  const glow = g.createRadialGradient(W * 0.8, 120, 10, W * 0.8, 120, 520); glow.addColorStop(0, 'rgba(0,201,141,0.30)'); glow.addColorStop(1, 'rgba(0,201,141,0)');
+  g.fillStyle = glow; g.fillRect(0, 0, W, H);
+  g.textBaseline = 'alphabetic';
+  const fit = (txt, maxW) => { let s = txt; while(g.measureText(s).width > maxW && s.length > 3) s = s.slice(0, -2); return s === txt ? txt : s.trimEnd() + '…'; };
+  g.fillStyle = GREEN; g.font = `800 40px ${font}`; g.fillText(t('weekcard.hdr').toUpperCase(), 80, 120);
+  g.fillStyle = DIM; g.font = `600 34px ${font}`;
+  g.fillText(`${formatDayMonthShort(d.monday)} — ${formatDayMonthShort(d.sunday)}`, 80, 172);
+  // главное число
+  g.fillStyle = TEXT; g.font = `900 260px ${font}`; g.fillText(String(d.total), 70, 470);
+  const nw = g.measureText(String(d.total)).width;
+  g.fillStyle = GREEN; g.font = `800 56px ${font}`;
+  g.fillText(formatPickups(d.total).replace(/^\d+\s*/, ''), 90 + nw, 470);
+  // строки
+  const rows = [];
+  if(d.waitSec > 0) rows.push([formatHM(d.waitSec), t('weekcard.waited')]);
+  if(d.total > 0 && d.bestDay.count > 0) rows.push([`${d.bestDay.label} · ${formatPickups(d.bestDay.count)}`, t('weekcard.bestDay')]);
+  if(d.topSpot) rows.push([d.topSpot, t('weekcard.topSpot')]);
+  if(d.longest >= 60) rows.push([formatHM(d.longest), t('weekcard.longest')]);
+  if(showEarned) rows.push([formatMoney(d.earned), t('weekcard.earned')]);
+  let y = 575;
+  rows.slice(0, 5).forEach(r => {
+    g.fillStyle = 'rgba(255,255,255,0.05)'; g.beginPath(); g.roundRect ? g.roundRect(70, y - 50, W - 140, 92, 22) : g.rect(70, y - 50, W - 140, 92); g.fill();
+    g.fillStyle = DIM; g.font = `600 26px ${font}`; g.fillText(r[1], 100, y - 10);
+    g.fillStyle = TEXT; g.font = `800 36px ${font}`; g.fillText(fit(r[0], W - 200), 100, y + 28);
+    y += 108;
+  });
+  // график по дням
+  const max = Math.max(1, ...d.days.map(x => x.count));
+  const baseY = 1235, chartH = 130, bw = 90, gap = (W - 160 - bw * 7) / 6;
+  d.days.forEach((x, i) => {
+    const h = Math.max(6, Math.round(x.count / max * chartH)); const bx = 80 + i * (bw + gap);
+    g.fillStyle = x === d.bestDay && x.count > 0 ? GREEN : 'rgba(255,255,255,0.18)';
+    g.beginPath(); g.roundRect ? g.roundRect(bx, baseY - h, bw, h, 12) : g.rect(bx, baseY - h, bw, h); g.fill();
+    g.fillStyle = DIM; g.font = `600 26px ${font}`; g.textAlign = 'center'; g.fillText(x.label, bx + bw / 2, baseY + 36); g.textAlign = 'left';
+  });
+  g.fillStyle = DIM; g.font = `600 28px ${font}`; g.fillText(t('weekcard.tagline'), 80, H - 24);
+}
+
+function openWeekCard(){
+  const d = computeWeekSummary();
+  if(d.total <= 0){ showToast(t('weekcard.empty')); return; }
+  document.getElementById('weekCardModalBg').classList.add('show');
+  drawWeekCard();
+  scrollModalTop('weekCardScroll');
+  lockMapInteractions();
+}
+function closeWeekCard(){
+  if(!document.getElementById('weekCardModalBg').classList.contains('show')) return;
+  document.getElementById('weekCardModalBg').classList.remove('show');
+  unlockMapInteractions();
+}
+function weekCardBlob(){
+  return new Promise(res => document.getElementById('weekCardCanvas').toBlob(b => res(b), 'image/png'));
+}
+async function shareWeekCard(){
+  try{
+    const blob = await weekCardBlob(); if(!blob) throw new Error('no blob');
+    const file = new File([blob], 'pickupmap-week.png', { type: 'image/png' });
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      await navigator.share({ files: [file], text: t('weekcard.shareText') });
+    } else {
+      await saveWeekCard();
+    }
+  }catch(e){
+    if(e && e.name === 'AbortError') return;
+    showToast(t('weekcard.fail'));
+  }
+}
+async function saveWeekCard(){
+  try{
+    const blob = await weekCardBlob(); if(!blob) throw new Error('no blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'pickupmap-week.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    showToast(t('weekcard.saved'));
+  }catch(e){ showToast(t('weekcard.fail')); }
+}
+
 function renderStats(){
   const body = document.getElementById('statsBody');
   if(visitsLog.length === 0){
@@ -3554,7 +3705,8 @@ function renderStats(){
     <div id="hourTrend"></div>
   `;
 
-  body.innerHTML = cardsHtml + chartHtml + waitHtml + hourHtml;
+  const weekBtn = `<button class="settingsActionBtn" style="margin:0 0 14px;" onclick="openWeekCard()">📤 ${t('weekcard.btn')}</button>`;
+  body.innerHTML = weekBtn + cardsHtml + chartHtml + waitHtml + hourHtml;
   renderHourChart();
   renderHourTrend();
 }
@@ -5291,6 +5443,7 @@ setTimeout(() => { try{ showBackupBannerIfNeeded(); }catch(e){} }, 4000);
     '📅':['','<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'],
     '▶':['','<path class="f" d="M7 4.8v14.4a.8.8 0 0 0 1.2.7l11.3-7.2a.8.8 0 0 0 0-1.4L8.2 4.1A.8.8 0 0 0 7 4.8z"/>'],
     '⏹':['','<rect class="f" x="6" y="6" width="12" height="12" rx="2"/>'],
+    '📤':['','<path d="M12 15V4M8 8l4-4 4 4M5 14v5h14v-5"/>'],
     '⏳':['','<path d="M7 3h10M7 21h10M8 3c0 5 3 6 4 9-1 3-4 4-4 9M16 3c0 5-3 6-4 9 1 3 4 4 4 9"/>'],
     '🏁':['','<path d="M5 21V4M5 4h14v9H5M9.5 4v9M14.5 4v9M5 8.5h14"/>'],
     '🕐':['','<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'],
