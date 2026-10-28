@@ -58,6 +58,10 @@
     border-radius:14px; overflow:hidden; border:1px solid var(--line);
     transition:none;}
   #map{width:100%; height:100%; background:var(--asphalt-2);}
+  #map.mapDark .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);}
+  #map.mapDark{background:#1b2027;}
+  #map.mapDark .leaflet-bar a{background:#1d2229; color:#e8edf2; border-color:#2c333c;}
+  #map.mapDark .leaflet-bar a:hover{background:#262d36;}
 
   #mapOuter.fullscreen{
     position:fixed; inset:0; margin:0; border-radius:0; border:none;
@@ -1944,8 +1948,11 @@ map.on('zoomend', updateLabelVisibility);
 // затемняем тайлы под тёмную тему интерфейса (по умолчанию), с возможностью переключить на светлую
 const DARK_FILTER = 'invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9)';
 
+// фильтр только на слой плиток (а не на всю карту с маркерами и кнопками): так масштабирование на телефоне не тормозит
 function applyMapTheme(isDark){
-  document.getElementById('map').style.filter = isDark ? DARK_FILTER : 'none';
+  const m = document.getElementById('map');
+  m.style.filter = 'none';
+  m.classList.toggle('mapDark', !!isDark);
 }
 function applyAppTheme(theme){
   document.body.classList.toggle('app-dark', theme === 'dark');
