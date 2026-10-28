@@ -62,6 +62,8 @@
   #map.mapDark{background:#1b2027;}
   #map.mapDark .leaflet-bar a{background:#1d2229; color:#e8edf2; border-color:#2c333c;}
   #map.mapDark .leaflet-bar a:hover{background:#262d36;}
+  #map.mapDark .pinDiv, #map.mapDark .bagBody{color:var(--mkText); border-color:var(--mkBorder);}
+  #map.mapDark .leaflet-tooltip.spotLabel{background:var(--tipBg); color:var(--tipText);}
 
   #mapOuter.fullscreen{
     position:fixed; inset:0; margin:0; border-radius:0; border:none;
@@ -1948,11 +1950,44 @@ map.on('zoomend', updateLabelVisibility);
 // затемняем тайлы под тёмную тему интерфейса (по умолчанию), с возможностью переключить на светлую
 const DARK_FILTER = 'invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9)';
 
-// фильтр только на слой плиток (а не на всю карту с маркерами и кнопками): так масштабирование на телефоне не тормозит
+// фильтр только на слой плиток (а не на всю карту с маркерами и кнопками): так масштабирование на телефоне не тормозит.
+// Цвета кружков и подписей пересчитываем по той же формуле вручную, чтобы выглядели как раньше.
+function darkMapLook(rgb){
+  const cl = v => Math.max(0, Math.min(1, v));
+  let [r, g, b] = rgb.map(v => v / 255);
+  r = 1 - r; g = 1 - g; b = 1 - b;                                   // invert(1)
+  const nr = cl(-0.574 * r + 1.430 * g + 0.144 * b);                  // hue-rotate(180deg)
+  const ng = cl(0.426 * r + 0.430 * g + 0.144 * b);
+  const nb = cl(0.426 * r + 1.430 * g - 0.856 * b);
+  return [nr, ng, nb].map(v => cl(v * 0.95)).map(v => cl((v - 0.5) * 0.9 + 0.5)).map(v => Math.round(v * 255)); // brightness, contrast
+}
+function parseCssColor(str){
+  str = String(str || '').trim();
+  let m = str.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if(m){ let h = m[1]; if(h.length === 3) h = h.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+  m = str.match(/rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)/);
+  return m ? [+m[1], +m[2], +m[3]] : null;
+}
+let mapIsDark = false;
 function applyMapTheme(isDark){
   const m = document.getElementById('map');
   m.style.filter = 'none';
   m.classList.toggle('mapDark', !!isDark);
+  const changed = (mapIsDark !== !!isDark);
+  mapIsDark = !!isDark;
+  const cs = getComputedStyle(document.body);
+  const set = (name, rgb, a) => { if(!rgb) return; const d = isDark ? darkMapLook(rgb) : rgb; m.style.setProperty(name, a == null ? `rgb(${d})` : `rgba(${d},${a})`); };
+  if(isDark){
+    set('--signal', parseCssColor(cs.getPropertyValue('--signal')));
+    set('--cold', parseCssColor(cs.getPropertyValue('--cold')));
+    set('--mkText', parseCssColor(cs.getPropertyValue('--signal-text')));
+    set('--mkBorder', [255, 255, 255], 0.6);
+    set('--tipBg', [20, 23, 28], 0.85);
+    set('--tipText', [255, 255, 255]);
+  } else {
+    ['--signal', '--cold', '--mkText', '--mkBorder', '--tipBg', '--tipText'].forEach(v => m.style.removeProperty(v));
+  }
+  if(changed && Object.keys(markers).length){ try{ renderAll(); }catch(e){} }
 }
 function applyAppTheme(theme){
   document.body.classList.toggle('app-dark', theme === 'dark');
@@ -2030,7 +2065,8 @@ function sizeForCount(count, max){
 
 function makeIcon(spot, max, isHot){
   const size = sizeForCount(spot.count, max);
-  const color = colorForCount(spot.count, max);
+  let color = colorForCount(spot.count, max);
+  if(mapIsDark){ const rgb = parseCssColor(color); if(rgb) color = `rgb(${darkMapLook(rgb)})`; }
   const style = localStorage.getItem(MARKER_STYLE_KEY) || 'circle';
 
   if(style === 'bag'){
