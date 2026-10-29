@@ -5287,7 +5287,7 @@ async function teamLeave(){
 function teamShareCode(){
   if(!teamInfo) return;
   const text = t('team.shareText', { code: teamInfo.code });
-  const url = 'https://mrbokovets-debug.github.io/picup-tracker/';
+  const url = 'https://pickupmap.app/';
   if(navigator.share){
     navigator.share({ text: text + '\n' + url }).catch(() => {});
     return;
