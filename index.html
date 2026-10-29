@@ -5445,6 +5445,20 @@ function resetAll(){ openWipeModal(); }
 
 // регистрируем service worker для офлайн-работы (сработает только когда сайт открыт по HTTPS)
 if('serviceWorker' in navigator){
+  // если при запуске уже была установлена версия, а потом пришла новая - один раз перезагружаемся, чтобы сразу показать свежую
+  // (только когда не открыто меню/окно и не идёт ожидание, чтобы не сбить человека посреди действия)
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloadedForUpdate = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(!hadController || reloadedForUpdate) return;
+    const tryReload = () => {
+      let busy = false;
+      try{ busy = anyOverlayOpen() || !!activeArrival; }catch(e){}
+      if(busy){ setTimeout(tryReload, 15000); return; }
+      reloadedForUpdate = true; location.reload();
+    };
+    tryReload();
+  });
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   });
