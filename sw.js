@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pickup-tracker-v32';
+const CACHE_NAME = 'pickup-tracker-v33';
 const ASSETS = [
   './',
   './index.html',
@@ -42,8 +42,10 @@ self.addEventListener('fetch', (event) => {
 
   // Network-first: всегда пытаемся взять свежую версию из сети,
   // а кэш используем только как запасной вариант, если сети нет (офлайн).
+  // cache:'no-cache' - всегда сверяемся с сервером (GitHub Pages иначе отдаёт файл из HTTP-кэша до 10 минут, и свежая версия не подхватывается)
+  const sameOrigin = event.request.url.startsWith(self.location.origin);
   event.respondWith(
-    fetch(event.request)
+    (sameOrigin ? fetch(event.request, { cache: 'no-cache' }) : fetch(event.request))
       .then((resp) => {
         const respClone = resp.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, respClone));
