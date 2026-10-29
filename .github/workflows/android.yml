@@ -6,6 +6,12 @@ on:
     paths:
       - 'android-app/**'
       - '.github/workflows/android.yml'
+      - 'index.html'
+      - 'sw.js'
+      - 'manifest.json'
+      - 'privacy.html'
+      - 'delete-account.html'
+      - '*.png'
 
 jobs:
   build:
