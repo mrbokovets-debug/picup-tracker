@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PickupMap — Delete account</title>
+<meta name="robots" content="index,follow">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  :root{--bg:#f4f6f5;--card:#fff;--text:#14171c;--dim:#5c6670;--line:#e1e5e3;--signal:#00a97b;--danger:#d63a3a;}
+  @media (prefers-color-scheme: dark){:root{--bg:#14171c;--card:#1d2127;--text:#eef1f0;--dim:#9aa5ad;--line:#2d333a;--signal:#00c98d;--danger:#ff6b6b;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:560px;margin:0 auto;padding:20px 16px 56px;}
+  .lang{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .lang button{padding:7px 12px;border-radius:18px;border:1.5px solid var(--line);background:var(--card);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;}
+  .lang button.on{border-color:var(--signal);color:var(--signal);}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 20px;}
+  h1{font-size:22px;margin:0 0 10px;line-height:1.25;}
+  p{margin:0 0 12px;} ul{margin:0 0 12px;padding-left:20px;} .dim{color:var(--dim);font-size:14px;}
+  input{width:100%;padding:13px 14px;font-size:16px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--text);margin:0 0 10px;}
+  button.act{width:100%;padding:14px;font-size:16px;font-weight:700;border:0;border-radius:12px;background:var(--signal);color:#fff;cursor:pointer;}
+  button.act.danger{background:var(--danger);}
+  button.act:disabled{opacity:.5;}
+  #msg{margin-top:12px;font-weight:600;} .err{color:var(--danger);} .ok{color:var(--signal);}
+  .step{display:none;} .step.on{display:block;}
+  a{color:var(--signal);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lang"><button data-b="ru" onclick="setL('ru')">Русский</button><button data-b="uk" onclick="setL('uk')">Українська</button><button data-b="es" onclick="setL('es')">Español</button><button data-b="en" onclick="setL('en')">English</button></div>
+  <div class="card">
+    <h1 id="h"></h1>
+    <p id="intro"></p>
+    <ul id="list"></ul>
+    <div class="step on" id="s1">
+      <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false">
+      <button class="act" id="b1" onclick="sendCode()"></button>
+    </div>
+    <div class="step" id="s2">
+      <p id="sent" class="dim"></p>
+      <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10">
+      <button class="act danger" id="b2" onclick="verifyAndDelete()"></button>
+    </div>
+    <div id="msg"></div>
+    <p class="dim" style="margin-top:16px" id="foot"></p>
+  </div>
+</div>
+<script>
+var SB_URL='https://ppipblwtratnjkikgmxz.supabase.co', SB_KEY='sb_publishable_soWgEUsTVaOwjOCVIcS8yw_1Z4Fvstj';
+var T={
+ru:{h:'Удаление аккаунта PickupMap',intro:'Здесь можно удалить аккаунт PickupMap без установки приложения. Будет безвозвратно удалено с сервера:',list:['твой e-mail и вход;','облачная копия данных (точки, история, суммы);','участие в командах и твои заборы в рейтинге.'],ph:'Твой e-mail',get:'Получить код',codePh:'Код из письма',del:'Удалить аккаунт навсегда',sent:'Код отправлен на {e}. Проверь почту (и «Спам»). После ввода кода аккаунт сразу удаляется.',done:'Готово: аккаунт и облачные данные удалены. Данные на телефоне остаются, их можно стереть в приложении: Настройки → Данные → Очистить все данные.',errEmail:'Введи правильный e-mail',errCode:'Код не подошёл. Проверь и попробуй ещё раз',errNet:'Нет связи или ошибка сервера. Попробуй позже',errLimit:'Слишком много писем. Подожди несколько минут',foot:'Вопросы: denysbokovets@gmail.com. <a href="privacy.html">Политика конфиденциальности</a>'},
+uk:{h:'Видалення акаунта PickupMap',intro:'Тут можна видалити акаунт PickupMap без встановлення застосунку. З сервера буде безповоротно видалено:',list:['твій e-mail і вхід;','хмарну копію даних (точки, історія, суми);','участь у командах і твої підбори в рейтингу.'],ph:'Твій e-mail',get:'Отримати код',codePh:'Код з листа',del:'Видалити акаунт назавжди',sent:'Код надіслано на {e}. Перевір пошту (і «Спам»). Після введення коду акаунт одразу видаляється.',done:'Готово: акаунт і хмарні дані видалено. Дані на телефоні залишаються, їх можна стерти в застосунку: Налаштування → Дані → Очистити всі дані.',errEmail:'Введи правильний e-mail',errCode:'Код не підійшов. Перевір і спробуй ще раз',errNet:'Немає зв’язку або помилка сервера. Спробуй пізніше',errLimit:'Забагато листів. Зачекай кілька хвилин',foot:'Питання: denysbokovets@gmail.com. <a href="privacy.html">Політика конфіденційності</a>'},
+es:{h:'Eliminar cuenta de PickupMap',intro:'Aquí puedes eliminar tu cuenta de PickupMap sin instalar la app. Se borrará del servidor de forma permanente:',list:['tu e-mail y acceso;','la copia en la nube (puntos, historial, importes);','tu participación en equipos y tus recogidas en el ranking.'],ph:'Tu e-mail',get:'Recibir código',codePh:'Código del correo',del:'Eliminar cuenta para siempre',sent:'Código enviado a {e}. Revisa el correo (y «Spam»). Al introducir el código la cuenta se elimina de inmediato.',done:'Listo: la cuenta y los datos en la nube se han eliminado. Los datos del móvil se conservan; puedes borrarlos en la app: Ajustes → Datos → Borrar todos los datos.',errEmail:'Introduce un e-mail válido',errCode:'El código no es correcto. Revísalo e inténtalo de nuevo',errNet:'Sin conexión o error del servidor. Inténtalo más tarde',errLimit:'Demasiados correos. Espera unos minutos',foot:'Dudas: denysbokovets@gmail.com. <a href="privacy.html">Política de privacidad</a>'},
+en:{h:'Delete your PickupMap account',intro:'You can delete your PickupMap account here without installing the app. The following is permanently removed from the server:',list:['your e-mail and sign-in;','the cloud copy of your data (spots, history, amounts);','your team membership and pickups shown in the ranking.'],ph:'Your e-mail',get:'Get code',codePh:'Code from the e-mail',del:'Delete account permanently',sent:'Code sent to {e}. Check your inbox (and spam). Once you enter the code the account is deleted immediately.',done:'Done: your account and cloud data have been deleted. Data on your phone stays; you can erase it in the app: Settings → Data → Clear all data.',errEmail:'Enter a valid e-mail',errCode:'That code did not work. Check it and try again',errNet:'No connection or server error. Try again later',errLimit:'Too many e-mails. Wait a few minutes',foot:'Questions: denysbokovets@gmail.com. <a href="privacy.html">Privacy policy</a>'}
+};
+var L='en', email='';
+function $(i){return document.getElementById(i);}
+function setL(l){
+  L=l; var t=T[l];
+  document.documentElement.lang=l;
+  $('h').textContent=t.h; $('intro').textContent=t.intro;
+  $('list').innerHTML=t.list.map(function(x){return '<li>'+x+'</li>';}).join('');
+  $('email').placeholder=t.ph; $('b1').textContent=t.get; $('code').placeholder=t.codePh; $('b2').textContent=t.del;
+  $('foot').innerHTML=t.foot; document.title='PickupMap — '+t.h;
+  if(email) $('sent').textContent=t.sent.replace('{e}',email);
+  document.querySelectorAll('.lang button').forEach(function(b){b.classList.toggle('on',b.dataset.b===l);});
+}
+function say(txt,cls){var m=$('msg');m.textContent=txt;m.className=cls||'';}
+async function sb(path,body,token){
+  var h={'apikey':SB_KEY,'Content-Type':'application/json'}; if(token) h['Authorization']='Bearer '+token;
+  var ctl=new AbortController(), tm=setTimeout(function(){ctl.abort();},20000), r, j=null;
+  try{ r=await fetch(SB_URL+path,{method:'POST',headers:h,body:JSON.stringify(body),signal:ctl.signal}); } finally{ clearTimeout(tm); }
+  try{ j=await r.json(); }catch(e){}
+  return {ok:r.ok,status:r.status,body:j};
+}
+async function sendCode(){
+  var e=$('email').value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)){ say(T[L].errEmail,'err'); return; }
+  $('b1').disabled=true; say('');
+  try{
+    // create_user:false - для удаления нужен уже существующий аккаунт, новый не создаём
+    var r=await sb('/auth/v1/otp',{email:e,create_user:false});
+    if(r.ok){ email=e; $('s1').classList.remove('on'); $('s2').classList.add('on'); $('sent').textContent=T[L].sent.replace('{e}',e); }
+    else if(r.status===429) say(T[L].errLimit,'err');
+    else say(T[L].errNet,'err');
+  }catch(x){ say(T[L].errNet,'err'); }
+  $('b1').disabled=false;
+}
+async function verifyAndDelete(){
+  var c=$('code').value.trim(); if(!c){ say(T[L].errCode,'err'); return; }
+  $('b2').disabled=true; say('');
+  try{
+    var v=await sb('/auth/v1/verify',{type:'email',email:email,token:c});
+    if(!v.ok||!v.body||!v.body.access_token){ say(T[L].errCode,'err'); $('b2').disabled=false; return; }
+    var d=await sb('/rest/v1/rpc/delete_my_account',{},v.body.access_token);
+    if(d.ok){ $('s2').classList.remove('on'); say(T[L].done,'ok'); }
+    else { say(T[L].errNet,'err'); $('b2').disabled=false; }
+  }catch(x){ say(T[L].errNet,'err'); $('b2').disabled=false; }
+}
+(function(){
+  var q=(location.search.match(/[?&]lang=(ru|uk|es|en)/)||[])[1];
+  var n=(navigator.language||'en').slice(0,2).toLowerCase();
+  setL(q||(['ru','uk','es','en'].indexOf(n)>=0?n:'en'));
+})();
+</script>
+</body>
+</html>
