@@ -1210,14 +1210,16 @@ function detectInitialLang(){
   try{
     const saved = localStorage.getItem(LANG_KEY);
     if(saved && SUPPORTED_LANGS.includes(saved)) return saved;
-    const nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
-    const prefix = nav.slice(0,2);
-    if(prefix === 'ru') return 'ru';
-    if(prefix === 'uk') return 'uk';
-    if(prefix === 'es') return 'es';
-    if(prefix === 'en') return 'en';
+    // язык телефона: идём по списку предпочтительных языков и берём первый, который знаем
+    // (каталонский/галисийский/баскский в Испании - показываем по-испански, белорусский/казахский - по-русски)
+    const MAP = { ru:'ru', be:'ru', kk:'ru', uk:'uk', es:'es', ca:'es', gl:'es', eu:'es', en:'en' };
+    const list = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || navigator.userLanguage || ''];
+    for(const l of list){
+      const code = String(l || '').toLowerCase().slice(0, 2);
+      if(MAP[code]) return MAP[code];
+    }
     return 'en';
-  }catch(e){ return 'ru'; }
+  }catch(e){ return 'en'; }
 }
 
 const TRANSLATIONS = {
