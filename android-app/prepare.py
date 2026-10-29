@@ -51,20 +51,37 @@ for d, s in sizes.items():
     img = src.resize((s, s), Image.LANCZOS)
     for fn in ("ic_launcher.png", "ic_launcher_round.png"):
         img.save(out / fn)
-# адаптивные иконки: foreground из maskable-иконки, фон тёмный (как у приложения)
-fg = Image.open(repo / "icon-maskable-512.png").convert("RGBA")
+# адаптивные иконки: фон (размытая зелёная заливка из самого рисунка) и передний план (метка в безопасной зоне 66%)
+from PIL import ImageDraw, ImageFilter
+rgb = src.convert("RGB")
+def layers(n):
+    small = rgb.resize((16, 16), Image.LANCZOS)
+    px = small.load()
+    for y in range(4, 12):
+        for x in range(4, 12):
+            px[x, y] = px[3 if x < 8 else 12, y]   # центр с белой меткой закрашиваем цветом соседей
+    bg = small.resize((n, n), Image.BICUBIC).filter(ImageFilter.GaussianBlur(n * 30 / 432))
+    art_size = int(n * 0.62 / 0.79)
+    art = rgb.resize((art_size, art_size), Image.LANCZOS).convert("RGBA")
+    m = Image.new("L", (art_size, art_size), 0)
+    f = int(art_size * 0.06)
+    ImageDraw.Draw(m).rectangle([f, f, art_size - f, art_size - f], fill=255)
+    art.putalpha(m.filter(ImageFilter.GaussianBlur(f * 0.7)))
+    fg = Image.new("RGBA", (n, n), (0, 0, 0, 0))
+    o = (n - art_size) // 2
+    fg.alpha_composite(art, (o, o))
+    return bg.convert("RGBA"), fg
 fsizes = {"mdpi": 108, "hdpi": 162, "xhdpi": 216, "xxhdpi": 324, "xxxhdpi": 432}
-for d, s in fsizes.items():
-    fg.resize((s, s), Image.LANCZOS).save(res / ("mipmap-" + d) / "ic_launcher_foreground.png")
+for d, s_ in fsizes.items():
+    bg, fg = layers(s_)
+    bg.save(res / ("mipmap-" + d) / "ic_launcher_background.png")
+    fg.save(res / ("mipmap-" + d) / "ic_launcher_foreground.png")
 any26 = res / "mipmap-anydpi-v26"
 any26.mkdir(parents=True, exist_ok=True)
-adaptive = '<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n    <background android:drawable="@color/ic_launcher_background"/>\n    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n</adaptive-icon>\n'
+adaptive = '<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n    <background android:drawable="@mipmap/ic_launcher_background"/>\n    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n</adaptive-icon>\n'
 (any26 / "ic_launcher.xml").write_text(adaptive)
 (any26 / "ic_launcher_round.xml").write_text(adaptive)
-vals = res / "values"
-vals.mkdir(parents=True, exist_ok=True)
-(vals / "ic_launcher_background.xml").write_text('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#14171C</color>\n</resources>\n')
-# старый векторный foreground шаблона убираем, чтобы не конфликтовал с PNG
-for p in res.glob("drawable*/ic_launcher_foreground.xml"):
-    p.unlink()
+# шаблонный цветной фон и векторный foreground убираем, чтобы не конфликтовали с PNG
+for p_ in list(res.glob("values/ic_launcher_background.xml")) + list(res.glob("drawable*/ic_launcher_foreground.xml")) + list(res.glob("drawable*/ic_launcher_background.xml")):
+    p_.unlink()
 print("icons done")
