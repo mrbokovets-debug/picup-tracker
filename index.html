@@ -5407,8 +5407,7 @@ function renderTeam(){
   const medalsHtml = medals.length ? `<div class="statsChartTitle" style="margin-top:14px;">${escapeHtml(t('team.medalsTitle'))}</div>` +
     medals.map(m => `<div class="waitRow"><div style="font-size:12.5px; color:var(--text-dim);">${escapeHtml(m[0])}</div><div style="font-size:14px; margin-top:2px; font-weight:700;">${escapeHtml(m[1])}</div></div>`).join('') : '';
   const rankHtml = `
-    <div class="statsChartTitle" style="margin-top:18px;">${escapeHtml(t('team.rankTitle'))}</div>
-    <div class="coords" style="margin:0 0 8px;">${escapeHtml(t('team.rankSub'))}</div>
+    <div class="statsChartTitle" style="margin:18px 0 8px;">${escapeHtml(t('team.rankTitle'))}</div>
     ${meHidden ? `<div class="recoHint" style="margin-bottom:8px;">${escapeHtml(t('team.rankHidden'))}</div>` : (gapHtml && anyPickups ? `<div class="recoHint" style="margin-bottom:8px;"><b>${escapeHtml(gapHtml)}</b></div>` : '')}
     ${rank.length && anyPickups ? rankRows : `<div class="statsEmpty" style="padding:10px 0;">${escapeHtml(t('team.rankEmpty'))}</div>`}
     ${medalsHtml}
