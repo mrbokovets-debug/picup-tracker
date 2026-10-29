@@ -1332,6 +1332,7 @@ const TRANSLATIONS = {
     calendar:{ today:'Сегодня', hint:'Выбери один день, или два дня — для диапазона между ними', reset:'Сбросить', apply:'Показать' },
     alerts:{ confirmRestartTimer:'Уже идёт отсчёт для «{name}». Начать заново для «{newName}»? Прошлый отсчёт не будет засчитан.',
       spotDeletedDuringWait:'Точка «{name}» была удалена, пока шёл отсчёт ожидания ({time}) - этот заказ не засчитан.',
+      longWaitConfirm:'Таймер шёл {time}. Скорее всего, ты забыл нажать «Забрал».\n\nОК - записать это время как ожидание\nОтмена - записать забор без времени ожидания', longWaitSkipped:'Забор записан без времени ожидания', 
       waitResult:'⏱️ Ждал: {time}\n\nСреднее ожидание в «{name}»: {avg}',
       confirmDeleteLastPickup:'Это последний забор в этой точке. Удалить точку полностью?',
       nothingToSave:'Пока нечего сохранять - данных пока нет.', noSpotsInFile:'В файле не найдено ни одной точки.',
@@ -1459,6 +1460,7 @@ const TRANSLATIONS = {
     calendar:{ today:'Сьогодні', hint:'Обери один день, або два дні — для діапазону між ними', reset:'Скинути', apply:'Показати' },
     alerts:{ confirmRestartTimer:'Вже йде відлік для «{name}». Почати заново для «{newName}»? Попередній відлік не буде зараховано.',
       spotDeletedDuringWait:'Точку «{name}» було видалено, поки йшов відлік очікування ({time}) - це замовлення не зараховано.',
+      longWaitConfirm:'Таймер ішов {time}. Імовірно, ти забув натиснути «Забрав».\n\nОК - записати цей час як очікування\nСкасувати - записати підбір без часу очікування', longWaitSkipped:'Підбір записано без часу очікування', 
       waitResult:'⏱️ Чекав: {time}\n\nСереднє очікування в «{name}»: {avg}',
       confirmDeleteLastPickup:'Це останній підбір у цій точці. Видалити точку повністю?',
       nothingToSave:'Поки нема чого зберігати - даних ще немає.', noSpotsInFile:'У файлі не знайдено жодної точки.',
@@ -1586,6 +1588,7 @@ const TRANSLATIONS = {
     calendar:{ today:'Hoy', hint:'Elige un día, o dos días para un rango entre ellos', reset:'Restablecer', apply:'Mostrar' },
     alerts:{ confirmRestartTimer:'Ya hay un cronómetro activo para «{name}». ¿Empezar de nuevo para «{newName}»? El cronómetro anterior no se contará.',
       spotDeletedDuringWait:'El punto «{name}» se eliminó mientras corría el cronómetro de espera ({time}) - este pedido no se contó.',
+      longWaitConfirm:'El temporizador corrió {time}. Seguramente olvidaste pulsar «Recogí».\n\nAceptar - guardar este tiempo como espera\nCancelar - guardar la recogida sin tiempo de espera', longWaitSkipped:'Recogida guardada sin tiempo de espera', 
       waitResult:'⏱️ Esperaste: {time}\n\nEspera media en «{name}»: {avg}',
       confirmDeleteLastPickup:'Esta es la última recogida de este punto. ¿Eliminar el punto por completo?',
       nothingToSave:'Aún no hay nada que guardar - todavía no hay datos.', noSpotsInFile:'No se encontró ningún punto en el archivo.',
@@ -1713,6 +1716,7 @@ const TRANSLATIONS = {
     calendar:{ today:'Today', hint:'Pick one day, or two days for a range between them', reset:'Reset', apply:'Show' },
     alerts:{ confirmRestartTimer:'A timer is already running for "{name}". Start over for "{newName}"? The previous timer won\'t be counted.',
       spotDeletedDuringWait:'The spot "{name}" was deleted while the wait timer was running ({time}) - this order was not counted.',
+      longWaitConfirm:'The timer ran for {time}. You probably forgot to tap “Picked up”.\n\nOK - save this time as waiting\nCancel - save the pickup without waiting time', longWaitSkipped:'Pickup saved without waiting time', 
       waitResult:'⏱️ Waited: {time}\n\nAverage wait at "{name}": {avg}',
       confirmDeleteLastPickup:'This is the last pickup at this spot. Delete the spot entirely?',
       nothingToSave:'Nothing to save yet - there\'s no data.', noSpotsInFile:'No spots found in the file.',
@@ -2341,7 +2345,7 @@ function renderAll(){
   spots.forEach(s => {
     if(filterSet && !filterSet.has(s.id)) return; // скрыто фильтром карты
     const marker = L.marker([s.lat, s.lng], { icon: makeIcon(s, max, hotIds.has(s.id)) }).addTo(map);
-    marker.bindTooltip(s.name, { permanent: true, direction: 'top', offset: [0, -8], className: 'spotLabel' });
+    marker.bindTooltip(escapeHtml(s.name), { permanent: true, direction: 'top', offset: [0, -8], className: 'spotLabel' });
     marker.on('click', (e) => {
       L.DomEvent.stopPropagation(e);
       if(marker._longPressFired){ marker._longPressFired = false; return; }
@@ -4456,7 +4460,12 @@ function completeArrival(endTs){
   if(!activeArrival) return;
   // endTs - реальный момент нажатия «Забрал» в уведомлении, если приложение при этом было закрыто
   const endMs = (typeof endTs === 'number' && endTs > activeArrival.startTs) ? Math.min(endTs, Date.now()) : Date.now();
-  const elapsedSec = Math.max(1, Math.floor((endMs - activeArrival.startTs) / 1000));
+  let elapsedSec = Math.max(1, Math.floor((endMs - activeArrival.startTs) / 1000));
+  let skipWait = false;
+  // таймер шёл больше двух часов - скорее всего, забыли нажать «Забрал»: не портим среднее ожидание без спроса
+  if(elapsedSec > 2 * 3600){
+    skipWait = !confirm(t('alerts.longWaitConfirm', { time: formatHM(elapsedSec) }));
+  }
   const s = spots.find(sp => sp.id === activeArrival.spotId);
   const spotName = activeArrival.spotName;
   localStorage.removeItem(ARRIVAL_TIMER_KEY);
@@ -4470,16 +4479,21 @@ function completeArrival(endTs){
     return;
   }
 
-  s.waitTotalSec = (s.waitTotalSec || 0) + elapsedSec;
-  s.waitCount = (s.waitCount || 0) + 1;
-  const avgSec = Math.round(s.waitTotalSec / s.waitCount);
+  if(!skipWait){
+    s.waitTotalSec = (s.waitTotalSec || 0) + elapsedSec;
+    s.waitCount = (s.waitCount || 0) + 1;
+  }
+  const avgSec = s.waitCount ? Math.round(s.waitTotalSec / s.waitCount) : 0;
 
   s.count += 1;
   s.lastVisit = new Date(endMs).toISOString();
-  visitsLog.push({ id: makeVisitId(), spotId: s.id, ts: s.lastVisit, waitSec: elapsedSec, type: 'add' });
+  const visitRec = { id: makeVisitId(), spotId: s.id, ts: s.lastVisit, type: 'add' };
+  if(!skipWait) visitRec.waitSec = elapsedSec;
+  visitsLog.push(visitRec);
   persist();
   persistVisits();
   renderAll();
+  if(skipWait){ showToast(t('alerts.longWaitSkipped'), 4000); return; }
 
   showToast(t('alerts.waitResult', { time: formatDuration(elapsedSec), name: spotName, avg: formatDuration(avgSec) }), 5000);
 }
@@ -4862,7 +4876,12 @@ try{ cloudSession = JSON.parse(localStorage.getItem(CLOUD_SESSION_KEY) || 'null'
 async function sbFetch(path, opts, token){
   const headers = Object.assign({ 'apikey': SB_KEY, 'Content-Type': 'application/json' }, (opts && opts.headers) || {});
   if(token) headers['Authorization'] = 'Bearer ' + token; // без входа - только apikey (publishable-ключ не JWT)
-  const res = await fetch(SB_URL + path, Object.assign({}, opts, { headers }));
+  // таймаут: на слабой связи запрос не должен висеть вечно и держать флаг «занято» (иначе облако и команда перестанут синхронизироваться до перезапуска)
+  const ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  const tmr = ctl ? setTimeout(() => ctl.abort(), 20000) : null;
+  let res;
+  try{ res = await fetch(SB_URL + path, Object.assign({}, opts, { headers }, ctl ? { signal: ctl.signal } : {})); }
+  finally{ if(tmr) clearTimeout(tmr); }
   let body = null;
   try{ body = await res.json(); }catch(e){}
   return { ok: res.ok, status: res.status, body };
