@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pickup-tracker-v37';
+const CACHE_NAME = 'pickup-tracker-v38';
 const ASSETS = [
   './',
   './index.html',
@@ -33,7 +33,8 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   // облако (Supabase) не кэшируем: там личные данные, и они должны быть всегда свежими
   if (event.request.url.includes('.supabase.co')) return;
-  const isMapTile = event.request.url.includes('tile.openstreetmap.org');
+  // плитки любого провайдера карты: адрес вида .../{z}/{x}/{y}.png (иначе после смены провайдера они бы кэшировались как файлы приложения)
+  const isMapTile = event.request.url.includes('tile.openstreetmap.org') || /\/\d{1,2}\/\d+\/\d+(@2x)?\.(png|jpe?g|webp)(\?|$)/.test(event.request.url);
   if (isMapTile) {
     // карту без сети всё равно не подгрузить, просто пробуем сеть и падаем тихо
     event.respondWith(fetch(event.request).catch(() => new Response('', { status: 504 })));

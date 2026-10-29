@@ -1934,9 +1934,17 @@ try{ L.control.zoom({ position: 'bottomright' }).addTo(map); }catch(e){}
   }
 });
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '© OpenStreetMap'
+// ПРОВАЙДЕР КАРТЫ: чтобы сменить, поменяй только этот блок.
+// Для Stadia: url 'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png?api_key=КЛЮЧ',
+// attribution '© Stadia Maps © OpenMapTiles © OpenStreetMap'. Подпись обязательна, не прятать.
+const TILE_CONFIG = {
+  url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  attribution: '© OpenStreetMap',
+  maxZoom: 19
+};
+L.tileLayer(TILE_CONFIG.url, {
+  maxZoom: TILE_CONFIG.maxZoom,
+  attribution: TILE_CONFIG.attribution
 }).addTo(map);
 
 // подписи с названиями заведений видны только при достаточном приближении карты,
