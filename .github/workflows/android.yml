@@ -1,0 +1,80 @@
+name: Android build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'android-app/**'
+      - '.github/workflows/android.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Capacitor
+        working-directory: android-app
+        run: |
+          npm init -y >/dev/null
+          npm install @capacitor/core @capacitor/android
+          npm install -D @capacitor/cli
+          npx cap --version
+
+      - name: Copy web files into the app
+        run: |
+          rm -rf android-app/www && mkdir -p android-app/www
+          cp index.html sw.js manifest.json privacy.html delete-account.html *.png android-app/www/
+
+      - name: Generate Android project
+        working-directory: android-app
+        run: |
+          npx cap add android
+          pip install --quiet pillow
+          VERSION_CODE=$((1000 + ${{ github.run_number }})) python3 prepare.py
+          npx cap sync android
+
+      - name: Build debug APK and release AAB
+        working-directory: android-app/android
+        run: ./gradlew --no-daemon assembleDebug bundleRelease
+
+      - name: Sign release bundle (only if signing secrets are set)
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          AAB=android-app/android/app/build/outputs/bundle/release/app-release.aab
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+            jarsigner -keystore "$RUNNER_TEMP/upload.keystore" -storepass "$KS_PASS" -keypass "$KEY_PASS" "$AAB" "$KEY_ALIAS"
+            jarsigner -verify "$AAB" | head -3
+            echo "SIGNED=1" >> "$GITHUB_ENV"
+          else
+            echo "No signing secrets: the AAB stays unsigned (fine for a test build)."
+          fi
+
+      - name: Upload debug APK (for installing on a phone)
+        uses: actions/upload-artifact@v4
+        with:
+          name: PickupMap-debug-apk
+          path: android-app/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      - name: Upload release AAB (for Google Play)
+        uses: actions/upload-artifact@v4
+        with:
+          name: PickupMap-release-aab
+          path: android-app/android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 7

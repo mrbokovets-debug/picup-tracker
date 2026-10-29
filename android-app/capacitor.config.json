@@ -1,0 +1,8 @@
+{
+  "appId": "app.pickupmap.android",
+  "appName": "PickupMap",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
