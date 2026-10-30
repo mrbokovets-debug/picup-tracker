@@ -270,6 +270,25 @@
   #rowActionCancelBtn{width:100%; padding:12px; border-radius:10px; border:none; font-size:14px;
     font-weight:700; cursor:pointer; background:var(--line); color:var(--text);}
 
+  /* меню точки: по тапу на точку карты - «Жду заказ», «Забрал» (+ сумма при сдельной оплате), «Переименовать» */
+  #spotSheetModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.7); display:none;
+    align-items:flex-end; justify-content:center; z-index:1200;}
+  #spotSheetModalBg.show{display:flex;}
+  #spotSheet{background:var(--card); width:100%; max-width:520px; border-radius:16px 16px 0 0;
+    padding:18px 18px calc(14px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); box-sizing:border-box;}
+  #spotSheet h3{margin:0 0 4px; font-size:17px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  #spotSheetMeta{color:var(--text-dim); font-size:12px; margin:0 0 12px;}
+  #spotSheetAmount{width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background:var(--asphalt-2);
+    color:var(--text); font-size:16px; outline:none; box-sizing:border-box; margin:0 0 10px;}
+  #spotSheetAmount:focus{border-color:var(--signal);}
+  #spotSheetBtns{display:flex; gap:10px;}
+  #spotSheetBtns button{flex:1; padding:14px 8px; border-radius:12px; border:none; font-size:14.5px; font-weight:800; cursor:pointer;}
+  #spotSheetWaitBtn{background:var(--signal-dim); color:var(--signal);}
+  #spotSheetPickBtn{background:var(--signal); color:var(--signal-text);}
+  #spotSheetLinks{display:flex; gap:10px; margin-top:10px;}
+  #spotSheetLinks button{flex:1; padding:11px; border-radius:10px; border:none; font-size:13.5px; font-weight:700; cursor:pointer;
+    background:var(--line); color:var(--text);}
+
   #onboardModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.85); display:none;
     align-items:center; justify-content:center; z-index:2000; padding:20px;}
   #onboardModalBg.show{display:flex;}
@@ -899,6 +918,22 @@
   </div>
 </div>
 
+<div id="spotSheetModalBg" onclick="if(event.target === this) closeSpotSheet()">
+  <div id="spotSheet">
+    <h3 id="spotSheetTitle"></h3>
+    <p id="spotSheetMeta"></p>
+    <input id="spotSheetAmount" type="number" inputmode="decimal" min="0" step="0.01" data-i18n-ph="spotSheet.amountPh" placeholder="Сумма за заказ (необязательно)">
+    <div id="spotSheetBtns">
+      <button id="spotSheetWaitBtn" onclick="spotSheetWait()"></button>
+      <button id="spotSheetPickBtn" onclick="spotSheetPickup()"></button>
+    </div>
+    <div id="spotSheetLinks">
+      <button data-i18n="rowAction.rename" onclick="spotSheetRename()">Переименовать</button>
+      <button data-i18n="rowAction.cancel" onclick="closeSpotSheet()">Отмена</button>
+    </div>
+  </div>
+</div>
+
 <div id="loginGate">
   <div id="loginGateInner">
     <div class="gateEmoji">📍</div>
@@ -1253,6 +1288,7 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'Сколько заплатили за этот заказ?', titleEdit:'Исправить итоговую сумму', saveAdd:'Добавить',
       saveEdit:'Сохранить', cancel:'Отмена', placeholder:'Например: 4.5', errAddPositive:'Введи сумму больше нуля.',
       errEditNonNeg:'Введи сумму 0 или больше.' },
+    spotSheet:{ wait:'⏱ Жду заказ', picked:'✅ Забрал', amountPh:'Сумма за заказ, {cur} (необязательно)', waitingNow:'ждёшь {time}', saved:'+1 забор: {name}', savedWithAmount:'+1 забор и {amount}: {name}' },
     rename:{ title:'Новое название заведения', save:'Сохранить', done:'Переименовано: {name}' },
     rowAction:{ rename:'Переименовать', add:'Добавить забор (+1)', remove:'Убрать забор (−1)', editAmount:'Исправить итоговую сумму', cancel:'Отмена' },
     onboard:{ title:'Как тебе платят за заказы?', sub:'Выбери свою схему — потом можно сменить в Настройках',
@@ -1263,7 +1299,7 @@ const TRANSLATIONS = {
       ordersIntroTitle:'Мои заказы', ordersIntroText:'Список всех точек, где ты когда-либо забирал заказы. Открой — покажу, что там внутри.',
       searchTitle:'Поиск точки', searchText:'Когда точек накопится много, начинай печатать название заведения — список отфильтруется на лету.',
       sortTitle:'Сортировка списка', sortText:'Нажми, чтобы переключить порядок: по частоте заборов (самые «ходовые» точки сверху) или по сумме заработка.',
-      rowsTitle:'Список точек', rowsText:'Как только отметишь первую точку на карте, она появится здесь. У каждой строки слева — кнопка с валютой (добавить сумму за заказ) и зелёный карандаш — меню «+1 забор / −1 забор / исправить итоговую сумму». Тап по самой строке переносит на карту прямо к этой точке.',
+      rowsTitle:'Список точек', rowsText:'Как только отметишь первую точку на карте, она появится здесь. У каждой строки слева — кнопка с валютой (добавить сумму за заказ) и зелёный карандаш — меню «+1 забор / −1 забор / переименовать / исправить итоговую сумму». Тап по самой строке переносит на карту прямо к этой точке.',
       statsIntroTitle:'Статистика', statsIntroText:'Вся твоя работа в цифрах — открой, покажу подробнее.',
       statsBodyTitle:'Цифры по работе', statsBodyText:'Сверху — сколько заборов сегодня, вчера, на этой неделе (считается с понедельника по воскресенье) и всего. Ниже — график по дням недели, время ожидания на точках и часы пик: в какое время суток у тебя обычно больше всего заказов за всю историю.',
       historyIntroTitle:'История заказов', historyIntroText:'Полная хроника каждого забора — открой, покажу.',
@@ -1281,8 +1317,8 @@ const TRANSLATIONS = {
       
       
       mapAddTitle:'Карта: новая точка', mapAddText:'Тапни по пустому месту карты там, где забираешь заказ, — откроется окно, впиши туда название заведения и сохрани.',
-      mapBumpTitle:'Карта: забор заказа (+1)', mapBumpText:'Короткий тап прямо по уже существующей точке на карте сразу засчитывает туда ещё один забор — никаких доп. окон. Если точка не совсем под пальцем, откроется список рядом стоящих — выбери нужную.',
-      mapWaitTitle:'Карта: время ожидания', mapWaitText:'А если на той же точке подержать палец примерно полсекунды не отпуская — точка завибрирует, и запустится отсчёт времени ожидания. Когда получишь заказ, нажми «✅ Забрал заказ» на зелёной полоске внизу экрана — и среднее время ожидания на этой точке посчитается само.',
+      mapBumpTitle:'Карта: меню точки', mapBumpText:'Тапни по точке на карте — снизу откроется меню заведения. «✅ Забрал» засчитывает забор (+1); при сдельной оплате сюда же можно сразу вписать сумму за заказ. «⏱ Жду заказ» запускает таймер ожидания. Там же можно переименовать точку. Если точка не совсем под пальцем, сначала откроется список рядом стоящих — выбери нужную.',
+      mapWaitTitle:'Карта: время ожидания', mapWaitText:'Таймер ожидания запускает кнопка «⏱ Жду заказ» в меню точки. Ещё быстрее — подержи палец на точке полсекунды: она завибрирует, и отсчёт начнётся сразу. Когда получишь заказ, нажми «✅ Забрал заказ» на зелёной полоске внизу экрана — среднее время ожидания на этой точке посчитается само.',
       locateTitle:'Моё местоположение', locateText:'Нажми — карта сама найдёт тебя по GPS и приблизится к твоей текущей точке. Полезно, когда нужно быстро понять, где ты сейчас относительно отмеченных точек.',
       fullscreenTitle:'Полный экран', fullscreenText:'Разворачивает карту на весь экран без кнопок — удобно, когда нужно точнее прицелиться в нужную точку перед тапом.',
       mapGlowTitle:'Светящиеся точки', mapGlowText:'Светятся точки, где именно в этот час суток ты забирал заказы чаще всего — по всей твоей истории. Это подсказка, куда ехать прямо сейчас. Если данных за этот час мало, ничего не светится. Когда наступает новый час, подсветка сама переключается.',
@@ -1296,7 +1332,7 @@ const TRANSLATIONS = {
     stats:{ title:'Статистика', empty:'Пока нет данных для статистики. Отмечай заборы — здесь появятся цифры по дням.',
       cardToday:'сегодня', cardYesterday:'вчера', cardWeek:'на этой неделе', cardTotal:'всего',
       longestWaitTitle:'Дольше всего ждал', waitEmptyTitle:'Время ожидания',
-      waitEmptyText:'Пока нет данных. Нажимай "⏱ Прибыл" при заказе, чтобы начать замерять.',
+      waitEmptyText:'Пока нет данных. Нажми на точку и выбери «⏱ Жду заказ», чтобы начать замерять.',
       peakHoursTitle:'🕐 Часы пик', hourChartNoData:'Пока нет данных за этот период.',
       hourChartPeakSummary:'Пик активности: {hours} ({count})', hourTrendTitle:'Как менялся пик по дням',
       hourTrendPeakLabel:'пик в {hours}', deletedSpot:'(точка удалена)' },
@@ -1305,7 +1341,7 @@ const TRANSLATIONS = {
       bestHoursTitle:'🕐 Лучшие часы для слотов', bestHoursEmpty:'Пока мало данных. Отмечай заборы — здесь появится совет по часам.',
       bestHoursText:'По твоей истории заборов чаще всего заказы идут в: {hours}. Стоит бронировать слоты именно на это время.',
       bestDaysTitle:'📅 Лучшие дни недели', bestDaysText:'Больше всего заказов обычно бывает в: {days}. Старайся планировать смены на эти дни.',
-      topSpotsCountTitle:'📍 Самые частые точки', topSpotsCountEmpty:'Пока нет заборов — отмечай заборы на карте.', topSpotsTitle:'💰 Самые прибыльные точки', topSpotsEmpty:'Пока нет данных о заработке — добавляй суммы за заказы в «Мои заказы».', timeTitle:'⏳ Сколько стоит твоё время', timeEmpty:'Пока мало данных: нужны заборы с замером ожидания (кнопка «⏱ Прибыл»).', timeRate:'Реальный доход: {rate} в час', timeRateNote:'За всё время: {earned} за {hours} ч работы. Часы считаются по активности: от первого до последнего забора за смену.', timeLostTitle:'Потеряно на ожидании за всё время', timeLostTotal:'Всего ждал: {time}', timeLostMoney:' ≈ {money} по твоей ставке', timeRankTitle:'🏁 Где выгоднее ехать', timeRankNote:'Заработок за заказ ÷ (среднее ожидание + 5 мин). Только точки, где минимум 2 заказа с замером.', timeRankAvg:'ожидание ≈ {min} мин', timePerMin:'{v} / мин'  },
+      topSpotsCountTitle:'📍 Самые частые точки', topSpotsCountEmpty:'Пока нет заборов — отмечай заборы на карте.', topSpotsTitle:'💰 Самые прибыльные точки', topSpotsEmpty:'Пока нет данных о заработке — добавляй суммы за заказы в «Мои заказы».', timeTitle:'⏳ Сколько стоит твоё время', timeEmpty:'Пока мало данных: нужны заборы с замером ожидания (кнопка «⏱ Жду заказ» в меню точки).', timeRate:'Реальный доход: {rate} в час', timeRateNote:'За всё время: {earned} за {hours} ч работы. Часы считаются по активности: от первого до последнего забора за смену.', timeLostTitle:'Потеряно на ожидании за всё время', timeLostTotal:'Всего ждал: {time}', timeLostMoney:' ≈ {money} по твоей ставке', timeRankTitle:'🏁 Где выгоднее ехать', timeRankNote:'Заработок за заказ ÷ (среднее ожидание + 5 мин). Только точки, где минимум 2 заказа с замером.', timeRankAvg:'ожидание ≈ {min} мин', timePerMin:'{v} / мин'  },
     settings:{ title:'Настройки', markerStyleLabel:'Как отмечать точки на карте', markerCircle:'Кружок', markerBag:'Сумка курьера',
       payTypeLabel:'Тип оплаты', payTypeHourlyOpt:'⏱ Почасовая + премия', payTypePieceOpt:'💰 Сдельная за заказ',
       currencyLabel:'Валюта', appThemeLabel:'Тема приложения', themeLight:'☀️ Светлая', themeDark:'🌙 Тёмная',
@@ -1382,6 +1418,7 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'Скільки заплатили за це замовлення?', titleEdit:'Виправити підсумкову суму', saveAdd:'Додати',
       saveEdit:'Зберегти', cancel:'Скасувати', placeholder:'Наприклад: 4.5', errAddPositive:'Введи суму більше нуля.',
       errEditNonNeg:'Введи суму 0 або більше.' },
+    spotSheet:{ wait:'⏱ Чекаю замовлення', picked:'✅ Забрав', amountPh:'Сума за замовлення, {cur} (необов’язково)', waitingNow:'чекаєш {time}', saved:'+1 підбір: {name}', savedWithAmount:'+1 підбір і {amount}: {name}' },
     rename:{ title:'Нова назва закладу', save:'Зберегти', done:'Перейменовано: {name}' },
     rowAction:{ rename:'Перейменувати', add:'Додати підбір (+1)', remove:'Прибрати підбір (−1)', editAmount:'Виправити підсумкову суму', cancel:'Скасувати' },
     onboard:{ title:'Як тобі платять за замовлення?', sub:'Обери свою схему — потім можна змінити в Налаштуваннях',
@@ -1392,7 +1429,7 @@ const TRANSLATIONS = {
       ordersIntroTitle:'Мої замовлення', ordersIntroText:'Список усіх точок, де ти коли-небудь забирав замовлення. Відкрий — покажу, що там усередині.',
       searchTitle:'Пошук точки', searchText:'Коли точок назбирається багато, починай друкувати назву закладу — список відфільтрується на льоту.',
       sortTitle:'Сортування списку', sortText:'Натисни, щоб перемкнути порядок: за частотою підборів (найходовіші точки зверху) або за сумою заробітку.',
-      rowsTitle:'Список точок', rowsText:'Щойно відмітиш першу точку на карті, вона з’явиться тут. У кожного рядка зліва — кнопка з валютою (додати суму за замовлення) і зелений олівець — меню «+1 підбір / −1 підбір / виправити підсумкову суму». Тап по самому рядку переносить на карту прямо до цієї точки.',
+      rowsTitle:'Список точок', rowsText:'Щойно відмітиш першу точку на карті, вона з’явиться тут. У кожного рядка зліва — кнопка з валютою (додати суму за замовлення) і зелений олівець — меню «+1 підбір / −1 підбір / перейменувати / виправити підсумкову суму». Тап по самому рядку переносить на карту прямо до цієї точки.',
       statsIntroTitle:'Статистика', statsIntroText:'Уся твоя робота в цифрах — відкрий, покажу детальніше.',
       statsBodyTitle:'Цифри по роботі', statsBodyText:'Зверху — скільки підборів сьогодні, вчора, цього тижня (рахується з понеділка по неділю) і всього. Нижче — графік по днях тижня, час очікування на точках і пікові години: в який час доби у тебе зазвичай найбільше замовлень за всю історію.',
       historyIntroTitle:'Історія замовлень', historyIntroText:'Повна хроніка кожного підбору — відкрий, покажу.',
@@ -1410,8 +1447,8 @@ const TRANSLATIONS = {
       
       
       mapAddTitle:'Карта: нова точка', mapAddText:'Тапни по порожньому місцю карти там, де забираєш замовлення, — відкриється вікно, впиши туди назву закладу і збережи.',
-      mapBumpTitle:'Карта: підбір замовлення (+1)', mapBumpText:'Короткий тап прямо по вже існуючій точці на карті одразу зараховує туди ще один підбір — жодних додаткових вікон. Якщо точка не зовсім під пальцем, відкриється список сусідніх — обери потрібну.',
-      mapWaitTitle:'Карта: час очікування', mapWaitText:'А якщо на тій же точці потримати палець приблизно півсекунди не відпускаючи — точка завібрує, і запуститься відлік часу очікування. Коли отримаєш замовлення, натисни «✅ Забрав замовлення» на зеленій смужці внизу екрана — і середній час очікування на цій точці порахується сам.',
+      mapBumpTitle:'Карта: меню точки', mapBumpText:'Тапни по точці на карті — знизу відкриється меню закладу. «✅ Забрав» зараховує підбір (+1); при відрядній оплаті сюди ж можна одразу вписати суму за замовлення. «⏱ Чекаю замовлення» запускає таймер очікування. Там же можна перейменувати точку. Якщо точка не зовсім під пальцем, спершу відкриється список сусідніх — обери потрібну.',
+      mapWaitTitle:'Карта: час очікування', mapWaitText:'Таймер очікування запускає кнопка «⏱ Чекаю замовлення» в меню точки. Ще швидше — потримай палець на точці пів секунди: вона завібрує, і відлік почнеться одразу. Коли отримаєш замовлення, натисни «✅ Забрав замовлення» на зеленій смужці внизу екрана — середній час очікування на цій точці порахується сам.',
       locateTitle:'Моє місцезнаходження', locateText:'Натисни — карта сама знайде тебе по GPS і наблизиться до твоєї поточної точки. Корисно, коли потрібно швидко зрозуміти, де ти зараз відносно відмічених точок.',
       fullscreenTitle:'Повний екран', fullscreenText:'Розгортає карту на весь екран без кнопок — зручно, коли потрібно точніше прицілитись у потрібну точку перед тапом.',
       mapGlowTitle:'Точки, що світяться', mapGlowText:'Світяться точки, де саме в цю годину доби ти забирав замовлення найчастіше — за всією твоєю історією. Це підказка, куди їхати просто зараз. Якщо даних за цю годину мало, нічого не світиться. Коли настає нова година, підсвітка сама перемикається.',
@@ -1425,7 +1462,7 @@ const TRANSLATIONS = {
     stats:{ title:'Статистика', empty:'Поки немає даних для статистики. Відмічай підбори — тут з’являться цифри по днях.',
       cardToday:'сьогодні', cardYesterday:'вчора', cardWeek:'цього тижня', cardTotal:'всього',
       longestWaitTitle:'Найдовше чекав', waitEmptyTitle:'Час очікування',
-      waitEmptyText:'Поки немає даних. Натискай "⏱ Прибув" при замовленні, щоб почати вимірювати.',
+      waitEmptyText:'Поки немає даних. Натисни на точку й обери «⏱ Чекаю замовлення», щоб почати вимірювати.',
       peakHoursTitle:'🕐 Пікові години', hourChartNoData:'Поки немає даних за цей період.',
       hourChartPeakSummary:'Пік активності: {hours} ({count})', hourTrendTitle:'Як змінювався пік по днях',
       hourTrendPeakLabel:'пік о {hours}', deletedSpot:'(точку видалено)' },
@@ -1434,7 +1471,7 @@ const TRANSLATIONS = {
       bestHoursTitle:'🕐 Найкращі години для слотів', bestHoursEmpty:'Поки замало даних. Відмічай підбори — тут з’явиться порада по годинах.',
       bestHoursText:'За твоєю історією підборів найчастіше замовлення йдуть о: {hours}. Варто бронювати слоти саме на цей час.',
       bestDaysTitle:'📅 Найкращі дні тижня', bestDaysText:'Найбільше замовлень зазвичай буває у: {days}. Намагайся планувати зміни на ці дні.',
-      topSpotsCountTitle:'📍 Найчастіші точки', topSpotsCountEmpty:'Поки немає підборів — відмічай підбори на карті.', topSpotsTitle:'💰 Найприбутковіші точки', topSpotsEmpty:'Поки немає даних про заробіток — додавай суми за замовлення в «Мої замовлення».', timeTitle:'⏳ Скільки коштує твій час', timeEmpty:'Поки мало даних: потрібні підбори з виміром очікування (кнопка «⏱ Прибув»).', timeRate:'Реальний дохід: {rate} за годину', timeRateNote:'За весь час: {earned} за {hours} год роботи. Години рахуються за активністю: від першого до останнього підбору за зміну.', timeLostTitle:'Втрачено на очікуванні за весь час', timeLostTotal:'Всього чекав: {time}', timeLostMoney:' ≈ {money} за твоєю ставкою', timeRankTitle:'🏁 Куди вигідніше їхати', timeRankNote:'Заробіток за замовлення ÷ (середнє очікування + 5 хв). Тільки точки, де щонайменше 2 замовлення з виміром.', timeRankAvg:'очікування ≈ {min} хв', timePerMin:'{v} / хв'  },
+      topSpotsCountTitle:'📍 Найчастіші точки', topSpotsCountEmpty:'Поки немає підборів — відмічай підбори на карті.', topSpotsTitle:'💰 Найприбутковіші точки', topSpotsEmpty:'Поки немає даних про заробіток — додавай суми за замовлення в «Мої замовлення».', timeTitle:'⏳ Скільки коштує твій час', timeEmpty:'Поки мало даних: потрібні підбори з виміром очікування (кнопка «⏱ Чекаю замовлення» в меню точки).', timeRate:'Реальний дохід: {rate} за годину', timeRateNote:'За весь час: {earned} за {hours} год роботи. Години рахуються за активністю: від першого до останнього підбору за зміну.', timeLostTitle:'Втрачено на очікуванні за весь час', timeLostTotal:'Всього чекав: {time}', timeLostMoney:' ≈ {money} за твоєю ставкою', timeRankTitle:'🏁 Куди вигідніше їхати', timeRankNote:'Заробіток за замовлення ÷ (середнє очікування + 5 хв). Тільки точки, де щонайменше 2 замовлення з виміром.', timeRankAvg:'очікування ≈ {min} хв', timePerMin:'{v} / хв'  },
     settings:{ title:'Налаштування', markerStyleLabel:'Як відмічати точки на карті', markerCircle:'Кружечок', markerBag:'Сумка кур’єра',
       payTypeLabel:'Тип оплати', payTypeHourlyOpt:'⏱ Погодинна + премія', payTypePieceOpt:'💰 Відрядна за замовлення',
       currencyLabel:'Валюта', appThemeLabel:'Тема застосунку', themeLight:'☀️ Світла', themeDark:'🌙 Темна',
@@ -1511,6 +1548,7 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'¿Cuánto te pagaron por este pedido?', titleEdit:'Corregir el importe total', saveAdd:'Añadir',
       saveEdit:'Guardar', cancel:'Cancelar', placeholder:'Por ejemplo: 4.5', errAddPositive:'Introduce un importe mayor que cero.',
       errEditNonNeg:'Introduce un importe de 0 o más.' },
+    spotSheet:{ wait:'⏱ Espero el pedido', picked:'✅ Recogido', amountPh:'Importe del pedido, {cur} (opcional)', waitingNow:'esperando {time}', saved:'+1 recogida: {name}', savedWithAmount:'+1 recogida y {amount}: {name}' },
     rename:{ title:'Nuevo nombre del local', save:'Guardar', done:'Nombre cambiado: {name}' },
     rowAction:{ rename:'Cambiar nombre', add:'Añadir recogida (+1)', remove:'Quitar recogida (−1)', editAmount:'Corregir el importe total', cancel:'Cancelar' },
     onboard:{ title:'¿Cómo te pagan los pedidos?', sub:'Elige tu modelo — luego puedes cambiarlo en Ajustes',
@@ -1521,7 +1559,7 @@ const TRANSLATIONS = {
       ordersIntroTitle:'Mis pedidos', ordersIntroText:'La lista de todos los puntos donde alguna vez recogiste pedidos. Ábrela y te muestro qué hay dentro.',
       searchTitle:'Buscar un punto', searchText:'Cuando tengas muchos puntos, empieza a escribir el nombre del local — la lista se filtra al instante.',
       sortTitle:'Orden de la lista', sortText:'Toca aquí para cambiar el orden: por frecuencia de recogidas (los puntos más usados arriba) o por ganancias.',
-      rowsTitle:'Lista de puntos', rowsText:'En cuanto marques el primer punto en el mapa, aparecerá aquí. Cada fila tiene a la izquierda un botón con la moneda (para añadir el importe del pedido) y un lápiz verde — el menú «+1 recogida / −1 recogida / corregir importe total». Tocar la fila te lleva directo a ese punto en el mapa.',
+      rowsTitle:'Lista de puntos', rowsText:'En cuanto marques el primer punto en el mapa, aparecerá aquí. Cada fila tiene a la izquierda un botón con la moneda (para añadir el importe del pedido) y un lápiz verde — el menú «+1 recogida / −1 recogida / cambiar nombre / corregir importe total». Tocar la fila te lleva directo a ese punto en el mapa.',
       statsIntroTitle:'Estadísticas', statsIntroText:'Todo tu trabajo en números — ábrelo y te lo explico.',
       statsBodyTitle:'Tus números', statsBodyText:'Arriba: cuántas recogidas tienes hoy, ayer, esta semana (de lunes a domingo) y en total. Abajo: un gráfico por día de la semana, el tiempo de espera en los puntos y las horas punta: a qué hora del día sueles tener más pedidos según todo tu historial.',
       historyIntroTitle:'Historial de pedidos', historyIntroText:'El registro completo de cada recogida — ábrelo y te lo muestro.',
@@ -1539,8 +1577,8 @@ const TRANSLATIONS = {
       
       
       mapAddTitle:'Mapa: punto nuevo', mapAddText:'Toca una zona vacía del mapa donde recoges pedidos — se abrirá una ventana, escribe el nombre del local y guárdalo.',
-      mapBumpTitle:'Mapa: recogida de pedido (+1)', mapBumpText:'Un toque corto directamente sobre un punto ya existente en el mapa registra ahí otra recogida — sin ventanas extra. Si el punto no queda justo bajo tu dedo, se abrirá una lista de los cercanos — elige el correcto.',
-      mapWaitTitle:'Mapa: tiempo de espera', mapWaitText:'Y si mantienes el dedo sobre el mismo punto medio segundo sin soltar, el punto vibrará y se iniciará el cronómetro de espera. Cuando recibas el pedido, pulsa «✅ Pedido recogido» en la franja verde de abajo — y el tiempo medio de espera en ese punto se calculará solo.',
+      mapBumpTitle:'Mapa: menú del punto', mapBumpText:'Toca un punto del mapa y se abrirá abajo el menú del local. «✅ Recogido» suma una recogida (+1); si cobras por pedido, ahí mismo puedes escribir el importe. «⏱ Espero el pedido» inicia el temporizador de espera. También puedes cambiar el nombre del punto. Si el punto no queda justo bajo tu dedo, primero se abrirá una lista de los cercanos — elige el correcto.',
+      mapWaitTitle:'Mapa: tiempo de espera', mapWaitText:'El temporizador de espera se inicia con el botón «⏱ Espero el pedido» del menú del punto. Aún más rápido: mantén el dedo medio segundo sobre el punto; vibrará y la cuenta empezará al instante. Cuando recibas el pedido, pulsa «✅ Pedido recogido» en la franja verde de abajo — el tiempo medio de espera en ese punto se calculará solo.',
       locateTitle:'Mi ubicación', locateText:'Pulsa aquí — el mapa te localizará por GPS y se acercará a tu posición actual. Útil para saber rápido dónde estás respecto a tus puntos marcados.',
       fullscreenTitle:'Pantalla completa', fullscreenText:'Expande el mapa a toda la pantalla sin botones — útil para apuntar con más precisión antes de tocar un punto.',
       mapGlowTitle:'Puntos que brillan', mapGlowText:'Brillan los puntos donde más pedidos has recogido justo a esta hora del día, según todo tu historial. Es una pista de adónde ir ahora mismo. Si hay pocos datos de esta hora, no brilla nada. Cuando empieza una hora nueva, el brillo cambia solo.',
@@ -1554,7 +1592,7 @@ const TRANSLATIONS = {
     stats:{ title:'Estadísticas', empty:'Aún no hay datos para las estadísticas. Marca recogidas — aquí aparecerán los números por día.',
       cardToday:'hoy', cardYesterday:'ayer', cardWeek:'esta semana', cardTotal:'total',
       longestWaitTitle:'Mayor tiempo de espera', waitEmptyTitle:'Tiempo de espera',
-      waitEmptyText:'Aún no hay datos. Pulsa "⏱ Llegué" en un pedido para empezar a medir.',
+      waitEmptyText:'Aún no hay datos. Toca un punto y elige «⏱ Espero el pedido» para empezar a medir.',
       peakHoursTitle:'🕐 Horas punta', hourChartNoData:'Aún no hay datos de este periodo.',
       hourChartPeakSummary:'Pico de actividad: {hours} ({count})', hourTrendTitle:'Cómo cambió el pico por día',
       hourTrendPeakLabel:'pico a las {hours}', deletedSpot:'(punto eliminado)' },
@@ -1563,7 +1601,7 @@ const TRANSLATIONS = {
       bestHoursTitle:'🕐 Mejores horas para reservar turnos', bestHoursEmpty:'Aún hay pocos datos. Marca recogidas — aquí aparecerá un consejo sobre horarios.',
       bestHoursText:'Según tu historial de recogidas, la mayoría de pedidos llegan a las: {hours}. Conviene reservar turnos justo en esas horas.',
       bestDaysTitle:'📅 Mejores días de la semana', bestDaysText:'La mayoría de pedidos suelen caer en: {days}. Intenta planear tus turnos esos días.',
-      topSpotsCountTitle:'📍 Puntos más frecuentes', topSpotsCountEmpty:'Aún no hay recogidas: márcalas en el mapa.', topSpotsTitle:'💰 Puntos más rentables', topSpotsEmpty:'Aún no hay datos de ganancias — añade los importes de tus pedidos en «Mis pedidos».', timeTitle:'⏳ Cuánto vale tu tiempo', timeEmpty:'Aún hay pocos datos: hacen falta recogidas con espera medida (botón «⏱ Llegué»).', timeRate:'Ingreso real: {rate} por hora', timeRateNote:'En total: {earned} en {hours} h de trabajo. Las horas se calculan por actividad: de la primera a la última recogida de cada turno.', timeLostTitle:'Perdido esperando en total', timeLostTotal:'Total esperando: {time}', timeLostMoney:' ≈ {money} a tu tarifa', timeRankTitle:'🏁 Dónde conviene ir', timeRankNote:'Ganancia por pedido ÷ (espera media + 5 min). Solo puntos con al menos 2 pedidos medidos.', timeRankAvg:'espera ≈ {min} min', timePerMin:'{v} / min'  },
+      topSpotsCountTitle:'📍 Puntos más frecuentes', topSpotsCountEmpty:'Aún no hay recogidas: márcalas en el mapa.', topSpotsTitle:'💰 Puntos más rentables', topSpotsEmpty:'Aún no hay datos de ganancias — añade los importes de tus pedidos en «Mis pedidos».', timeTitle:'⏳ Cuánto vale tu tiempo', timeEmpty:'Aún hay pocos datos: hacen falta recogidas con espera medida (botón «⏱ Espero el pedido» en el menú del punto).', timeRate:'Ingreso real: {rate} por hora', timeRateNote:'En total: {earned} en {hours} h de trabajo. Las horas se calculan por actividad: de la primera a la última recogida de cada turno.', timeLostTitle:'Perdido esperando en total', timeLostTotal:'Total esperando: {time}', timeLostMoney:' ≈ {money} a tu tarifa', timeRankTitle:'🏁 Dónde conviene ir', timeRankNote:'Ganancia por pedido ÷ (espera media + 5 min). Solo puntos con al menos 2 pedidos medidos.', timeRankAvg:'espera ≈ {min} min', timePerMin:'{v} / min'  },
     settings:{ title:'Ajustes', markerStyleLabel:'Cómo marcar los puntos en el mapa', markerCircle:'Círculo', markerBag:'Mochila de repartidor',
       payTypeLabel:'Tipo de pago', payTypeHourlyOpt:'⏱ Por horas + bonus', payTypePieceOpt:'💰 Por pedido (destajo)',
       currencyLabel:'Moneda', appThemeLabel:'Tema de la app', themeLight:'☀️ Claro', themeDark:'🌙 Oscuro',
@@ -1640,6 +1678,7 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'How much did you get paid for this order?', titleEdit:'Fix the total amount', saveAdd:'Add',
       saveEdit:'Save', cancel:'Cancel', placeholder:'e.g. 4.5', errAddPositive:'Enter an amount greater than zero.',
       errEditNonNeg:'Enter an amount of 0 or more.' },
+    spotSheet:{ wait:'⏱ Waiting', picked:'✅ Picked up', amountPh:'Order amount, {cur} (optional)', waitingNow:'waiting {time}', saved:'+1 pickup: {name}', savedWithAmount:'+1 pickup and {amount}: {name}' },
     rename:{ title:'New place name', save:'Save', done:'Renamed: {name}' },
     rowAction:{ rename:'Rename', add:'Add pickup (+1)', remove:'Remove pickup (−1)', editAmount:'Fix the total amount', cancel:'Cancel' },
     onboard:{ title:'How do you get paid for orders?', sub:'Pick your scheme — you can change it later in Settings',
@@ -1650,7 +1689,7 @@ const TRANSLATIONS = {
       ordersIntroTitle:'My orders', ordersIntroText:'The list of every spot where you\'ve ever picked up an order. Open it and I\'ll show you what\'s inside.',
       searchTitle:'Search for a spot', searchText:'Once you have a lot of spots, start typing a place name — the list filters instantly.',
       sortTitle:'List sorting', sortText:'Tap to switch the order: by pickup frequency (busiest spots on top) or by earnings.',
-      rowsTitle:'List of spots', rowsText:'As soon as you mark your first spot on the map, it shows up here. Each row has a currency button on the left (to add the order amount) and a green pencil — the "+1 pickup / −1 pickup / fix total amount" menu. Tapping the row itself jumps straight to that spot on the map.',
+      rowsTitle:'List of spots', rowsText:'As soon as you mark your first spot on the map, it shows up here. Each row has a currency button on the left (to add the order amount) and a green pencil — the "+1 pickup / −1 pickup / rename / fix total amount" menu. Tapping the row itself jumps straight to that spot on the map.',
       statsIntroTitle:'Stats', statsIntroText:'All your work in numbers — open it and I\'ll walk you through it.',
       statsBodyTitle:'Your numbers', statsBodyText:'At the top: how many pickups today, yesterday, this week (Monday to Sunday) and overall. Below: a chart by day of the week, wait times at your spots, and peak hours — what time of day you usually get the most orders, based on your whole history.',
       historyIntroTitle:'Order history', historyIntroText:'A full log of every pickup — open it and I\'ll show you.',
@@ -1668,8 +1707,8 @@ const TRANSLATIONS = {
       
       
       mapAddTitle:'Map: a new spot', mapAddText:'Tap an empty spot on the map where you pick up orders — a window opens, type the place\'s name in it and save.',
-      mapBumpTitle:'Map: picking up an order (+1)', mapBumpText:'A quick tap right on an existing spot on the map counts another pickup there instantly — no extra windows. If the spot isn\'t quite under your finger, a list of nearby ones opens — pick the right one.',
-      mapWaitTitle:'Map: wait time', mapWaitText:'And if you hold your finger on the same spot for about half a second without lifting it, the spot will vibrate and a wait timer starts. Once you get the order, tap "✅ Picked up order" on the green bar at the bottom — and the average wait time for that spot gets calculated automatically.',
+      mapBumpTitle:'Map: spot menu', mapBumpText:'Tap a spot on the map and its menu slides up. «✅ Picked up» counts a pickup (+1); if you are paid per order, you can type the amount right there. «⏱ Waiting» starts the wait timer. You can also rename the spot there. If the spot is not exactly under your finger, a list of nearby spots opens first — pick the right one.',
+      mapWaitTitle:'Map: wait time', mapWaitText:'The wait timer starts with the «⏱ Waiting» button in the spot menu. Even faster: hold your finger on the spot for half a second; it vibrates and the timer starts right away. Once you get the order, tap "✅ Picked up order" on the green bar at the bottom — the average wait time for that spot gets calculated automatically.',
       locateTitle:'My location', locateText:'Tap it — the map finds you via GPS and zooms to your current position. Handy for quickly seeing where you are relative to your marked spots.',
       fullscreenTitle:'Fullscreen', fullscreenText:'Expands the map to fill the whole screen with no buttons — handy for aiming more precisely at a spot before tapping.',
       mapGlowTitle:'Glowing spots', mapGlowText:'Spots glow where you picked up the most orders at exactly this hour of the day, across your whole history. It is a hint of where to head right now. If there is little data for this hour, nothing glows. When a new hour starts, the glow switches by itself.',
@@ -1683,7 +1722,7 @@ const TRANSLATIONS = {
     stats:{ title:'Stats', empty:'No stats yet. Log pickups and daily numbers will show up here.',
       cardToday:'today', cardYesterday:'yesterday', cardWeek:'this week', cardTotal:'total',
       longestWaitTitle:'Longest waits', waitEmptyTitle:'Wait time',
-      waitEmptyText:'No data yet. Tap "⏱ Arrived" on an order to start measuring.',
+      waitEmptyText:'No data yet. Tap a spot and choose «⏱ Waiting» to start measuring.',
       peakHoursTitle:'🕐 Peak hours', hourChartNoData:'No data for this period yet.',
       hourChartPeakSummary:'Peak activity: {hours} ({count})', hourTrendTitle:'How the peak changed by day',
       hourTrendPeakLabel:'peak at {hours}', deletedSpot:'(spot deleted)' },
@@ -1692,7 +1731,7 @@ const TRANSLATIONS = {
       bestHoursTitle:'🕐 Best hours for slots', bestHoursEmpty:'Not enough data yet. Log pickups and an hourly tip will show up here.',
       bestHoursText:'Based on your pickup history, orders most often come in at: {hours}. It\'s worth booking slots for that time.',
       bestDaysTitle:'📅 Best days of the week', bestDaysText:'Most orders usually come in on: {days}. Try to schedule your shifts on these days.',
-      topSpotsCountTitle:'📍 Most frequent spots', topSpotsCountEmpty:'No pickups yet — mark pickups on the map.', topSpotsTitle:'💰 Most profitable spots', topSpotsEmpty:'No earnings data yet — add order amounts in "My orders".', timeTitle:'⏳ What your time is worth', timeEmpty:'Not enough data yet: you need pickups with measured waiting (the "⏱ Arrived" button).', timeRate:'Real earnings: {rate} per hour', timeRateNote:'All time: {earned} over {hours} h of work. Hours are counted by activity: from the first to the last pickup of each shift.', timeLostTitle:'Lost to waiting, all time', timeLostTotal:'Total waiting: {time}', timeLostMoney:' ≈ {money} at your rate', timeRankTitle:'🏁 Where it pays to go', timeRankNote:'Earnings per order ÷ (average wait + 5 min). Only spots with at least 2 measured orders.', timeRankAvg:'wait ≈ {min} min', timePerMin:'{v} / min'  },
+      topSpotsCountTitle:'📍 Most frequent spots', topSpotsCountEmpty:'No pickups yet — mark pickups on the map.', topSpotsTitle:'💰 Most profitable spots', topSpotsEmpty:'No earnings data yet — add order amounts in "My orders".', timeTitle:'⏳ What your time is worth', timeEmpty:'Not enough data yet: you need pickups with measured waiting (the «⏱ Waiting» button in the spot menu).', timeRate:'Real earnings: {rate} per hour', timeRateNote:'All time: {earned} over {hours} h of work. Hours are counted by activity: from the first to the last pickup of each shift.', timeLostTitle:'Lost to waiting, all time', timeLostTotal:'Total waiting: {time}', timeLostMoney:' ≈ {money} at your rate', timeRankTitle:'🏁 Where it pays to go', timeRankNote:'Earnings per order ÷ (average wait + 5 min). Only spots with at least 2 measured orders.', timeRankAvg:'wait ≈ {min} min', timePerMin:'{v} / min'  },
     settings:{ title:'Settings', markerStyleLabel:'How to mark spots on the map', markerCircle:'Circle', markerBag:'Courier bag',
       payTypeLabel:'Pay type', payTypeHourlyOpt:'⏱ Hourly + bonus', payTypePieceOpt:'💰 Per-order (piece rate)',
       currencyLabel:'Currency', appThemeLabel:'App theme', themeLight:'☀️ Light', themeDark:'🌙 Dark',
@@ -2349,7 +2388,7 @@ function renderAll(){
     marker.on('click', (e) => {
       L.DomEvent.stopPropagation(e);
       if(marker._longPressFired){ marker._longPressFired = false; return; }
-      bump(s.id);
+      openSpotSheet(s.id);
     });
     attachLongPress(marker, s.id);
     markers[s.id] = marker;
@@ -3052,13 +3091,84 @@ function saveAmount(){
   if(isEdit){
     s.earned = amount;
   } else {
-    s.earned = (s.earned || 0) + amount;
-    earningsLog.push({ id: makeVisitId(), spotId: s.id, amount, ts: new Date().toISOString() });
-    persistEarnings();
+    addEarning(s, amount);
   }
   persist();
   closeAmountModal();
   renderAll();
+}
+function addEarning(s, amount){
+  s.earned = (s.earned || 0) + amount;
+  earningsLog.push({ id: makeVisitId(), spotId: s.id, amount, ts: new Date().toISOString() });
+  persistEarnings();
+}
+
+// ---------- меню точки (тап по точке на карте или в списке рядом стоящих) ----------
+let spotSheetId = null;
+function openSpotSheet(spotId){
+  const s = spots.find(sp => sp.id === spotId);
+  if(!s) return;
+  spotSheetId = spotId;
+  const waitingHere = !!(activeArrival && activeArrival.spotId === spotId);
+  document.getElementById('spotSheetTitle').textContent = s.name;
+  const meta = [formatZaboros(s.count)];
+  if(s.waitCount > 0) meta.push(t('choice.avgWait', { time: formatDuration(Math.round(s.waitTotalSec / s.waitCount)) }));
+  if(waitingHere) meta.push(t('spotSheet.waitingNow', { time: formatTimer(Math.floor((Date.now() - activeArrival.startTs) / 1000)) }));
+  document.getElementById('spotSheetMeta').textContent = meta.join(' · ');
+  const amount = document.getElementById('spotSheetAmount');
+  amount.value = '';
+  amount.style.display = isPieceRate() ? '' : 'none';
+  amount.placeholder = t('spotSheet.amountPh', { cur: getCurrency() });
+  const waitBtn = document.getElementById('spotSheetWaitBtn');
+  waitBtn.textContent = t('spotSheet.wait');
+  waitBtn.style.display = waitingHere ? 'none' : '';  // таймер на этой точке уже идёт
+  document.getElementById('spotSheetPickBtn').textContent = t('spotSheet.picked');
+  document.getElementById('spotSheetModalBg').classList.add('show');
+}
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' && document.activeElement && document.activeElement.id === 'spotSheetAmount'){ e.preventDefault(); spotSheetPickup(); }
+});
+function closeSpotSheet(){
+  document.getElementById('spotSheetModalBg').classList.remove('show');
+  try{ document.getElementById('spotSheetAmount').blur(); }catch(e){}
+  spotSheetId = null;
+}
+function spotSheetWait(){
+  const id = spotSheetId;
+  closeSpotSheet();
+  if(id) startArrival(id);
+}
+function spotSheetPickup(){
+  const id = spotSheetId;
+  const s = spots.find(sp => sp.id === id);
+  if(!s){ closeSpotSheet(); return; }
+  let amount = 0;
+  if(isPieceRate()){
+    const raw = document.getElementById('spotSheetAmount').value.replace(',', '.').trim();
+    if(raw){
+      amount = parseFloat(raw);
+      if(isNaN(amount) || amount < 0){ showToast(t('amount.errAddPositive'), 3500); return; }
+    }
+  }
+  closeSpotSheet();
+  // если на этой точке идёт таймер ожидания - «Забрал» его останавливает и записывает забор с ожиданием
+  const fromTimer = !!(activeArrival && activeArrival.spotId === id);
+  if(fromTimer) completeArrival();
+  else bump(id);
+  if(amount > 0){
+    addEarning(s, amount);
+    persist();
+    renderAll();
+    // после таймера оставляем его подсказку с временем ожидания, иначе подтверждаем сумму
+    if(!fromTimer) showToast(t('spotSheet.savedWithAmount', { amount: formatMoney(amount), name: s.name }), 2500);
+  } else if(!fromTimer){
+    showToast(t('spotSheet.saved', { name: s.name }), 2000);
+  }
+}
+function spotSheetRename(){
+  const id = spotSheetId;
+  closeSpotSheet();
+  if(id) openRenameModal(id);
 }
 function chooseMarkerStyle(style){
   localStorage.setItem(MARKER_STYLE_KEY, style);
@@ -3080,7 +3190,7 @@ function closeDrawer(){
 // любой экран поверх главного (меню, модалки, тур) сейчас открыт?
 function anyOverlayOpen(){
   const ids = ['sideDrawer', 'ordersModalBg', 'modalBg', 'choiceModalBg', 'amountModalBg', 'rowActionModalBg',
-    'onboardModalBg', 'statsModalBg', 'weekCardModalBg', 'recoModalBg', 'teamModalBg', 'settingsModalBg', 'historyModalBg', 'calendarModalBg', 'tourOverlay'];
+    'onboardModalBg', 'spotSheetModalBg', 'statsModalBg', 'weekCardModalBg', 'recoModalBg', 'teamModalBg', 'settingsModalBg', 'historyModalBg', 'calendarModalBg', 'tourOverlay'];
   return ids.some(id => {
     const el = document.getElementById(id);
     return el && el.classList.contains('show');
@@ -4353,8 +4463,8 @@ function openChoiceModal(lat, lng, nearby, prefillName){
   `}).join('');
   box.querySelectorAll('.choiceRow').forEach(el => {
     el.addEventListener('click', () => {
-      bump(el.dataset.id);
       closeChoiceModal();
+      openSpotSheet(el.dataset.id);
     });
   });
   box.querySelectorAll('.choiceArriveBtn').forEach(btn => {
