@@ -612,6 +612,8 @@
   body.arrivalActive #backupBanner{bottom:calc(14px + var(--arrivalH, 0px));}
   body.arrivalActive #toast{bottom:calc(30px + var(--arrivalH, 0px));}
   #arrivalBar.show{display:flex;}
+  /* пока открыто любое окно, полоса таймера уходит под него: иначе она закрывает низ окна и кнопку «Готово» */
+  body:has([id$="ModalBg"].show) #arrivalBar, body:has(#modalBg.show) #arrivalBar{z-index:900;}
   #arrivalText{font-size:14px; font-weight:700;}
   #arrivalTime{font-size:22px; font-weight:800; letter-spacing:0.02em;}
   .arrivalBtns{display:flex; gap:10px; width:100%; max-width:400px;}
@@ -1251,7 +1253,8 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'Сколько заплатили за этот заказ?', titleEdit:'Исправить итоговую сумму', saveAdd:'Добавить',
       saveEdit:'Сохранить', cancel:'Отмена', placeholder:'Например: 4.5', errAddPositive:'Введи сумму больше нуля.',
       errEditNonNeg:'Введи сумму 0 или больше.' },
-    rowAction:{ add:'Добавить забор (+1)', remove:'Убрать забор (−1)', editAmount:'Исправить итоговую сумму', cancel:'Отмена' },
+    rename:{ title:'Новое название заведения', save:'Сохранить', done:'Переименовано: {name}' },
+    rowAction:{ rename:'Переименовать', add:'Добавить забор (+1)', remove:'Убрать забор (−1)', editAmount:'Исправить итоговую сумму', cancel:'Отмена' },
     onboard:{ title:'Как тебе платят за заказы?', sub:'Выбери свою схему — потом можно сменить в Настройках',
       hourlyTitle:'Почасовая + премия', hourlyDesc:'Платят за время + бонус за скорость и количество',
       pieceTitle:'Сдельная за заказ', pieceDesc:'Фиксированная сумма за каждый заказ + подача' },
@@ -1379,7 +1382,8 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'Скільки заплатили за це замовлення?', titleEdit:'Виправити підсумкову суму', saveAdd:'Додати',
       saveEdit:'Зберегти', cancel:'Скасувати', placeholder:'Наприклад: 4.5', errAddPositive:'Введи суму більше нуля.',
       errEditNonNeg:'Введи суму 0 або більше.' },
-    rowAction:{ add:'Додати підбір (+1)', remove:'Прибрати підбір (−1)', editAmount:'Виправити підсумкову суму', cancel:'Скасувати' },
+    rename:{ title:'Нова назва закладу', save:'Зберегти', done:'Перейменовано: {name}' },
+    rowAction:{ rename:'Перейменувати', add:'Додати підбір (+1)', remove:'Прибрати підбір (−1)', editAmount:'Виправити підсумкову суму', cancel:'Скасувати' },
     onboard:{ title:'Як тобі платять за замовлення?', sub:'Обери свою схему — потім можна змінити в Налаштуваннях',
       hourlyTitle:'Погодинна + премія', hourlyDesc:'Платять за час + бонус за швидкість і кількість',
       pieceTitle:'Відрядна за замовлення', pieceDesc:'Фіксована сума за кожне замовлення + подача' },
@@ -1507,7 +1511,8 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'¿Cuánto te pagaron por este pedido?', titleEdit:'Corregir el importe total', saveAdd:'Añadir',
       saveEdit:'Guardar', cancel:'Cancelar', placeholder:'Por ejemplo: 4.5', errAddPositive:'Introduce un importe mayor que cero.',
       errEditNonNeg:'Introduce un importe de 0 o más.' },
-    rowAction:{ add:'Añadir recogida (+1)', remove:'Quitar recogida (−1)', editAmount:'Corregir el importe total', cancel:'Cancelar' },
+    rename:{ title:'Nuevo nombre del local', save:'Guardar', done:'Nombre cambiado: {name}' },
+    rowAction:{ rename:'Cambiar nombre', add:'Añadir recogida (+1)', remove:'Quitar recogida (−1)', editAmount:'Corregir el importe total', cancel:'Cancelar' },
     onboard:{ title:'¿Cómo te pagan los pedidos?', sub:'Elige tu modelo — luego puedes cambiarlo en Ajustes',
       hourlyTitle:'Por horas + bonus', hourlyDesc:'Te pagan por tiempo + bonus por velocidad y cantidad',
       pieceTitle:'Por pedido (destajo)', pieceDesc:'Importe fijo por cada pedido + recargo por distancia' },
@@ -1635,7 +1640,8 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'How much did you get paid for this order?', titleEdit:'Fix the total amount', saveAdd:'Add',
       saveEdit:'Save', cancel:'Cancel', placeholder:'e.g. 4.5', errAddPositive:'Enter an amount greater than zero.',
       errEditNonNeg:'Enter an amount of 0 or more.' },
-    rowAction:{ add:'Add pickup (+1)', remove:'Remove pickup (−1)', editAmount:'Fix the total amount', cancel:'Cancel' },
+    rename:{ title:'New place name', save:'Save', done:'Renamed: {name}' },
+    rowAction:{ rename:'Rename', add:'Add pickup (+1)', remove:'Remove pickup (−1)', editAmount:'Fix the total amount', cancel:'Cancel' },
     onboard:{ title:'How do you get paid for orders?', sub:'Pick your scheme — you can change it later in Settings',
       hourlyTitle:'Hourly + bonus', hourlyDesc:'Paid by time + bonus for speed and volume',
       pieceTitle:'Per-order (piece rate)', pieceDesc:'A fixed amount per order + a pickup fee' },
@@ -2935,6 +2941,11 @@ function openRowActionMenu(spotId){
       <span class="drawerLabel">${t('rowAction.remove')}</span>
       <span class="drawerChevron">›</span>
     </div>
+    <div class="drawerItem" onclick="rowActionRename()">
+      <span class="drawerIcon">✏️</span>
+      <span class="drawerLabel">${t('rowAction.rename')}</span>
+      <span class="drawerChevron">›</span>
+    </div>
     ${earningsOn ? `
     <div class="drawerItem" onclick="rowActionEditAmount()">
       <span class="drawerIcon">✎</span>
@@ -2957,6 +2968,44 @@ function rowActionUnbump(){
   const id = pendingRowActionSpotId;
   closeRowActionModal();
   if(id) unbump(id);
+}
+function rowActionRename(){
+  const id = pendingRowActionSpotId;
+  closeRowActionModal();
+  if(id) openRenameModal(id);
+}
+// переименование точки: то же окно, что и при добавлении, только с текущим названием и кнопкой «Сохранить»
+let renameSpotId = null;
+function openRenameModal(spotId){
+  const s = spots.find(sp => sp.id === spotId);
+  if(!s) return;
+  renameSpotId = spotId;
+  pendingLatLng = null;
+  document.querySelector('#modal h3').textContent = t('rename.title');
+  document.getElementById('coordsText').textContent = '';
+  document.getElementById('saveBtn').textContent = t('rename.save');
+  const input = document.getElementById('nameInput');
+  input.value = s.name;
+  document.getElementById('modalBg').classList.add('show');
+  setTimeout(() => { input.focus(); input.select(); }, 50);
+}
+function saveRename(){
+  const id = renameSpotId;
+  const name = document.getElementById('nameInput').value.trim();
+  closeModal();
+  const s = spots.find(sp => sp.id === id);
+  if(!s || !name || name === s.name) return;
+  s.name = name;
+  // у идущего таймера название хранится отдельно - обновляем и его, и полосу ожидания
+  if(activeArrival && activeArrival.spotId === id){
+    activeArrival.spotName = name;
+    try{ localStorage.setItem(ARRIVAL_TIMER_KEY, JSON.stringify(activeArrival)); }catch(e){}
+    try{ document.getElementById('arrivalSpotName').textContent = name; }catch(e){}
+    try{ teamPublishLive(); }catch(e){}
+  }
+  persist();
+  renderAll();
+  showToast(t('rename.done', { name }), 2500);
 }
 function rowActionEditAmount(){
   const id = pendingRowActionSpotId;
@@ -4342,8 +4391,15 @@ function openModal(lat, lng, prefillName){
 function closeModal(){
   document.getElementById('modalBg').classList.remove('show');
   pendingLatLng = null;
+  if(renameSpotId){
+    // возвращаем окну вид «новая точка»
+    renameSpotId = null;
+    document.querySelector('#modal h3').textContent = t('addSpot.title');
+    document.getElementById('saveBtn').textContent = t('addSpot.add');
+  }
 }
 function saveNewSpot(){
+  if(renameSpotId){ saveRename(); return; }
   const name = document.getElementById('nameInput').value.trim();
   if(!name || !pendingLatLng){ closeModal(); return; }
   const newId = 'spot_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
