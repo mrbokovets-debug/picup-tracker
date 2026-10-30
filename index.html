@@ -3723,7 +3723,8 @@ function computeWeekSummary(){
   const bestDay = days.reduce((b, d) => d.count > b.count ? d : b, days[0]);
   let topSpot = null, topN = 0;
   Object.keys(perSpot).forEach(id => { if(perSpot[id] > topN){ const sp = spots.find(x => String(x.id) === String(id)); if(sp){ topN = perSpot[id]; topSpot = sp.name; } } });
-  const earned = Math.max(0, earningsLog.filter(e => { const k = dayKey(new Date(e.ts)); return !!map[k]; }).reduce((a, e) => a + (+e.amount || 0), 0));
+  // поправки итога (fix) датированы днём исправления, а не днём заказа - в недельный заработок их не берём
+  const earned = Math.max(0, earningsLog.filter(e => { if(e.fix) return false; const k = dayKey(new Date(e.ts)); return !!map[k]; }).reduce((a, e) => a + (+e.amount || 0), 0));
   return { monday, sunday, days, total, bestDay, topSpot, topN, waitSec, longest, earned };
 }
 
