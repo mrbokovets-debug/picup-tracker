@@ -797,6 +797,11 @@
       <span class="drawerLabel" data-i18n="drawer.howTo">Как пользоваться</span>
       <span class="drawerChevron">›</span>
     </div>
+    <div class="drawerItem" id="drawerItemContact" onclick="closeDrawer(); contactDeveloper();">
+      <span class="drawerIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+      <span class="drawerLabel" data-i18n="drawer.contact">Написать разработчику</span>
+      <span class="drawerChevron">›</span>
+    </div>
   </div>
 </div>
 
@@ -1259,7 +1264,7 @@ function detectInitialLang(){
 
 const TRANSLATIONS = {
   ru: {
-    drawer:{ menu:'Меню', orders:'Мои заказы', stats:'Статистика', history:'История', reco:'Рекомендации', team:'Команда',
+    drawer:{ contact:'Написать разработчику', contactSubject:'PickupMap: вопрос или идея', contactBody:'Опиши, что случилось или что хочешь предложить:', menu:'Меню', orders:'Мои заказы', stats:'Статистика', history:'История', reco:'Рекомендации', team:'Команда',
       settings:'Настройки', howTo:'Как пользоваться', backup:'Сохранить копию', restore:'Восстановить из файла',
       clearData:'Очистить все данные' },
     header:{ searching:'Ищу тебя...', myLocation:'Твоё местоположение',
@@ -1389,7 +1394,7 @@ const TRANSLATIONS = {
   },
 
   uk:{
-    drawer:{ menu:'Меню', orders:'Мої замовлення', stats:'Статистика', history:'Історія', reco:'Рекомендації', team:'Команда',
+    drawer:{ contact:'Написати розробнику', contactSubject:'PickupMap: питання або ідея', contactBody:'Опиши, що сталося або що хочеш запропонувати:', menu:'Меню', orders:'Мої замовлення', stats:'Статистика', history:'Історія', reco:'Рекомендації', team:'Команда',
       settings:'Налаштування', howTo:'Як користуватись', backup:'Зберегти копію', restore:'Відновити з файлу',
       clearData:'Очистити всі дані' },
     header:{ searching:'Шукаю тебе...', myLocation:'Твоє місцезнаходження',
@@ -1519,7 +1524,7 @@ const TRANSLATIONS = {
   },
 
   es:{
-    drawer:{ menu:'Menú', orders:'Mis pedidos', stats:'Estadísticas', history:'Historial', reco:'Recomendaciones', team:'Equipo',
+    drawer:{ contact:'Escribir al desarrollador', contactSubject:'PickupMap: pregunta o idea', contactBody:'Cuéntanos qué ha pasado o qué te gustaría proponer:', menu:'Menú', orders:'Mis pedidos', stats:'Estadísticas', history:'Historial', reco:'Recomendaciones', team:'Equipo',
       settings:'Ajustes', howTo:'Cómo usar la app', backup:'Guardar copia', restore:'Restaurar desde archivo',
       clearData:'Borrar todos los datos' },
     header:{ searching:'Buscándote...', myLocation:'Tu ubicación',
@@ -1649,7 +1654,7 @@ const TRANSLATIONS = {
   },
 
   en:{
-    drawer:{ menu:'Menu', orders:'My orders', stats:'Stats', history:'History', reco:'Recommendations', team:'Team',
+    drawer:{ contact:'Contact the developer', contactSubject:'PickupMap: question or idea', contactBody:'Tell us what happened or what you would like to suggest:', menu:'Menu', orders:'My orders', stats:'Stats', history:'History', reco:'Recommendations', team:'Team',
       settings:'Settings', howTo:'How to use', backup:'Save a backup', restore:'Restore from file',
       clearData:'Clear all data' },
     header:{ searching:'Locating you...', myLocation:'Your location',
@@ -4873,6 +4878,18 @@ async function cloudPasswordLogin(pre){
     await cloudAfterLogin();
   }catch(e){ showToast(t('cloud.errNet'), 4000); }
   finally{ cloudBusy = false; }
+}
+// «Написать разработчику»: открываем почтовое приложение с готовой темой и техническими данными внизу
+const DEVELOPER_EMAIL = 'denysbokovets@gmail.com';
+const APP_VERSION = '1.0.0';
+function contactDeveloper(){
+  let platform = 'web';
+  try{ if(window.Capacitor && window.Capacitor.getPlatform) platform = window.Capacitor.getPlatform(); else if(isStandalonePwa()) platform = 'pwa'; }catch(e){}
+  const tech = ['', '', '—', 'PickupMap ' + APP_VERSION + ' · ' + platform + ' · ' + currentLang + ' · ' + (isPieceRate() ? 'piece' : 'hourly'),
+    'Spots: ' + spots.length + ' · ' + (cloudSession ? 'signed in' : 'no account'), navigator.userAgent].join('\n');
+  const url = 'mailto:' + DEVELOPER_EMAIL + '?subject=' + encodeURIComponent(t('drawer.contactSubject'))
+    + '&body=' + encodeURIComponent(t('drawer.contactBody') + '\n' + tech);
+  try{ window.location.href = url; }catch(e){}
 }
 function cloudSignOut(){ cloudLocalSignOut(); if(loginGateNeeded()) openLoginGate(); }
 
