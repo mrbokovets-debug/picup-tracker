@@ -377,7 +377,19 @@
   .statsBar{width:100%; max-width:28px; background:var(--cold); border-radius:4px 4px 0 0; min-height:2px; transition:height .3s ease;}
   .statsBar.today{background:var(--signal);}
   .statsBarNum{font-size:10px; color:var(--text-dim); margin-bottom:3px;}
-  .statsBarDay{font-size:9.5px; color:var(--text-dim); margin-top:5px;}
+  .statsBarDay{font-size:9.5px; color:var(--text-dim); margin-top:5px; white-space:nowrap;}
+  #statsPeriodTabs{display:flex; gap:6px; margin:4px 0 10px;}
+  #statsPeriodTabs .periodTab{padding:7px 4px; font-size:12px;}
+  #statsPeriodNav{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 10px;}
+  #statsPeriodNav button{width:36px; height:32px; border-radius:8px; border:1px solid var(--line); background:var(--asphalt-2);
+    color:var(--text); font-size:18px; font-weight:700; cursor:pointer; flex-shrink:0; line-height:1;}
+  #statsPeriodNav button:disabled{opacity:.3; cursor:default;}
+  #statsPeriodLabel{flex:1; text-align:center; font-size:13px; font-weight:700; color:var(--text);}
+  #statsPeriodTotal{text-align:center; font-size:12px; color:var(--text-dim); margin:2px 0 4px;}
+  #statsPeriodTotal b{color:var(--signal);}
+  #statsChart.dense{gap:3px;}
+  #statsChart.dense .statsBarDay{font-size:8.5px;}
+  #statsChart.dense .statsBarNum{font-size:9px;}
   .statsEmpty{color:var(--text-dim); font-size:13px; text-align:center; padding:20px 10px;}
   #waitRanking{display:flex; flex-direction:column; gap:6px;}
   .waitRow{
@@ -1344,7 +1356,7 @@ const TRANSLATIONS = {
       dataTitle:'Данные и резервная копия', dataText:'Все данные хранятся только в твоём телефоне. Время от времени нажимай «Сохранить копию» — получишь файл, который можно отправить себе или в облако. Из него данные возвращаются кнопкой «Восстановить из файла», в том числе на новом телефоне. Приложение само напомнит про копию. Ниже — «Очистить все данные»: она удаляет всё, поэтому просит ввести слово подтверждения.',
       stepLabel:'Шаг {i} из {n}', next:'Далее', finish:'Готово', skip:'Пропустить'
     },
-    stats:{ title:'Статистика', empty:'Пока нет данных для статистики. Отмечай заборы — здесь появятся цифры по дням.',
+    stats:{ title:'Статистика', tab_day:'Дни', tab_week:'Недели', tab_month:'Месяцы', tab_year:'Годы', periodTotal:'За период: {n}', empty:'Пока нет данных для статистики. Отмечай заборы — здесь появятся цифры по дням.',
       cardToday:'сегодня', cardYesterday:'вчера', cardWeek:'на этой неделе', cardTotal:'всего',
       longestWaitTitle:'Дольше всего ждал', waitEmptyTitle:'Время ожидания',
       waitEmptyText:'Пока нет данных. Нажми на точку и выбери «⏱ Жду заказ», чтобы начать замерять.',
@@ -1474,7 +1486,7 @@ const TRANSLATIONS = {
       dataTitle:'Дані та резервна копія', dataText:'Усі дані зберігаються лише в твоєму телефоні. Час від часу натискай «Зберегти копію» — отримаєш файл, який можна надіслати собі або в хмару. З нього дані повертаються кнопкою «Відновити з файлу», зокрема на новому телефоні. Застосунок сам нагадає про копію. Нижче — «Очистити всі дані»: вона видаляє все, тому просить ввести слово підтвердження.',
       stepLabel:'Крок {i} з {n}', next:'Далі', finish:'Готово', skip:'Пропустити'
     },
-    stats:{ title:'Статистика', empty:'Поки немає даних для статистики. Відмічай підбори — тут з’являться цифри по днях.',
+    stats:{ title:'Статистика', tab_day:'Дні', tab_week:'Тижні', tab_month:'Місяці', tab_year:'Роки', periodTotal:'За період: {n}', empty:'Поки немає даних для статистики. Відмічай підбори — тут з’являться цифри по днях.',
       cardToday:'сьогодні', cardYesterday:'вчора', cardWeek:'цього тижня', cardTotal:'всього',
       longestWaitTitle:'Найдовше чекав', waitEmptyTitle:'Час очікування',
       waitEmptyText:'Поки немає даних. Натисни на точку й обери «⏱ Чекаю замовлення», щоб почати вимірювати.',
@@ -1604,7 +1616,7 @@ const TRANSLATIONS = {
       dataTitle:'Datos y copia de seguridad', dataText:'Todos los datos se guardan solo en tu móvil. De vez en cuando pulsa «Guardar copia»: obtendrás un archivo que puedes enviarte o subir a la nube. Con «Restaurar desde archivo» los datos vuelven, también en un móvil nuevo. La app te recordará hacer la copia. Más abajo está «Borrar todos los datos»: elimina todo, por eso pide escribir una palabra de confirmación.',
       stepLabel:'Paso {i} de {n}', next:'Siguiente', finish:'Listo', skip:'Omitir'
     },
-    stats:{ title:'Estadísticas', empty:'Aún no hay datos para las estadísticas. Marca recogidas — aquí aparecerán los números por día.',
+    stats:{ title:'Estadísticas', tab_day:'Días', tab_week:'Semanas', tab_month:'Meses', tab_year:'Años', periodTotal:'En el periodo: {n}',  empty:'Aún no hay datos para las estadísticas. Marca recogidas — aquí aparecerán los números por día.',
       cardToday:'hoy', cardYesterday:'ayer', cardWeek:'esta semana', cardTotal:'total',
       longestWaitTitle:'Mayor tiempo de espera', waitEmptyTitle:'Tiempo de espera',
       waitEmptyText:'Aún no hay datos. Toca un punto y elige «⏱ Espero el pedido» para empezar a medir.',
@@ -1734,7 +1746,7 @@ const TRANSLATIONS = {
       dataTitle:'Data and backup', dataText:'All data is stored only on your phone. Tap “Save a backup” now and then to get a file you can send to yourself or put in the cloud. “Restore from file” brings the data back, even on a new phone. The app will remind you to back up. Below is “Clear all data”: it deletes everything, so it asks you to type a confirmation word.',
       stepLabel:'Step {i} of {n}', next:'Next', finish:'Done', skip:'Skip'
     },
-    stats:{ title:'Stats', empty:'No stats yet. Log pickups and daily numbers will show up here.',
+    stats:{ title:'Stats', tab_day:'Days', tab_week:'Weeks', tab_month:'Months', tab_year:'Years', periodTotal:'For the period: {n}',  empty:'No stats yet. Log pickups and daily numbers will show up here.',
       cardToday:'today', cardYesterday:'yesterday', cardWeek:'this week', cardTotal:'total',
       longestWaitTitle:'Longest waits', waitEmptyTitle:'Wait time',
       waitEmptyText:'No data yet. Tap a spot and choose «⏱ Waiting» to start measuring.',
@@ -3503,7 +3515,134 @@ function renderHistory(){
   body.innerHTML = html;
 }
 
+// ---------- график заборов по периодам: дни / недели / месяцы / годы ----------
+let statsChartMode = 'day';   // что означает один столбик
+let statsChartOffset = 0;     // 0 - текущий период, -1 - предыдущий и т.д.
+const STATS_WEEKS_PER_PAGE = 8;
+const STATS_YEARS_PER_PAGE = 6;
+function uiLocale(){ return currentLang === 'uk' ? 'uk-UA' : currentLang === 'es' ? 'es-ES' : currentLang === 'en' ? 'en-GB' : 'ru-RU'; }
+function mondayOf(date){
+  const d = new Date(date); d.setHours(0,0,0,0);
+  const dow = d.getDay(); d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
+  return d;
+}
+function addDays(date, n){ const d = new Date(date); d.setDate(d.getDate() + n); return d; }
+function shortDate(d, withMonth){
+  return d.toLocaleDateString(uiLocale(), withMonth ? { day: 'numeric', month: 'short' } : { day: 'numeric' }).replace(/\.$/, '');
+}
+function statsNetByDay(){
+  const map = {};
+  let first = null;
+  visitsLog.forEach(v => {
+    const dt = new Date(v.ts); if(isNaN(dt)) return;
+    const k = dayKey(dt);
+    map[k] = (map[k] || 0) + (v.type === 'remove' ? -1 : 1);
+    if(!first || dt < first) first = dt;
+  });
+  return { map, first };
+}
+// столбики выбранного периода: [{label, count, current}], подпись периода и можно ли листать назад
+function buildStatsPeriod(mode, offset){
+  const { map, first } = statsNetByDay();
+  const now = new Date();
+  const sumDays = (from, toExcl) => { let n = 0; for(let d = new Date(from); d < toExcl; d = addDays(d, 1)) n += map[dayKey(d)] || 0; return Math.max(0, n); };
+  const bars = []; let label = '', start;
+  if(mode === 'day'){
+    start = addDays(mondayOf(now), offset * 7);
+    const todayK = dayKey(now);
+    for(let i = 0; i < 7; i++){
+      const d = addDays(start, i);
+      bars.push({ label: weekdaysMon()[i], count: Math.max(0, map[dayKey(d)] || 0), current: dayKey(d) === todayK });
+    }
+    const end = addDays(start, 6);
+    label = shortDate(start, start.getMonth() !== end.getMonth()) + ' – ' + shortDate(end, true);
+    if(start.getFullYear() !== now.getFullYear()) label += ' ' + start.getFullYear();
+  } else if(mode === 'week'){
+    const curMon = mondayOf(now);
+    const lastMon = addDays(curMon, offset * STATS_WEEKS_PER_PAGE * 7);
+    start = addDays(lastMon, -(STATS_WEEKS_PER_PAGE - 1) * 7);
+    for(let i = 0; i < STATS_WEEKS_PER_PAGE; i++){
+      const mon = addDays(start, i * 7);
+      const dd = String(mon.getDate()).padStart(2, '0'), mm = String(mon.getMonth() + 1).padStart(2, '0');
+      bars.push({ label: dd + '.' + mm, count: sumDays(mon, addDays(mon, 7)), current: dayKey(mon) === dayKey(curMon) });
+    }
+    label = shortDate(start, true) + ' – ' + shortDate(addDays(lastMon, 6), true);
+    if(start.getFullYear() !== now.getFullYear() || lastMon.getFullYear() !== now.getFullYear()) label += ' ' + addDays(lastMon, 6).getFullYear();
+  } else if(mode === 'month'){
+    const y = now.getFullYear() + offset;
+    start = new Date(y, 0, 1);
+    const names = (TRANSLATIONS[currentLang].months || TRANSLATIONS.ru.months).nom;
+    for(let m = 0; m < 12; m++){
+      const nm = names[m];
+      bars.push({ label: nm.charAt(0).toUpperCase() + nm.slice(1, 3), count: sumDays(new Date(y, m, 1), new Date(y, m + 1, 1)),
+        current: y === now.getFullYear() && m === now.getMonth() });
+    }
+    label = String(y);
+  } else {
+    const lastY = now.getFullYear() + offset * STATS_YEARS_PER_PAGE;
+    const firstData = first ? first.getFullYear() : now.getFullYear();
+    const firstY = Math.max(lastY - STATS_YEARS_PER_PAGE + 1, Math.min(firstData, lastY));
+    start = new Date(firstY, 0, 1);
+    for(let y = firstY; y <= lastY; y++){
+      bars.push({ label: String(y), count: sumDays(new Date(y, 0, 1), new Date(y + 1, 0, 1)), current: y === now.getFullYear() });
+    }
+    label = firstY === lastY ? String(lastY) : firstY + ' – ' + lastY;
+  }
+  const canPrev = !!first && first < start;
+  return { bars, label, canPrev, total: bars.reduce((a, b) => a + b.count, 0) };
+}
+function renderStatsPeriodChart(){
+  const box = document.getElementById('statsPeriodBox');
+  if(!box) return;
+  const p = buildStatsPeriod(statsChartMode, statsChartOffset);
+  const max = Math.max(1, ...p.bars.map(b => b.count));
+  const tabs = ['day', 'week', 'month', 'year'].map(m =>
+    `<button class="periodTab${m === statsChartMode ? ' active' : ''}" onclick="setStatsChartMode('${m}')">${t('stats.tab_' + m)}</button>`).join('');
+  box.innerHTML = `
+    <div id="statsPeriodTabs">${tabs}</div>
+    <div id="statsPeriodNav">
+      <button onclick="shiftStatsPeriod(-1)" aria-label="‹"${p.canPrev ? '' : ' disabled'}>‹</button>
+      <div id="statsPeriodLabel">${escapeHtml(p.label)}</div>
+      <button onclick="shiftStatsPeriod(1)" aria-label="›"${statsChartOffset < 0 ? '' : ' disabled'}>›</button>
+    </div>
+    <div id="statsChart"${p.bars.length > 8 ? ' class="dense"' : ''}>
+      ${p.bars.map(b => {
+        const h = Math.max(4, Math.round((b.count / max) * 100));
+        return `<div class="statsBarWrap">
+          <div class="statsBarNum">${b.count || ''}</div>
+          <div class="statsBar${b.current ? ' today' : ''}" style="height:${h}px"></div>
+          <div class="statsBarDay">${escapeHtml(b.label)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div id="statsPeriodTotal">${t('stats.periodTotal', { n: `<b>${escapeHtml(formatZaboros(p.total))}</b>` })}</div>`;
+  // свайп по графику: влево - вперёд во времени, вправо - назад
+  const chart = document.getElementById('statsChart');
+  let sx = null, sy = null;
+  chart.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  chart.addEventListener('touchend', e => {
+    if(sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    sx = null;
+    if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) shiftStatsPeriod(dx < 0 ? 1 : -1);
+  }, { passive: true });
+}
+function setStatsChartMode(mode){
+  statsChartMode = mode;
+  statsChartOffset = 0;
+  renderStatsPeriodChart();
+}
+function shiftStatsPeriod(dir){
+  if(dir > 0 && statsChartOffset >= 0) return;
+  if(dir < 0 && !buildStatsPeriod(statsChartMode, statsChartOffset).canPrev) return;
+  statsChartOffset += dir;
+  renderStatsPeriodChart();
+}
+
 function openStatsModal(){
+  // при каждом открытии - текущая неделя по дням
+  statsChartMode = 'day';
+  statsChartOffset = 0;
   renderStats();
   document.getElementById('statsModalBg').classList.add('show');
   scrollModalTop('statsModalScroll');
@@ -3886,19 +4025,7 @@ function renderStats(){
     </div>
   `;
 
-  const chartHtml = `
-    <div id="statsChart">
-      ${days.map(d => {
-        const h = Math.max(4, Math.round((d.count / maxCount) * 100));
-        const isToday = d.key === todayKey;
-        return `<div class="statsBarWrap">
-          <div class="statsBarNum">${d.count || ''}</div>
-          <div class="statsBar${isToday ? ' today' : ''}" style="height:${h}px"></div>
-          <div class="statsBarDay">${escapeHtml(d.label)}</div>
-        </div>`;
-      }).join('')}
-    </div>
-  `;
+  const chartHtml = `<div id="statsPeriodBox"></div>`;
 
   const spotByIdForWait = {};
   spots.forEach(s => spotByIdForWait[s.id] = s);
@@ -3942,6 +4069,7 @@ function renderStats(){
 
   const weekBtn = `<button class="settingsActionBtn" style="margin:0 0 14px;" onclick="openWeekCard()">📤 ${t('weekcard.btn')}</button>`;
   body.innerHTML = weekBtn + cardsHtml + chartHtml + waitHtml + hourHtml;
+  renderStatsPeriodChart();
   renderHourChart();
   renderHourTrend();
 }
