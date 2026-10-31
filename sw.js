@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pickup-tracker-v50';
+const CACHE_NAME = 'pickup-tracker-v51';
 const ASSETS = [
   './',
   './index.html',

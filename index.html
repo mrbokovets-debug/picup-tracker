@@ -1356,7 +1356,7 @@ const TRANSLATIONS = {
       dataTitle:'Данные и резервная копия', dataText:'Все данные хранятся только в твоём телефоне. Время от времени нажимай «Сохранить копию» — получишь файл, который можно отправить себе или в облако. Из него данные возвращаются кнопкой «Восстановить из файла», в том числе на новом телефоне. Приложение само напомнит про копию. Ниже — «Очистить все данные»: она удаляет всё, поэтому просит ввести слово подтверждения.',
       stepLabel:'Шаг {i} из {n}', next:'Далее', finish:'Готово', skip:'Пропустить'
     },
-    stats:{ title:'Статистика', tab_day:'Дни', tab_week:'Недели', tab_month:'Месяцы', tab_year:'Годы', periodTotal:'За период: {n}', empty:'Пока нет данных для статистики. Отмечай заборы — здесь появятся цифры по дням.',
+    stats:{ title:'Статистика', tab_day:'Дни', tab_month:'Месяцы', tab_year:'Годы', periodTotal:'За период: {n}', empty:'Пока нет данных для статистики. Отмечай заборы — здесь появятся цифры по дням.',
       cardToday:'сегодня', cardYesterday:'вчера', cardWeek:'на этой неделе', cardTotal:'всего',
       longestWaitTitle:'Дольше всего ждал', waitEmptyTitle:'Время ожидания',
       waitEmptyText:'Пока нет данных. Нажми на точку и выбери «⏱ Жду заказ», чтобы начать замерять.',
@@ -1486,7 +1486,7 @@ const TRANSLATIONS = {
       dataTitle:'Дані та резервна копія', dataText:'Усі дані зберігаються лише в твоєму телефоні. Час від часу натискай «Зберегти копію» — отримаєш файл, який можна надіслати собі або в хмару. З нього дані повертаються кнопкою «Відновити з файлу», зокрема на новому телефоні. Застосунок сам нагадає про копію. Нижче — «Очистити всі дані»: вона видаляє все, тому просить ввести слово підтвердження.',
       stepLabel:'Крок {i} з {n}', next:'Далі', finish:'Готово', skip:'Пропустити'
     },
-    stats:{ title:'Статистика', tab_day:'Дні', tab_week:'Тижні', tab_month:'Місяці', tab_year:'Роки', periodTotal:'За період: {n}', empty:'Поки немає даних для статистики. Відмічай підбори — тут з’являться цифри по днях.',
+    stats:{ title:'Статистика', tab_day:'Дні', tab_month:'Місяці', tab_year:'Роки', periodTotal:'За період: {n}', empty:'Поки немає даних для статистики. Відмічай підбори — тут з’являться цифри по днях.',
       cardToday:'сьогодні', cardYesterday:'вчора', cardWeek:'цього тижня', cardTotal:'всього',
       longestWaitTitle:'Найдовше чекав', waitEmptyTitle:'Час очікування',
       waitEmptyText:'Поки немає даних. Натисни на точку й обери «⏱ Чекаю замовлення», щоб почати вимірювати.',
@@ -1616,7 +1616,7 @@ const TRANSLATIONS = {
       dataTitle:'Datos y copia de seguridad', dataText:'Todos los datos se guardan solo en tu móvil. De vez en cuando pulsa «Guardar copia»: obtendrás un archivo que puedes enviarte o subir a la nube. Con «Restaurar desde archivo» los datos vuelven, también en un móvil nuevo. La app te recordará hacer la copia. Más abajo está «Borrar todos los datos»: elimina todo, por eso pide escribir una palabra de confirmación.',
       stepLabel:'Paso {i} de {n}', next:'Siguiente', finish:'Listo', skip:'Omitir'
     },
-    stats:{ title:'Estadísticas', tab_day:'Días', tab_week:'Semanas', tab_month:'Meses', tab_year:'Años', periodTotal:'En el periodo: {n}',  empty:'Aún no hay datos para las estadísticas. Marca recogidas — aquí aparecerán los números por día.',
+    stats:{ title:'Estadísticas', tab_day:'Días', tab_month:'Meses', tab_year:'Años', periodTotal:'En el periodo: {n}',  empty:'Aún no hay datos para las estadísticas. Marca recogidas — aquí aparecerán los números por día.',
       cardToday:'hoy', cardYesterday:'ayer', cardWeek:'esta semana', cardTotal:'total',
       longestWaitTitle:'Mayor tiempo de espera', waitEmptyTitle:'Tiempo de espera',
       waitEmptyText:'Aún no hay datos. Toca un punto y elige «⏱ Espero el pedido» para empezar a medir.',
@@ -1746,7 +1746,7 @@ const TRANSLATIONS = {
       dataTitle:'Data and backup', dataText:'All data is stored only on your phone. Tap “Save a backup” now and then to get a file you can send to yourself or put in the cloud. “Restore from file” brings the data back, even on a new phone. The app will remind you to back up. Below is “Clear all data”: it deletes everything, so it asks you to type a confirmation word.',
       stepLabel:'Step {i} of {n}', next:'Next', finish:'Done', skip:'Skip'
     },
-    stats:{ title:'Stats', tab_day:'Days', tab_week:'Weeks', tab_month:'Months', tab_year:'Years', periodTotal:'For the period: {n}',  empty:'No stats yet. Log pickups and daily numbers will show up here.',
+    stats:{ title:'Stats', tab_day:'Days', tab_month:'Months', tab_year:'Years', periodTotal:'For the period: {n}',  empty:'No stats yet. Log pickups and daily numbers will show up here.',
       cardToday:'today', cardYesterday:'yesterday', cardWeek:'this week', cardTotal:'total',
       longestWaitTitle:'Longest waits', waitEmptyTitle:'Wait time',
       waitEmptyText:'No data yet. Tap a spot and choose «⏱ Waiting» to start measuring.',
@@ -3515,10 +3515,9 @@ function renderHistory(){
   body.innerHTML = html;
 }
 
-// ---------- график заборов по периодам: дни / недели / месяцы / годы ----------
+// ---------- график заборов по периодам: дни (текущая неделя) / месяцы / годы ----------
 let statsChartMode = 'day';   // что означает один столбик
 let statsChartOffset = 0;     // 0 - текущий период, -1 - предыдущий и т.д.
-const STATS_WEEKS_PER_PAGE = 8;
 const STATS_YEARS_PER_PAGE = 6;
 function uiLocale(){ return currentLang === 'uk' ? 'uk-UA' : currentLang === 'es' ? 'es-ES' : currentLang === 'en' ? 'en-GB' : 'ru-RU'; }
 function mondayOf(date){
@@ -3557,17 +3556,6 @@ function buildStatsPeriod(mode, offset){
     const end = addDays(start, 6);
     label = shortDate(start, start.getMonth() !== end.getMonth()) + ' – ' + shortDate(end, true);
     if(start.getFullYear() !== now.getFullYear()) label += ' ' + start.getFullYear();
-  } else if(mode === 'week'){
-    const curMon = mondayOf(now);
-    const lastMon = addDays(curMon, offset * STATS_WEEKS_PER_PAGE * 7);
-    start = addDays(lastMon, -(STATS_WEEKS_PER_PAGE - 1) * 7);
-    for(let i = 0; i < STATS_WEEKS_PER_PAGE; i++){
-      const mon = addDays(start, i * 7);
-      const dd = String(mon.getDate()).padStart(2, '0'), mm = String(mon.getMonth() + 1).padStart(2, '0');
-      bars.push({ label: dd + '.' + mm, count: sumDays(mon, addDays(mon, 7)), current: dayKey(mon) === dayKey(curMon) });
-    }
-    label = shortDate(start, true) + ' – ' + shortDate(addDays(lastMon, 6), true);
-    if(start.getFullYear() !== now.getFullYear() || lastMon.getFullYear() !== now.getFullYear()) label += ' ' + addDays(lastMon, 6).getFullYear();
   } else if(mode === 'month'){
     const y = now.getFullYear() + offset;
     start = new Date(y, 0, 1);
@@ -3594,16 +3582,19 @@ function buildStatsPeriod(mode, offset){
 function renderStatsPeriodChart(){
   const box = document.getElementById('statsPeriodBox');
   if(!box) return;
+  // «Дни» - всегда только текущая неделя, без листания; месяцы и годы листаются
+  if(statsChartMode === 'day') statsChartOffset = 0;
+  const navOn = statsChartMode !== 'day';
   const p = buildStatsPeriod(statsChartMode, statsChartOffset);
   const max = Math.max(1, ...p.bars.map(b => b.count));
-  const tabs = ['day', 'week', 'month', 'year'].map(m =>
+  const tabs = ['day', 'month', 'year'].map(m =>
     `<button class="periodTab${m === statsChartMode ? ' active' : ''}" onclick="setStatsChartMode('${m}')">${t('stats.tab_' + m)}</button>`).join('');
   box.innerHTML = `
     <div id="statsPeriodTabs">${tabs}</div>
     <div id="statsPeriodNav">
-      <button onclick="shiftStatsPeriod(-1)" aria-label="‹"${p.canPrev ? '' : ' disabled'}>‹</button>
+      ${navOn ? `<button onclick="shiftStatsPeriod(-1)" aria-label="‹"${p.canPrev ? '' : ' disabled'}>‹</button>` : ''}
       <div id="statsPeriodLabel">${escapeHtml(p.label)}</div>
-      <button onclick="shiftStatsPeriod(1)" aria-label="›"${statsChartOffset < 0 ? '' : ' disabled'}>›</button>
+      ${navOn ? `<button onclick="shiftStatsPeriod(1)" aria-label="›"${statsChartOffset < 0 ? '' : ' disabled'}>›</button>` : ''}
     </div>
     <div id="statsChart"${p.bars.length > 8 ? ' class="dense"' : ''}>
       ${p.bars.map(b => {
@@ -3618,6 +3609,7 @@ function renderStatsPeriodChart(){
     <div id="statsPeriodTotal">${t('stats.periodTotal', { n: `<b>${escapeHtml(formatZaboros(p.total))}</b>` })}</div>`;
   // свайп по графику: влево - вперёд во времени, вправо - назад
   const chart = document.getElementById('statsChart');
+  if(!navOn) return;
   let sx = null, sy = null;
   chart.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
   chart.addEventListener('touchend', e => {
@@ -3633,6 +3625,7 @@ function setStatsChartMode(mode){
   renderStatsPeriodChart();
 }
 function shiftStatsPeriod(dir){
+  if(statsChartMode === 'day') return;
   if(dir > 0 && statsChartOffset >= 0) return;
   if(dir < 0 && !buildStatsPeriod(statsChartMode, statsChartOffset).canPrev) return;
   statsChartOffset += dir;
