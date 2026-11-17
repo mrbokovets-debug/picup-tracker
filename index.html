@@ -286,6 +286,16 @@
   #spotSheetWaitBtn{background:var(--signal-dim); color:var(--signal);}
   #spotSheetPickBtn{background:var(--signal); color:var(--signal-text);}
   #spotSheetLinks{display:flex; gap:10px; margin-top:10px;}
+  /* время забора: «сейчас» или выбранный день и час (когда вносишь заборы после смены) */
+  #spotSheetWhen{display:flex; align-items:center; gap:8px; width:100%; margin:0 0 10px; padding:11px 12px; border-radius:10px;
+    border:1px dashed var(--line); background:transparent; color:var(--text); font-size:14px; cursor:pointer; text-align:left; box-sizing:border-box;}
+  #spotSheetWhen b{color:var(--signal); font-weight:800;}
+  #spotSheetWhen .chev{margin-left:auto; color:var(--text-dim);}
+  #spotSheetWhenPick{display:none; gap:8px; margin:0 0 10px;}
+  #spotSheetWhenPick.show{display:flex;}
+  #spotSheetWhenPick select{flex:1; min-width:0; padding:11px 8px; border-radius:10px; border:1px solid var(--line); background:var(--asphalt-2);
+    color:var(--text); font-size:15px; outline:none;}
+  #spotSheetWhenPick button{padding:0 12px; border-radius:10px; border:none; background:var(--line); color:var(--text); font-size:13px; font-weight:700; cursor:pointer;}
   #spotSheetLinks button{flex:1; padding:11px; border-radius:10px; border:none; font-size:13.5px; font-weight:700; cursor:pointer;
     background:var(--line); color:var(--text);}
 
@@ -940,6 +950,12 @@
     <h3 id="spotSheetTitle"></h3>
     <p id="spotSheetMeta"></p>
     <input id="spotSheetAmount" type="number" inputmode="decimal" min="0" step="0.01" data-i18n-ph="spotSheet.amountPh" placeholder="Сумма за заказ (необязательно)">
+    <button id="spotSheetWhen" type="button" onclick="toggleSpotSheetWhen()"></button>
+    <div id="spotSheetWhenPick">
+      <select id="spotSheetDay" onchange="onSpotSheetWhenChange(true)"></select>
+      <select id="spotSheetHour" onchange="onSpotSheetWhenChange(false)"></select>
+      <button type="button" onclick="resetSpotSheetWhen()" data-i18n="spotSheet.whenNowBtn">Сейчас</button>
+    </div>
     <div id="spotSheetBtns">
       <button id="spotSheetWaitBtn" onclick="spotSheetWait()"></button>
       <button id="spotSheetPickBtn" onclick="spotSheetPickup()"></button>
@@ -1315,7 +1331,7 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'Сколько заплатили за этот заказ?', titleEdit:'Исправить итоговую сумму', saveAdd:'Добавить',
       saveEdit:'Сохранить', cancel:'Отмена', placeholder:'Например: 4.5', errAddPositive:'Введи сумму больше нуля.',
       errEditNonNeg:'Введи сумму 0 или больше.' },
-    spotSheet:{ wait:'⏱ Жду заказ', picked:'✅ Забрал', amountPh:'Сумма за заказ, {cur} (необязательно)', waitingNow:'ждёшь {time}', saved:'+1 забор: {name}', savedWithAmount:'+1 забор и {amount}: {name}' },
+    spotSheet:{ when:'Когда', whenNow:'сейчас', whenNowBtn:'Сейчас', today:'Сегодня', yesterday:'Вчера', wait:'⏱ Жду заказ', picked:'✅ Забрал', amountPh:'Сумма за заказ, {cur} (необязательно)', waitingNow:'ждёшь {time}', saved:'+1 забор: {name}', savedWithAmount:'+1 забор и {amount}: {name}' },
     rename:{ title:'Новое название заведения', save:'Сохранить', done:'Переименовано: {name}' },
     rowAction:{ rename:'Переименовать', add:'Добавить забор (+1)', remove:'Убрать забор (−1)', editAmount:'Исправить итоговую сумму', cancel:'Отмена' },
     onboard:{ title:'Как тебе платят за заказы?', sub:'Выбери свою схему — потом можно сменить в Настройках',
@@ -1445,7 +1461,7 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'Скільки заплатили за це замовлення?', titleEdit:'Виправити підсумкову суму', saveAdd:'Додати',
       saveEdit:'Зберегти', cancel:'Скасувати', placeholder:'Наприклад: 4.5', errAddPositive:'Введи суму більше нуля.',
       errEditNonNeg:'Введи суму 0 або більше.' },
-    spotSheet:{ wait:'⏱ Чекаю замовлення', picked:'✅ Забрав', amountPh:'Сума за замовлення, {cur} (необов’язково)', waitingNow:'чекаєш {time}', saved:'+1 підбір: {name}', savedWithAmount:'+1 підбір і {amount}: {name}' },
+    spotSheet:{ when:'Коли', whenNow:'зараз', whenNowBtn:'Зараз', today:'Сьогодні', yesterday:'Вчора', wait:'⏱ Чекаю замовлення', picked:'✅ Забрав', amountPh:'Сума за замовлення, {cur} (необов’язково)', waitingNow:'чекаєш {time}', saved:'+1 підбір: {name}', savedWithAmount:'+1 підбір і {amount}: {name}' },
     rename:{ title:'Нова назва закладу', save:'Зберегти', done:'Перейменовано: {name}' },
     rowAction:{ rename:'Перейменувати', add:'Додати підбір (+1)', remove:'Прибрати підбір (−1)', editAmount:'Виправити підсумкову суму', cancel:'Скасувати' },
     onboard:{ title:'Як тобі платять за замовлення?', sub:'Обери свою схему — потім можна змінити в Налаштуваннях',
@@ -1575,7 +1591,7 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'¿Cuánto te pagaron por este pedido?', titleEdit:'Corregir el importe total', saveAdd:'Añadir',
       saveEdit:'Guardar', cancel:'Cancelar', placeholder:'Por ejemplo: 4.5', errAddPositive:'Introduce un importe mayor que cero.',
       errEditNonNeg:'Introduce un importe de 0 o más.' },
-    spotSheet:{ wait:'⏱ Espero el pedido', picked:'✅ Recogido', amountPh:'Importe del pedido, {cur} (opcional)', waitingNow:'esperando {time}', saved:'+1 recogida: {name}', savedWithAmount:'+1 recogida y {amount}: {name}' },
+    spotSheet:{ when:'Cuándo', whenNow:'ahora', whenNowBtn:'Ahora', today:'Hoy', yesterday:'Ayer', wait:'⏱ Espero el pedido', picked:'✅ Recogido', amountPh:'Importe del pedido, {cur} (opcional)', waitingNow:'esperando {time}', saved:'+1 recogida: {name}', savedWithAmount:'+1 recogida y {amount}: {name}' },
     rename:{ title:'Nuevo nombre del local', save:'Guardar', done:'Nombre cambiado: {name}' },
     rowAction:{ rename:'Cambiar nombre', add:'Añadir recogida (+1)', remove:'Quitar recogida (−1)', editAmount:'Corregir el importe total', cancel:'Cancelar' },
     onboard:{ title:'¿Cómo te pagan los pedidos?', sub:'Elige tu modelo — luego puedes cambiarlo en Ajustes',
@@ -1705,7 +1721,7 @@ const TRANSLATIONS = {
     amount:{ titleAdd:'How much did you get paid for this order?', titleEdit:'Fix the total amount', saveAdd:'Add',
       saveEdit:'Save', cancel:'Cancel', placeholder:'e.g. 4.5', errAddPositive:'Enter an amount greater than zero.',
       errEditNonNeg:'Enter an amount of 0 or more.' },
-    spotSheet:{ wait:'⏱ Waiting', picked:'✅ Picked up', amountPh:'Order amount, {cur} (optional)', waitingNow:'waiting {time}', saved:'+1 pickup: {name}', savedWithAmount:'+1 pickup and {amount}: {name}' },
+    spotSheet:{ when:'When', whenNow:'now', whenNowBtn:'Now', today:'Today', yesterday:'Yesterday', wait:'⏱ Waiting', picked:'✅ Picked up', amountPh:'Order amount, {cur} (optional)', waitingNow:'waiting {time}', saved:'+1 pickup: {name}', savedWithAmount:'+1 pickup and {amount}: {name}' },
     rename:{ title:'New place name', save:'Save', done:'Renamed: {name}' },
     rowAction:{ rename:'Rename', add:'Add pickup (+1)', remove:'Remove pickup (−1)', editAmount:'Fix the total amount', cancel:'Cancel' },
     onboard:{ title:'How do you get paid for orders?', sub:'Pick your scheme — you can change it later in Settings',
@@ -3152,9 +3168,9 @@ function reconcileEarnings(){
   if(changed) persistEarnings();
   return changed;
 }
-function addEarning(s, amount){
+function addEarning(s, amount, atMs){
   s.earned = (s.earned || 0) + amount;
-  earningsLog.push({ id: makeVisitId(), spotId: s.id, amount, ts: new Date().toISOString() });
+  earningsLog.push({ id: makeVisitId(), spotId: s.id, amount, ts: new Date(atMs || Date.now()).toISOString() });
   persistEarnings();
 }
 
@@ -3178,11 +3194,80 @@ function openSpotSheet(spotId){
   waitBtn.textContent = t('spotSheet.wait');
   waitBtn.style.display = waitingHere ? 'none' : '';  // таймер на этой точке уже идёт
   document.getElementById('spotSheetPickBtn').textContent = t('spotSheet.picked');
+  // выбор времени: по умолчанию «сейчас»; при идущем на этой точке таймере время забора - момент остановки
+  spotSheetWhenMs = null;
+  document.getElementById('spotSheetWhenPick').classList.remove('show');
+  document.getElementById('spotSheetWhen').style.display = waitingHere ? 'none' : '';
+  renderSpotSheetWhen();
   document.getElementById('spotSheetModalBg').classList.add('show');
 }
 document.addEventListener('keydown', (e) => {
   if(e.key === 'Enter' && document.activeElement && document.activeElement.id === 'spotSheetAmount'){ e.preventDefault(); spotSheetPickup(); }
 });
+let spotSheetWhenMs = null;      // null - «сейчас», иначе выбранный момент забора
+let spotSheetLastPick = null;    // последний выбранный день и час - предлагаем его при следующем выборе
+const SPOT_WHEN_DAYS = 7;
+function dayStart(offsetDays){ const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - offsetDays); return d; }
+function whenLabel(ms){
+  const d = new Date(ms), hh = String(d.getHours()).padStart(2, '0') + ':00';
+  const today = dayStart(0).getTime(), dms = new Date(d).setHours(0, 0, 0, 0);
+  const off = Math.round((today - dms) / 86400000);
+  const day = off === 0 ? t('spotSheet.today') : off === 1 ? t('spotSheet.yesterday')
+    : d.toLocaleDateString(uiLocale(), { weekday: 'short', day: 'numeric', month: 'short' });
+  return day + ', ' + hh;
+}
+function renderSpotSheetWhen(){
+  const btn = document.getElementById('spotSheetWhen');
+  const val = spotSheetWhenMs ? whenLabel(spotSheetWhenMs) : t('spotSheet.whenNow');
+  btn.innerHTML = `<span>🕐</span><span>${escapeHtml(t('spotSheet.when'))}: <b>${escapeHtml(val)}</b></span><span class="chev">▾</span>`;
+}
+function fillSpotSheetHours(dayOff, keepHour){
+  const sel = document.getElementById('spotSheetHour');
+  const maxH = dayOff === 0 ? new Date().getHours() : 23;   // в будущее выбрать нельзя
+  let html = '';
+  for(let h = 0; h <= maxH; h++) html += `<option value="${h}">${String(h).padStart(2, '0')}:00–${String(h).padStart(2, '0')}:59</option>`;
+  sel.innerHTML = html;
+  sel.value = String(Math.min(keepHour, maxH));
+}
+function toggleSpotSheetWhen(){
+  const box = document.getElementById('spotSheetWhenPick');
+  if(box.classList.contains('show')){ box.classList.remove('show'); return; }
+  const daySel = document.getElementById('spotSheetDay');
+  let html = '';
+  for(let i = 0; i < SPOT_WHEN_DAYS; i++){
+    const d = dayStart(i);
+    const lab = i === 0 ? t('spotSheet.today') : i === 1 ? t('spotSheet.yesterday') : d.toLocaleDateString(uiLocale(), { weekday: 'short', day: 'numeric', month: 'short' });
+    html += `<option value="${i}">${escapeHtml(lab)}</option>`;
+  }
+  daySel.innerHTML = html;
+  // предлагаем прошлый выбор (удобно вносить несколько заборов подряд), иначе - сегодня, текущий час
+  let off = 0, hour = new Date().getHours();
+  if(spotSheetLastPick){
+    const o = Math.round((dayStart(0).getTime() - spotSheetLastPick.day) / 86400000);
+    if(o >= 0 && o < SPOT_WHEN_DAYS){ off = o; hour = spotSheetLastPick.hour; }
+  }
+  daySel.value = String(off);
+  fillSpotSheetHours(off, hour);
+  box.classList.add('show');
+  onSpotSheetWhenChange(false);
+}
+function onSpotSheetWhenChange(dayChanged){
+  const off = parseInt(document.getElementById('spotSheetDay').value, 10) || 0;
+  const hourSel = document.getElementById('spotSheetHour');
+  if(dayChanged) fillSpotSheetHours(off, parseInt(hourSel.value, 10) || 0);
+  const hour = parseInt(hourSel.value, 10) || 0;
+  const d = dayStart(off); d.setHours(hour, 30, 0, 0);       // середина часа: не съезжает на соседний час
+  let ms = d.getTime();
+  if(ms > Date.now()) ms = Date.now();                       // текущий час - не позже «сейчас»
+  spotSheetWhenMs = ms;
+  spotSheetLastPick = { day: dayStart(off).getTime(), hour };
+  renderSpotSheetWhen();
+}
+function resetSpotSheetWhen(){
+  spotSheetWhenMs = null;
+  document.getElementById('spotSheetWhenPick').classList.remove('show');
+  renderSpotSheetWhen();
+}
 function closeSpotSheet(){
   document.getElementById('spotSheetModalBg').classList.remove('show');
   try{ document.getElementById('spotSheetAmount').blur(); }catch(e){}
@@ -3205,19 +3290,21 @@ function spotSheetPickup(){
       if(isNaN(amount) || amount < 0){ showToast(t('amount.errAddPositive'), 3500); return; }
     }
   }
+  const spotSheetWhenMsAtClick = spotSheetWhenMs;   // closeSpotSheet не сбрасывает выбор, но берём заранее
   closeSpotSheet();
   // если на этой точке идёт таймер ожидания - «Забрал» его останавливает и записывает забор с ожиданием
   const fromTimer = !!(activeArrival && activeArrival.spotId === id);
+  const atMs = fromTimer ? null : spotSheetWhenMsAtClick;
   if(fromTimer) completeArrival();
-  else bump(id);
+  else bump(id, atMs);
   if(amount > 0){
-    addEarning(s, amount);
+    addEarning(s, amount, atMs);
     persist();
     renderAll();
     // после таймера оставляем его подсказку с временем ожидания, иначе подтверждаем сумму
-    if(!fromTimer) showToast(t('spotSheet.savedWithAmount', { amount: formatMoney(amount), name: s.name }), 2500);
+    if(!fromTimer) showToast(t('spotSheet.savedWithAmount', { amount: formatMoney(amount), name: s.name }) + (atMs ? ' · ' + whenLabel(atMs) : ''), 2500);
   } else if(!fromTimer){
-    showToast(t('spotSheet.saved', { name: s.name }), 2000);
+    showToast(t('spotSheet.saved', { name: s.name }) + (atMs ? ' · ' + whenLabel(atMs) : ''), 2000);
   }
 }
 function spotSheetRename(){
@@ -4527,12 +4614,14 @@ function makeVisitId(){
   return 'visit_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
 }
 
-function bump(id){
+function bump(id, atMs){
   const s = spots.find(s => s.id === id);
   if(!s) return;
   s.count += 1;
-  s.lastVisit = new Date().toISOString();
-  visitsLog.push({ id: makeVisitId(), spotId: id, ts: s.lastVisit, type: 'add' });
+  // atMs - время забора, выбранное вручную (вносишь заборы после смены); по умолчанию - сейчас
+  const ts = new Date(atMs || Date.now()).toISOString();
+  if(!s.lastVisit || new Date(s.lastVisit).getTime() < new Date(ts).getTime()) s.lastVisit = ts;
+  visitsLog.push({ id: makeVisitId(), spotId: id, ts, type: 'add' });
   persist();
   persistVisits();
   renderAll();
