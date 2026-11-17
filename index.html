@@ -689,6 +689,19 @@
     padding:calc(24px + env(safe-area-inset-top, 0px)) 20px 16px;
     font-size:26px; font-weight:800; color:var(--text);
   }
+  /* шапка профиля в меню */
+  #drawerProfile{display:block; padding:calc(20px + env(safe-area-inset-top, 0px)) 18px 14px; cursor:pointer;}
+  #drawerProfile:active{background:var(--asphalt-2);}
+  .dpTop{display:flex; align-items:center; gap:12px;}
+  .dpAvatar{width:48px; height:48px; border-radius:50%; background:var(--signal); color:var(--signal-text); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800;}
+  .dpName{font-size:19px; font-weight:800; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .dpSub{font-size:12.5px; color:var(--text-dim); margin-top:2px; line-height:1.35;}
+  .dpSub.login{color:var(--signal); font-weight:700;}
+  .dpStats{display:flex; gap:6px; margin-top:12px;}
+  .dpStat{flex:1; background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px; padding:7px 4px; text-align:center;}
+  .dpStat b{display:block; font-size:16px; color:var(--signal); font-weight:800;}
+  .dpStat span{font-size:10.5px; color:var(--text-dim);}
   .drawerGroup{
     border-top:1px solid var(--line); padding-top:6px; margin-top:6px;
   }
@@ -776,9 +789,7 @@
 
 <div id="drawerOverlay" onclick="closeDrawer()"></div>
 <div id="sideDrawer">
-  <div class="drawerHeader">
-    <span data-i18n="drawer.menu">Меню</span>
-  </div>
+  <div id="drawerProfile" onclick="onDrawerProfileTap()"></div>
 
   <div class="drawerGroup">
     <div class="drawerItem" id="drawerItemOrders" onclick="closeDrawer(); openOrdersModal();">
@@ -1292,6 +1303,7 @@ function detectInitialLang(){
 
 const TRANSLATIONS = {
   ru: {
+    profile:{ guest:'Гость', loginHint:'Войти, чтобы не потерять данные ›', cloudOn:'☁️ Облако включено', cloudSaved:'☁️ Сохранено {time}', total:'заборов', week:'за неделю', spots:'точек', today:'сегодня', yesterday:'вчера' },
     drawer:{ contact:'Написать разработчику', contactSubject:'PickupMap: вопрос или идея', contactBody:'Опиши, что случилось или что хочешь предложить:', menu:'Меню', orders:'Мои заказы', stats:'Статистика', history:'История', reco:'Рекомендации', team:'Команда',
       settings:'Настройки', howTo:'Как пользоваться', backup:'Сохранить копию', restore:'Восстановить из файла',
       clearData:'Очистить все данные' },
@@ -1422,6 +1434,7 @@ const TRANSLATIONS = {
   },
 
   uk:{
+    profile:{ guest:'Гість', loginHint:'Увійти, щоб не втратити дані ›', cloudOn:'☁️ Хмару ввімкнено', cloudSaved:'☁️ Збережено {time}', total:'підборів', week:'за тиждень', spots:'точок', today:'сьогодні', yesterday:'вчора' },
     drawer:{ contact:'Написати розробнику', contactSubject:'PickupMap: питання або ідея', contactBody:'Опиши, що сталося або що хочеш запропонувати:', menu:'Меню', orders:'Мої замовлення', stats:'Статистика', history:'Історія', reco:'Рекомендації', team:'Команда',
       settings:'Налаштування', howTo:'Як користуватись', backup:'Зберегти копію', restore:'Відновити з файлу',
       clearData:'Очистити всі дані' },
@@ -1552,6 +1565,7 @@ const TRANSLATIONS = {
   },
 
   es:{
+    profile:{ guest:'Invitado', loginHint:'Inicia sesión para no perder tus datos ›', cloudOn:'☁️ Nube activada', cloudSaved:'☁️ Guardado {time}', total:'recogidas', week:'esta semana', spots:'puntos', today:'hoy', yesterday:'ayer' },
     drawer:{ contact:'Escribir al desarrollador', contactSubject:'PickupMap: pregunta o idea', contactBody:'Cuéntanos qué ha pasado o qué te gustaría proponer:', menu:'Menú', orders:'Mis pedidos', stats:'Estadísticas', history:'Historial', reco:'Recomendaciones', team:'Equipo',
       settings:'Ajustes', howTo:'Cómo usar la app', backup:'Guardar copia', restore:'Restaurar desde archivo',
       clearData:'Borrar todos los datos' },
@@ -1682,6 +1696,7 @@ const TRANSLATIONS = {
   },
 
   en:{
+    profile:{ guest:'Guest', loginHint:'Sign in to keep your data safe ›', cloudOn:'☁️ Cloud on', cloudSaved:'☁️ Saved {time}', total:'pickups', week:'this week', spots:'spots', today:'today', yesterday:'yesterday' },
     drawer:{ contact:'Contact the developer', contactSubject:'PickupMap: question or idea', contactBody:'Tell us what happened or what you would like to suggest:', menu:'Menu', orders:'My orders', stats:'Stats', history:'History', reco:'Recommendations', team:'Team',
       settings:'Settings', howTo:'How to use', backup:'Save a backup', restore:'Restore from file',
       clearData:'Clear all data' },
@@ -3320,7 +3335,65 @@ function chooseMarkerStyle(style){
   renderAll();
 }
 
+// шапка профиля в меню: ник, статус облака и команды, три цифры
+function profileName(){
+  if(teamInfo && teamInfo.nickname) return teamInfo.nickname;
+  const nick = localStorage.getItem(TEAM_NICK_KEY);
+  if(nick) return nick;
+  if(cloudSession && cloudSession.email) return cloudSession.email.split('@')[0];
+  return t('profile.guest');
+}
+function renderDrawerProfile(){
+  const box = document.getElementById('drawerProfile');
+  if(!box) return;
+  const name = profileName();
+  const first = (cloudSession || teamInfo || localStorage.getItem(TEAM_NICK_KEY)) ? (Array.from(name.trim())[0] || '📍').toUpperCase() : '📍';
+  let sub, subCls = '';
+  if(!cloudSession){
+    sub = t('profile.loginHint'); subCls = ' login';
+  } else {
+    const parts = [];
+    const ts = parseInt(localStorage.getItem(CLOUD_TS_KEY) || '0', 10);
+    parts.push(ts ? t('profile.cloudSaved', { time: formatWhenShort(ts) }) : t('profile.cloudOn'));
+    if(teamInfo) parts.push('👥 ' + (teamInfo.name || t('team.defaultName')));
+    sub = parts.join(' · ');
+  }
+  const total = spots.reduce((a, s) => a + (s.count || 0), 0);
+  const weekStart = teamWeekStart();
+  let week = 0;
+  visitsLog.forEach(v => { if(new Date(v.ts).getTime() >= weekStart) week += (v.type === 'remove' ? -1 : 1); });
+  box.innerHTML = `
+    <div class="dpTop">
+      <div class="dpAvatar">${escapeHtml(first)}</div>
+      <div style="min-width:0;">
+        <div class="dpName">${escapeHtml(name)}</div>
+        <div class="dpSub${subCls}">${escapeHtml(sub)}</div>
+      </div>
+    </div>
+    <div class="dpStats">
+      <div class="dpStat"><b>${total}</b><span>${escapeHtml(t('profile.total'))}</span></div>
+      <div class="dpStat"><b>${Math.max(0, week)}</b><span>${escapeHtml(t('profile.week'))}</span></div>
+      <div class="dpStat"><b>${spots.length}</b><span>${escapeHtml(t('profile.spots'))}</span></div>
+    </div>`;
+}
+// «сегодня 18:40», «вчера 09:12», «12 нояб.»
+function formatWhenShort(ms){
+  const d = new Date(ms), hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
+  const off = Math.round((today - dd) / 86400000);
+  if(off === 0) return t('profile.today') + ' ' + hm;
+  if(off === 1) return t('profile.yesterday') + ' ' + hm;
+  return d.toLocaleDateString(uiLocale(), { day: 'numeric', month: 'short' });
+}
+function onDrawerProfileTap(){
+  closeDrawer();
+  if(!cloudSession){ openLoginGate(); return; }
+  openSettingsModal();
+  try{ document.getElementById('grpData').open = true; }catch(e){}
+}
 function openDrawer(){
+  try{ renderDrawerProfile(); }catch(e){}
   document.getElementById('sideDrawer').classList.add('show');
   document.getElementById('drawerOverlay').classList.add('show');
 }
