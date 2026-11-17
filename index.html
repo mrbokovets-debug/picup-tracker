@@ -592,6 +592,15 @@
     padding:10px 14px; margin-bottom:14px; font-size:13px; font-weight:700; color:var(--signal);
   }
   .historyDateFilterArrow{color:var(--text-dim); font-size:16px;}
+  #historySearchWrap{display:flex; align-items:center; gap:8px; background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px; padding:0 6px 0 12px; margin-bottom:10px;}
+  #historySearchWrap:focus-within{border-color:var(--signal);}
+  .historySearchIcon{font-size:14px; opacity:.7;}
+  #historySearch{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text); font-size:16px; padding:11px 0; font-family:inherit; -webkit-appearance:none; appearance:none;}
+  #historySearch::-webkit-search-cancel-button{display:none;}
+  #historySearchClear{display:none; width:28px; height:28px; border-radius:50%; border:0; background:var(--line); color:var(--text-dim); font-size:12px; cursor:pointer; padding:0;}
+  #historySearchWrap.hasText #historySearchClear{display:block;}
+  .historySearchSummary{background:var(--signal-dim); border-radius:10px; padding:10px 12px; margin:0 0 14px; font-size:13px; color:var(--text); line-height:1.45;}
+  .historySearchSummary b{color:var(--signal);}
 
   /* --- Модалка календаря --- */
   #calendarModalBg{position:fixed; inset:0; background:rgba(10,12,15,0.5); display:none;
@@ -1263,6 +1272,11 @@
         <button class="modalXBtn" onclick="closeHistoryModal()">✕</button>
       </div>
       <p class="coords" data-i18n="history.desc">Полный список твоих заказов по дням и времени: где забрал, сколько ждал и когда случайно нажал не туда (−1). Листай вниз или ищи конкретный день по дате.</p>
+      <div id="historySearchWrap">
+        <span class="historySearchIcon">🔍</span>
+        <input id="historySearch" type="search" autocomplete="off" enterkeyhint="search" data-i18n-ph="history.searchPh" placeholder="Поиск заведения" oninput="onHistorySearch()">
+        <button id="historySearchClear" type="button" onclick="clearHistorySearch()" aria-label="×">✕</button>
+      </div>
       <div id="historyDateFilterBar" onclick="openCalendarModal()">
         <span id="historyDateFilterLabel" data-i18n="history.dateFilterDefault">📅 Поиск по дате</span>
         <span class="historyDateFilterArrow">›</span>
@@ -1429,8 +1443,8 @@ const TRANSLATIONS = {
       notifStatusUnsupported:'⚠️ Этот браузер не поддерживает уведомления. Открой приложение в Chrome или установи его на экран «Домой»',
       notifTestFailed:'Не получилось показать уведомление. Проверь разрешение в настройках телефона.',
       pushOn:'☁️ Напоминания придут, даже если приложение закрыто', pushIosHint:'ℹ️ На iPhone напоминания при закрытом приложении работают, только если добавить его на экран «Домой» (Поделиться → На экран «Домой»)' },
-    history:{ title:'История заказов', desc:'Полный список твоих заказов по дням и времени: где забрал, сколько ждал и когда случайно нажал не туда (−1). Листай вниз или ищи конкретный день по дате.',
-      dateFilterDefault:'📅 Поиск по дате', emptyAll:'Пока пусто. Здесь появится история всех +1 и −1 по точкам.',
+    history:{ title:'История заказов', desc:'Полный список твоих заказов по дням и времени: где забрал, сколько ждал и когда случайно нажал не туда (−1). Листай вниз, ищи заведение по названию или день по дате.',
+      searchPh:'Поиск заведения', emptySearch:'Ничего не найдено. Попробуй другое название.', found:'Найдено: {n} · заведений: {places}', avgWait:'Среднее ожидание: {t}', dateFilterDefault:'📅 Поиск по дате', emptyAll:'Пока пусто. Здесь появится история всех +1 и −1 по точкам.',
       emptyRange:'За выбранный период записей нет.' },
     calendar:{ today:'Сегодня', hint:'Выбери один день, или два дня — для диапазона между ними', reset:'Сбросить', apply:'Показать' },
     alerts:{ confirmRestartTimer:'Уже идёт отсчёт для «{name}». Начать заново для «{newName}»? Прошлый отсчёт не будет засчитан.',
@@ -1560,8 +1574,8 @@ const TRANSLATIONS = {
       notifStatusUnsupported:'⚠️ Цей браузер не підтримує сповіщення. Відкрий застосунок у Chrome або встанови його на екран «Додому»',
       notifTestFailed:'Не вдалося показати сповіщення. Перевір дозвіл у налаштуваннях телефона.',
       pushOn:'☁️ Нагадування прийдуть, навіть якщо застосунок закрито', pushIosHint:'ℹ️ На iPhone нагадування при закритому застосунку працюють, лише якщо додати його на екран «Додому» (Поділитися → На екран «Додому»)' },
-    history:{ title:'Історія замовлень', desc:'Повний список твоїх замовлень по днях і часу: де забрав, скільки чекав і коли випадково натиснув не туди (−1). Гортай вниз або шукай конкретний день за датою.',
-      dateFilterDefault:'📅 Пошук за датою', emptyAll:'Поки порожньо. Тут з’явиться історія всіх +1 і −1 по точках.',
+    history:{ title:'Історія замовлень', desc:'Повний список твоїх замовлень по днях і часу: де забрав, скільки чекав і коли випадково натиснув не туди (−1). Гортай вниз, шукай заклад за назвою або день за датою.',
+      searchPh:'Пошук закладу', emptySearch:'Нічого не знайдено. Спробуй іншу назву.', found:'Знайдено: {n} · закладів: {places}', avgWait:'Середнє очікування: {t}', dateFilterDefault:'📅 Пошук за датою', emptyAll:'Поки порожньо. Тут з’явиться історія всіх +1 і −1 по точках.',
       emptyRange:'За обраний період записів немає.' },
     calendar:{ today:'Сьогодні', hint:'Обери один день, або два дні — для діапазону між ними', reset:'Скинути', apply:'Показати' },
     alerts:{ confirmRestartTimer:'Вже йде відлік для «{name}». Почати заново для «{newName}»? Попередній відлік не буде зараховано.',
@@ -1691,8 +1705,8 @@ const TRANSLATIONS = {
       notifStatusUnsupported:'⚠️ Este navegador no admite notificaciones. Abre la app en Chrome o instálala en la pantalla de inicio',
       notifTestFailed:'No se pudo mostrar la notificación. Revisa el permiso en los ajustes del móvil.',
       pushOn:'☁️ Los avisos llegarán aunque la app esté cerrada', pushIosHint:'ℹ️ En iPhone los avisos con la app cerrada solo funcionan si la añades a la pantalla de inicio (Compartir → Añadir a pantalla de inicio)' },
-    history:{ title:'Historial de pedidos', desc:'La lista completa de tus pedidos por día y hora: dónde recogiste, cuánto esperaste y cuándo tocaste el punto equivocado por error (−1). Desplázate hacia abajo o busca un día concreto por fecha.',
-      dateFilterDefault:'📅 Buscar por fecha', emptyAll:'Aún no hay nada. Aquí aparecerá el historial de todos los +1 y −1 de tus puntos.',
+    history:{ title:'Historial de pedidos', desc:'La lista completa de tus pedidos por día y hora: dónde recogiste, cuánto esperaste y cuándo tocaste el punto equivocado por error (−1). Desplázate hacia abajo, busca un local por su nombre o un día por fecha.',
+      searchPh:'Buscar local', emptySearch:'No se encontró nada. Prueba con otro nombre.', found:'Encontrado: {n} · locales: {places}', avgWait:'Espera media: {t}', dateFilterDefault:'📅 Buscar por fecha', emptyAll:'Aún no hay nada. Aquí aparecerá el historial de todos los +1 y −1 de tus puntos.',
       emptyRange:'No hay registros en el periodo seleccionado.' },
     calendar:{ today:'Hoy', hint:'Elige un día, o dos días para un rango entre ellos', reset:'Restablecer', apply:'Mostrar' },
     alerts:{ confirmRestartTimer:'Ya hay un cronómetro activo para «{name}». ¿Empezar de nuevo para «{newName}»? El cronómetro anterior no se contará.',
@@ -1822,8 +1836,8 @@ const TRANSLATIONS = {
       notifStatusUnsupported:'⚠️ This browser does not support notifications. Open the app in Chrome or install it to the home screen',
       notifTestFailed:'Could not show the notification. Check the permission in your phone settings.',
       pushOn:'☁️ Reminders will arrive even if the app is closed', pushIosHint:'ℹ️ On iPhone, reminders with the app closed only work if you add it to the Home Screen (Share → Add to Home Screen)' },
-    history:{ title:'Order history', desc:'The full list of your orders by day and time: where you picked up, how long you waited, and when you accidentally tapped the wrong spot (−1). Scroll down or search for a specific day.',
-      dateFilterDefault:'📅 Search by date', emptyAll:'Nothing here yet. The history of every +1 and −1 on your spots will show up here.',
+    history:{ title:'Order history', desc:'The full list of your orders by day and time: where you picked up, how long you waited, and when you accidentally tapped the wrong spot (−1). Scroll down, search for a place by name or for a specific day.',
+      searchPh:'Search for a place', emptySearch:'Nothing found. Try another name.', found:'Found: {n} · places: {places}', avgWait:'Average wait: {t}', dateFilterDefault:'📅 Search by date', emptyAll:'Nothing here yet. The history of every +1 and −1 on your spots will show up here.',
       emptyRange:'No records for the selected period.' },
     calendar:{ today:'Today', hint:'Pick one day, or two days for a range between them', reset:'Reset', apply:'Show' },
     alerts:{ confirmRestartTimer:'A timer is already running for "{name}". Start over for "{newName}"? The previous timer won\'t be counted.',
@@ -3626,7 +3640,22 @@ function goToSpotOnMap(spotId){
   }, 320);
 }
 
+// поиск по названию заведения: без учёта регистра и ударений (Café = cafe)
+function historyNorm(x){ return String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ё/g, 'е').trim(); }
+function historySearchQuery(){ const el = document.getElementById('historySearch'); return el ? historyNorm(el.value) : ''; }
+function onHistorySearch(){
+  const el = document.getElementById('historySearch');
+  document.getElementById('historySearchWrap').classList.toggle('hasText', !!(el && el.value));
+  renderHistory();
+}
+function clearHistorySearch(){
+  const el = document.getElementById('historySearch');
+  if(el){ el.value = ''; }
+  onHistorySearch();
+}
 function openHistoryModal(){
+  const hs = document.getElementById('historySearch');
+  if(hs){ hs.value = ''; document.getElementById('historySearchWrap').classList.remove('hasText'); }
   renderHistory();
   document.getElementById('historyModalBg').classList.add('show');
   scrollModalTop('historyModalScroll');
@@ -3648,16 +3677,18 @@ function renderHistory(){
     const t = new Date(v.ts).getTime();
     return t >= rangeStart && t <= rangeEnd;
   };
-  const rangedLog = visitsLog.filter(inRange);
+  const spotById = {};
+  spots.forEach(s => spotById[s.id] = s);
+  const q = historySearchQuery();
+  const nameOf = (v) => { const sp = spotById[v.spotId]; return sp ? sp.name : t('stats.deletedSpot'); };
+  const rangedLog = visitsLog.filter(v => inRange(v) && (!q || historyNorm(nameOf(v)).includes(q)));
 
   if(rangedLog.length === 0){
-    body.innerHTML = `<div class="statsEmpty">${t('history.emptyRange')}</div>`;
+    body.innerHTML = `<div class="statsEmpty">${t(q ? 'history.emptySearch' : 'history.emptyRange')}</div>`;
     return;
   }
 
   const sorted = [...rangedLog].sort((a, b) => new Date(b.ts) - new Date(a.ts)).slice(0, 300);
-  const spotById = {};
-  spots.forEach(s => spotById[s.id] = s);
 
   // считаем чистое число заборов за каждый день (добавления минус отмены) в пределах выбранного периода
   const dayNetCounts = {};
@@ -3668,6 +3699,15 @@ function renderHistory(){
 
   let lastDayLabel = null;
   let html = '';
+  if(q){
+    // итог по найденному: сколько заборов, в скольких заведениях, среднее ожидание
+    const net = rangedLog.reduce((a, v) => a + (v.type === 'remove' ? -1 : 1), 0);
+    const places = new Set(rangedLog.map(v => v.spotId)).size;
+    const waits = rangedLog.filter(v => v.type !== 'remove' && v.waitSec != null).map(v => v.waitSec);
+    const avg = waits.length ? Math.round(waits.reduce((a, b) => a + b, 0) / waits.length) : null;
+    html += `<div class="historySearchSummary">${t('history.found', { n: `<b>${escapeHtml(formatZaboros(Math.max(0, net)))}</b>`, places: `<b>${places}</b>` })}`
+      + (avg != null ? `<br>${t('history.avgWait', { t: `<b>${escapeHtml(formatDuration(avg))}</b>` })}` : '') + `</div>`;
+  }
   sorted.forEach(v => {
     const d = new Date(v.ts);
     const dayLabel = formatDayMonthLong(d);
