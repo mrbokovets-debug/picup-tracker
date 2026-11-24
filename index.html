@@ -719,6 +719,42 @@
   .teamGoalDone{font-size:13px; color:var(--signal); font-weight:700; margin-top:6px;}
   .teamKickBtn{width:26px; height:26px; border-radius:50%; border:1px solid var(--line); background:transparent; color:var(--text-dim); font-size:13px; cursor:pointer; padding:0; flex-shrink:0;}
 
+  /* ---------- новогоднее оформление (body.ny): 1 декабря - 7 января ---------- */
+  body.ny .pinDiv, body.ny .bagBody{position:relative;}
+  .nyPinHat{position:absolute; pointer-events:none; overflow:visible; transform:rotate(18deg); transform-origin:30% 85%;
+    filter:drop-shadow(0 1px 1.2px rgba(0,0,0,.45));}
+  body.ny #menuBtn, body.ny #locateBtn, body.ny #fullscreenBtn, body.ny #mapFilterBtn{z-index:403;}
+  body.ny #menuBtn::after, body.ny #locateBtn::after, body.ny #fullscreenBtn::after, body.ny #mapFilterBtn::after{
+    content:''; position:absolute; left:-3px; right:-3px; top:-7px; height:15px; pointer-events:none;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 16' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff'/%3E%3Cstop offset='.65' stop-color='%23f1f5f9'/%3E%3Cstop offset='1' stop-color='%23cfdbe6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M2 12.5C1.5 8 5 5.5 9 6.5 11 2.5 17 1.2 21 4 24.5 1 31 .8 34.5 3.6 38.5 1.6 45 2.4 47.5 5.6 52.5 4.6 58.5 7.4 58 12.5 57.8 14.6 56 15.4 54 14.6L49 14.6C48.6 16.4 46.4 16.6 45.8 14.6L21.5 14.6C21 16.9 17.8 17 17.2 14.6L6.5 14.6C4.2 15.6 2.1 14.6 2 12.5Z' fill='url(%23a)'/%3E%3Cpath d='M7 7.5C9 6 11.5 6.3 13 7.4M24 4.4C26.5 3 30 3.2 32 4.6M40 4.2C42.5 3.4 45.5 4 47 5.8' stroke='%23ffffff' stroke-width='1.1' stroke-linecap='round' fill='none' opacity='.9'/%3E%3C/svg%3E") center/100% 100% no-repeat;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3));}
+  body.ny #mapFilterDot{z-index:2;}
+  .nyGarland{position:absolute; left:0; top:0; width:100%; height:34px; z-index:402; pointer-events:none; overflow:visible;}
+  .nyGarland .nyBulbGlow{animation:nyTwinkle 2.6s ease-in-out infinite;}
+  @keyframes nyTwinkle{0%,100%{opacity:.95;} 50%{opacity:.25;}}
+  .nySnow{position:absolute; inset:0; width:100%; height:100%; z-index:401; pointer-events:none;}
+  @media (prefers-reduced-motion: reduce){ .nyGarland .nyBulbGlow{animation:none;} }
+  body.ny #drawerProfile{position:relative; overflow:hidden; padding-bottom:34px;
+    background:radial-gradient(110% 80% at 88% -15%, rgba(120,170,230,.35) 0, transparent 60%),
+      linear-gradient(172deg, #143a61 0%, #0f2f4d 55%, #0d2a40 100%);}
+  body.ny #drawerProfile::before{content:''; position:absolute; inset:0; pointer-events:none;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='170'%3E%3Ccircle cx='126.7' cy='95.2' r='1.9' fill='%23fff' opacity='0.62'/%3E%3Ccircle cx='239.4' cy='32.3' r='1.9' fill='%23fff' opacity='0.73'/%3E%3Ccircle cx='222.0' cy='16.0' r='1.1' fill='%23fff' opacity='0.44'/%3E%3Ccircle cx='150.8' cy='151.4' r='0.7' fill='%23fff' opacity='0.71'/%3E%3Ccircle cx='110.9' cy='77.0' r='0.9' fill='%23fff' opacity='0.72'/%3E%3Ccircle cx='232.9' cy='10.7' r='0.7' fill='%23fff' opacity='0.46'/%3E%3Ccircle cx='67.7' cy='5.1' r='1.9' fill='%23fff' opacity='0.55'/%3E%3Ccircle cx='165.5' cy='33.2' r='1' fill='%23fff' opacity='0.73'/%3E%3Ccircle cx='139.9' cy='112.6' r='1.9' fill='%23fff' opacity='0.74'/%3E%3Ccircle cx='113.9' cy='93.7' r='0.8' fill='%23fff' opacity='0.77'/%3E%3Ccircle cx='88.3' cy='39.0' r='1.1' fill='%23fff' opacity='0.37'/%3E%3Ccircle cx='157.7' cy='18.3' r='0.8' fill='%23fff' opacity='0.86'/%3E%3Ccircle cx='108.2' cy='162.9' r='0.7' fill='%23fff' opacity='0.48'/%3E%3Ccircle cx='259.6' cy='8.9' r='1.6' fill='%23fff' opacity='0.94'/%3E%3Ccircle cx='111.3' cy='12.4' r='1' fill='%23fff' opacity='0.82'/%3E%3Ccircle cx='75.5' cy='14.8' r='1.3' fill='%23fff' opacity='0.36'/%3E%3Ccircle cx='114.8' cy='156.9' r='0.9' fill='%23fff' opacity='0.50'/%3E%3Ccircle cx='28.3' cy='10.2' r='1.9' fill='%23fff' opacity='0.46'/%3E%3Ccircle cx='156.6' cy='76.1' r='1' fill='%23fff' opacity='0.94'/%3E%3Ccircle cx='215.5' cy='71.3' r='1.6' fill='%23fff' opacity='0.42'/%3E%3Ccircle cx='117.8' cy='36.2' r='1.1' fill='%23fff' opacity='0.87'/%3E%3Ccircle cx='273.0' cy='100.8' r='0.7' fill='%23fff' opacity='0.48'/%3E%3Ccircle cx='110.4' cy='145.2' r='0.8' fill='%23fff' opacity='0.38'/%3E%3Ccircle cx='41.0' cy='75.1' r='0.7' fill='%23fff' opacity='0.81'/%3E%3Ccircle cx='92.1' cy='50.4' r='0.8' fill='%23fff' opacity='0.39'/%3E%3Ccircle cx='58.4' cy='108.2' r='0.7' fill='%23fff' opacity='0.71'/%3E%3Ccircle cx='104.1' cy='77.0' r='1.9' fill='%23fff' opacity='0.85'/%3E%3Ccircle cx='38.0' cy='65.6' r='0.9' fill='%23fff' opacity='0.54'/%3E%3Ccircle cx='63.9' cy='103.8' r='1' fill='%23fff' opacity='0.45'/%3E%3Ccircle cx='176.1' cy='94.2' r='1.6' fill='%23fff' opacity='0.88'/%3E%3C/svg%3E") 0 0/280px 170px repeat;}
+  body.ny #drawerProfile::after{content:''; position:absolute; left:0; right:0; bottom:0; height:30px; pointer-events:none;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 30' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff'/%3E%3Cstop offset='1' stop-color='%23e3ebf3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 14C30 6 55 8 85 14S140 4 180 10 245 18 300 8V30H0Z' fill='%23b9cde0' opacity='.55'/%3E%3Cpath d='M0 22C25 15 50 14 80 19S135 25 170 18 240 12 300 19V30H0Z' fill='url(%23f)'/%3E%3C/svg%3E") bottom/100% 100% no-repeat;}
+  body.ny #drawerProfile .dpTop, body.ny #drawerProfile .dpStats{position:relative; z-index:1;}
+  body.ny #drawerProfile:active{background:linear-gradient(172deg, #174270 0%, #123657 100%);}
+  body.ny .dpName{color:#ffffff;}
+  body.ny .dpSub{color:#cfe0f2;}
+  body.ny .dpSub.login{color:#ffd77a;}
+  body.ny .dpStat{background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.16);}
+  body.ny .dpStat b{color:#ffd77a;}
+  body.ny .dpStat span{color:#cfe0f2;}
+  body.ny .dpAvatar{position:relative; overflow:visible; box-shadow:0 0 0 3px rgba(255,255,255,.18);}
+  .nyAvatarHat{position:absolute; width:46px; height:43px; left:3px; top:-27px; transform:rotate(-8deg); pointer-events:none;
+    overflow:visible; filter:drop-shadow(0 1.5px 1.5px rgba(0,0,0,.4));}
+  #nyOptions{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+  #nyOptions .themeOption{padding:12px 4px; font-size:12px;}
+
   /* шапка профиля в меню */
   #drawerProfile{display:block; padding:calc(20px + env(safe-area-inset-top, 0px)) 18px 14px; cursor:pointer;}
   #drawerProfile:active{background:var(--asphalt-2);}
@@ -1199,6 +1235,14 @@
       <div class="themeOption" data-theme="light" data-i18n="settings.themeLight" onclick="chooseMapTheme('light')">☀️ Светлая</div>
       <div class="themeOption" data-theme="dark" data-i18n="settings.themeDark" onclick="chooseMapTheme('dark')">🌙 Тёмная</div>
     </div>
+
+    <div id="nySettingWrap" style="display:none">
+      <p class="coords" data-i18n="settings.nyLabel">Новогоднее оформление</p>
+      <div id="nyOptions">
+        <div class="themeOption" data-ny="on" data-i18n="settings.nyOn" onclick="chooseNY('on')">🎄 Включено</div>
+        <div class="themeOption" data-ny="off" data-i18n="settings.nyOff" onclick="chooseNY('off')">Выключено</div>
+      </div>
+    </div>
       </div>
     </details>
 
@@ -1432,7 +1476,7 @@ const TRANSLATIONS = {
       bestHoursText:'По твоей истории заборов чаще всего заказы идут в: {hours}. Стоит бронировать слоты именно на это время.',
       bestDaysTitle:'📅 Лучшие дни недели', bestDaysText:'Больше всего заказов обычно бывает в: {days}. Старайся планировать смены на эти дни.',
       topSpotsCountTitle:'📍 Самые частые точки', topSpotsCountEmpty:'Пока нет заборов — отмечай заборы на карте.', topSpotsTitle:'💰 Самые прибыльные точки', topSpotsEmpty:'Пока нет данных о заработке — вписывай сумму за заказ в меню точки на карте («✅ Забрал») или в «Мои заказы».', timeTitle:'⏳ Сколько стоит твоё время', timeEmpty:'Пока мало данных: нужны заборы с замером ожидания (кнопка «⏱ Жду заказ» в меню точки).', timeRate:'Реальный доход: {rate} в час', timeRateNote:'За всё время: {earned} за {hours} ч работы. Часы считаются по заборам: от первого до последнего за смену. Суммы можно вписывать и позже — на часы это не влияет.', timeLostTitle:'Потеряно на ожидании за всё время', timeLostTotal:'Всего ждал: {time}', timeLostMoney:' ≈ {money} по твоей ставке', timeRankTitle:'🏁 Где выгоднее ехать', timeRankNote:'Заработок за заказ ÷ (среднее ожидание + 5 мин). Только точки, где минимум 2 заказа с замером.', timeRankAvg:'ожидание ≈ {min} мин', timePerMin:'{v} / мин'  },
-    settings:{ title:'Настройки', markerStyleLabel:'Как отмечать точки на карте', markerCircle:'Кружок', markerBag:'Сумка курьера',
+    settings:{ title:'Настройки', nyLabel:'Новогоднее оформление', nyOn:'🎄 Включено', nyOff:'Выключено', markerStyleLabel:'Как отмечать точки на карте', markerCircle:'Кружок', markerBag:'Сумка курьера',
       payTypeLabel:'Тип оплаты', payTypeHourlyOpt:'⏱ Почасовая + премия', payTypePieceOpt:'💰 Сдельная за заказ',
       currencyLabel:'Валюта', appThemeLabel:'Тема приложения', themeLight:'☀️ Светлая', themeDark:'🌙 Тёмная',
       mapThemeLabel:'Тема карты', done:'Готово', languageLabel:'Язык приложения',
@@ -1563,7 +1607,7 @@ const TRANSLATIONS = {
       bestHoursText:'За твоєю історією підборів найчастіше замовлення йдуть о: {hours}. Варто бронювати слоти саме на цей час.',
       bestDaysTitle:'📅 Найкращі дні тижня', bestDaysText:'Найбільше замовлень зазвичай буває у: {days}. Намагайся планувати зміни на ці дні.',
       topSpotsCountTitle:'📍 Найчастіші точки', topSpotsCountEmpty:'Поки немає підборів — відмічай підбори на карті.', topSpotsTitle:'💰 Найприбутковіші точки', topSpotsEmpty:'Поки немає даних про заробіток — вписуй суму за замовлення в меню точки на карті («✅ Забрав») або в «Мої замовлення».', timeTitle:'⏳ Скільки коштує твій час', timeEmpty:'Поки мало даних: потрібні підбори з виміром очікування (кнопка «⏱ Чекаю замовлення» в меню точки).', timeRate:'Реальний дохід: {rate} за годину', timeRateNote:'За весь час: {earned} за {hours} год роботи. Години рахуються за підборами: від першого до останнього за зміну. Суми можна вписувати й пізніше — на години це не впливає.', timeLostTitle:'Втрачено на очікуванні за весь час', timeLostTotal:'Всього чекав: {time}', timeLostMoney:' ≈ {money} за твоєю ставкою', timeRankTitle:'🏁 Куди вигідніше їхати', timeRankNote:'Заробіток за замовлення ÷ (середнє очікування + 5 хв). Тільки точки, де щонайменше 2 замовлення з виміром.', timeRankAvg:'очікування ≈ {min} хв', timePerMin:'{v} / хв'  },
-    settings:{ title:'Налаштування', markerStyleLabel:'Як відмічати точки на карті', markerCircle:'Кружечок', markerBag:'Сумка кур’єра',
+    settings:{ title:'Налаштування', nyLabel:'Новорічне оформлення', nyOn:'🎄 Увімкнено', nyOff:'Вимкнено', markerStyleLabel:'Як відмічати точки на карті', markerCircle:'Кружечок', markerBag:'Сумка кур’єра',
       payTypeLabel:'Тип оплати', payTypeHourlyOpt:'⏱ Погодинна + премія', payTypePieceOpt:'💰 Відрядна за замовлення',
       currencyLabel:'Валюта', appThemeLabel:'Тема застосунку', themeLight:'☀️ Світла', themeDark:'🌙 Темна',
       mapThemeLabel:'Тема карти', done:'Готово', languageLabel:'Мова застосунку',
@@ -1694,7 +1738,7 @@ const TRANSLATIONS = {
       bestHoursText:'Según tu historial de recogidas, la mayoría de pedidos llegan a las: {hours}. Conviene reservar turnos justo en esas horas.',
       bestDaysTitle:'📅 Mejores días de la semana', bestDaysText:'La mayoría de pedidos suelen caer en: {days}. Intenta planear tus turnos esos días.',
       topSpotsCountTitle:'📍 Puntos más frecuentes', topSpotsCountEmpty:'Aún no hay recogidas: márcalas en el mapa.', topSpotsTitle:'💰 Puntos más rentables', topSpotsEmpty:'Aún no hay datos de ganancias — escribe el importe del pedido en el menú del punto en el mapa («✅ Recogido») o en «Mis pedidos».', timeTitle:'⏳ Cuánto vale tu tiempo', timeEmpty:'Aún hay pocos datos: hacen falta recogidas con espera medida (botón «⏱ Espero el pedido» en el menú del punto).', timeRate:'Ingreso real: {rate} por hora', timeRateNote:'En total: {earned} en {hours} h de trabajo. Las horas se calculan por recogidas: de la primera a la última de cada turno. Puedes apuntar los importes más tarde: no cambia las horas.', timeLostTitle:'Perdido esperando en total', timeLostTotal:'Total esperando: {time}', timeLostMoney:' ≈ {money} a tu tarifa', timeRankTitle:'🏁 Dónde conviene ir', timeRankNote:'Ganancia por pedido ÷ (espera media + 5 min). Solo puntos con al menos 2 pedidos medidos.', timeRankAvg:'espera ≈ {min} min', timePerMin:'{v} / min'  },
-    settings:{ title:'Ajustes', markerStyleLabel:'Cómo marcar los puntos en el mapa', markerCircle:'Círculo', markerBag:'Mochila de repartidor',
+    settings:{ title:'Ajustes', nyLabel:'Decoración navideña', nyOn:'🎄 Activada', nyOff:'Desactivada', markerStyleLabel:'Cómo marcar los puntos en el mapa', markerCircle:'Círculo', markerBag:'Mochila de repartidor',
       payTypeLabel:'Tipo de pago', payTypeHourlyOpt:'⏱ Por horas + bonus', payTypePieceOpt:'💰 Por pedido (destajo)',
       currencyLabel:'Moneda', appThemeLabel:'Tema de la app', themeLight:'☀️ Claro', themeDark:'🌙 Oscuro',
       mapThemeLabel:'Tema del mapa', done:'Listo', languageLabel:'Idioma de la app',
@@ -1825,7 +1869,7 @@ const TRANSLATIONS = {
       bestHoursText:'Based on your pickup history, orders most often come in at: {hours}. It\'s worth booking slots for that time.',
       bestDaysTitle:'📅 Best days of the week', bestDaysText:'Most orders usually come in on: {days}. Try to schedule your shifts on these days.',
       topSpotsCountTitle:'📍 Most frequent spots', topSpotsCountEmpty:'No pickups yet — mark pickups on the map.', topSpotsTitle:'💰 Most profitable spots', topSpotsEmpty:'No earnings data yet — type the order amount in the spot menu on the map («✅ Picked up») or in "My orders".', timeTitle:'⏳ What your time is worth', timeEmpty:'Not enough data yet: you need pickups with measured waiting (the «⏱ Waiting» button in the spot menu).', timeRate:'Real earnings: {rate} per hour', timeRateNote:'All time: {earned} over {hours} h of work. Hours are counted by pickups: from the first to the last one of each shift. You can enter amounts later: it does not change the hours.', timeLostTitle:'Lost to waiting, all time', timeLostTotal:'Total waiting: {time}', timeLostMoney:' ≈ {money} at your rate', timeRankTitle:'🏁 Where it pays to go', timeRankNote:'Earnings per order ÷ (average wait + 5 min). Only spots with at least 2 measured orders.', timeRankAvg:'wait ≈ {min} min', timePerMin:'{v} / min'  },
-    settings:{ title:'Settings', markerStyleLabel:'How to mark spots on the map', markerCircle:'Circle', markerBag:'Courier bag',
+    settings:{ title:'Settings', nyLabel:'Holiday look', nyOn:'🎄 On', nyOff:'Off', markerStyleLabel:'How to mark spots on the map', markerCircle:'Circle', markerBag:'Courier bag',
       payTypeLabel:'Pay type', payTypeHourlyOpt:'⏱ Hourly + bonus', payTypePieceOpt:'💰 Per-order (piece rate)',
       currencyLabel:'Currency', appThemeLabel:'App theme', themeLight:'☀️ Light', themeDark:'🌙 Dark',
       mapThemeLabel:'Map theme', done:'Done', languageLabel:'App language',
@@ -2201,6 +2245,12 @@ function sizeForCount(count, max){
   return 24 + t * 28;
 }
 
+// новогодняя шапка сидит на макушке точки и масштабируется вместе с ней
+function nyPinHatHtml(size){
+  if(!document.body.classList.contains('ny')) return '';
+  const w = Math.round(size * 0.9), h = Math.round(w * 60 / 64);
+  return nyHatSvg('nyPinHat', `width:${w}px;height:${h}px;left:${Math.round(size * 0.1)}px;top:${-Math.round(h * 0.74)}px;`);
+}
 function makeIcon(spot, max, isHot){
   const size = sizeForCount(spot.count, max);
   let color = colorForCount(spot.count, max);
@@ -2212,12 +2262,12 @@ function makeIcon(spot, max, isHot){
     const h = Math.round(size * 1.2);
     const html = `<div class="bagPin" style="width:${w}px;">
       <div class="bagStrap" style="border-color:${color};"></div>
-      <div class="bagBody" style="background:${color}; box-shadow:0 0 ${size*0.4}px ${color}66; font-size:${size*0.38}px;">${spot.count}</div>
+      <div class="bagBody" style="background:${color}; box-shadow:0 0 ${size*0.4}px ${color}66; font-size:${size*0.38}px;">${spot.count}${nyPinHatHtml(w)}</div>
     </div>`;
     return L.divIcon({ html, className: '', iconSize: [w, h], iconAnchor: [w/2, h] });
   }
 
-  const html = `<div class="pinDiv${isHot ? ' hourHot' : ''}" style="width:${size}px;height:${size}px;background:${color};box-shadow:0 0 ${size*0.5}px ${color}66;font-size:${size*0.4}px;">${spot.count}</div>`;
+  const html = `<div class="pinDiv${isHot ? ' hourHot' : ''}" style="width:${size}px;height:${size}px;background:${color};box-shadow:0 0 ${size*0.5}px ${color}66;font-size:${size*0.4}px;">${spot.count}${nyPinHatHtml(size)}</div>`;
   return L.divIcon({ html, className: '', iconSize: [size, size], iconAnchor: [size/2, size/2] });
 }
 
@@ -2479,7 +2529,11 @@ function renderAll(){
   spots.forEach(s => {
     if(filterSet && !filterSet.has(s.id)) return; // скрыто фильтром карты
     const marker = L.marker([s.lat, s.lng], { icon: makeIcon(s, max, hotIds.has(s.id)) }).addTo(map);
-    marker.bindTooltip(escapeHtml(s.name), { permanent: true, direction: 'top', offset: [0, -8], className: 'spotLabel' });
+    // подпись поднимается над новогодней шапкой (у «сумки» точка привязки снизу, поэтому выше)
+    const nySz = sizeForCount(s.count, max);
+    const nyLift = !document.body.classList.contains('ny') ? 0
+      : (localStorage.getItem(MARKER_STYLE_KEY) === 'bag' ? Math.round(nySz * 1.55 - 12) : Math.max(6, Math.round(nySz * 0.45 - 4)));
+    marker.bindTooltip(escapeHtml(s.name), { permanent: true, direction: 'top', offset: [0, -8 - nyLift], className: 'spotLabel' });
     marker.on('click', (e) => {
       L.DomEvent.stopPropagation(e);
       if(marker._longPressFired){ marker._longPressFired = false; return; }
@@ -3405,7 +3459,7 @@ function renderDrawerProfile(){
   visitsLog.forEach(v => { if(new Date(v.ts).getTime() >= weekStart) week += (v.type === 'remove' ? -1 : 1); });
   box.innerHTML = `
     <div class="dpTop">
-      <div class="dpAvatar">${escapeHtml(first)}</div>
+      <div class="dpAvatar">${escapeHtml(first)}${document.body.classList.contains('ny') ? nyHatSvg('nyAvatarHat') : ''}</div>
       <div style="min-width:0;">
         <div class="dpName">${escapeHtml(name)}</div>
         <div class="dpSub${subCls}">${escapeHtml(sub)}</div>
@@ -6052,6 +6106,132 @@ document.getElementById('nameInput')?.addEventListener('keydown', (e) => {
 document.getElementById('amountInput')?.addEventListener('keydown', (e) => {
   if(e.key === 'Enter') saveAmount();
 });
+
+// ---------- новогоднее оформление: снег, гирлянда, шапки на точках, зимняя шапка профиля ----------
+// включается само с 1 декабря по 7 января; в настройках можно выключить. ?ny=1 в адресе - посмотреть заранее
+const NY_KEY = 'pickup-ny';            // 'off' - выключено пользователем
+const NY_FORCE_KEY = 'pickup-ny-force'; // '1' - показать вне сезона (для проверки)
+function nySeason(d){ d = d || new Date(); const m = d.getMonth(); return m === 11 || (m === 0 && d.getDate() <= 7); }
+function nyAvailable(){ let f = null; try{ f = localStorage.getItem(NY_FORCE_KEY); }catch(e){} return nySeason() || f === '1'; }
+function nyOn(){ let off = null; try{ off = localStorage.getItem(NY_KEY); }catch(e){} return nyAvailable() && off !== 'off'; }
+function nyHatSvg(cls, style){ return `<svg class="${cls}" viewBox="0 0 64 60" style="${style || ''}" aria-hidden="true"><use href="#nyHatSym"/></svg>`; }
+function nyEnsureDefs(){
+  if(document.getElementById('nyDefs')) return;
+  const bulbs = ['#ff4b55', '#ffcf3f', '#36d68f', '#4aa8ff', '#ff6fd0'].map((c, i) =>
+    `<radialGradient id="nyBulb${i}" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".3" stop-color="${c}"/><stop offset="1" stop-color="${c}" stop-opacity=".85"/></radialGradient>
+     <radialGradient id="nyGlow${i}"><stop offset="0" stop-color="${c}" stop-opacity=".75"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient>`).join('');
+  document.body.insertAdjacentHTML('beforeend', `<svg id="nyDefs" width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <linearGradient id="nyRed" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff626a"/><stop offset=".45" stop-color="#e02633"/><stop offset="1" stop-color="#a1101c"/></linearGradient>
+    <linearGradient id="nyFur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f0f4f8"/><stop offset="1" stop-color="#c9d5e1"/></linearGradient>
+    <radialGradient id="nyPom" cx=".38" cy=".35" r=".7"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#eef3f7"/><stop offset="1" stop-color="#c4cfdb"/></radialGradient>
+    ${bulbs}
+    <symbol id="nyHatSym" viewBox="0 0 64 60">
+      <path d="M11 45C12.5 31 18 17 31 9.5 39 5 49.5 5.5 54.5 11.5 58 15.8 58.5 21.5 56.5 27 54.8 22.5 50.5 19.6 45.5 21 40.8 22.6 39.5 30 43 45Z" fill="url(#nyRed)"/>
+      <path d="M31 9.5C39 5 49.5 5.5 54.5 11.5 58 15.8 58.5 21.5 56.5 27 54.8 22.5 50.5 19.6 45.5 21 44 15 38 11 31 9.5Z" fill="#7d0b15" opacity=".35"/>
+      <path d="M15 40C16 29 21 19 30 13" stroke="#ff9aa0" stroke-width="2.2" stroke-linecap="round" fill="none" opacity=".55"/>
+      <path d="M5.5 47.5C5 43.5 7.5 41 10.5 41.5 12.5 39.5 15.5 39.6 17 41 19 39.2 22.2 39.4 23.6 41 25.6 39.3 28.8 39.4 30.2 41 32.2 39.3 35.4 39.4 36.8 41 38.8 39.3 42 39.4 43.4 41 45.4 39.4 48.6 39.6 49.8 41.4 53 41 55.6 43.4 55.2 47.4 55.6 51.4 53 53.8 49.8 53.4 48.4 55.2 45.2 55.3 43.4 53.6 41.6 55.3 38.4 55.3 36.8 53.6 35 55.3 31.8 55.3 30.2 53.6 28.4 55.3 25.2 55.3 23.6 53.6 21.8 55.3 18.6 55.2 17 53.5 15.2 55.2 12 55.1 10.6 53.4 7.6 54 5 51.6 5.5 47.5Z" fill="url(#nyFur)"/>
+      <path d="M9 45.5C20 43.8 38 43.6 52 45.6" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".9"/>
+      <circle cx="56.5" cy="30.5" r="7.2" fill="url(#nyPom)"/>
+      <circle cx="54.3" cy="28.3" r="2.2" fill="#ffffff" opacity=".9"/>
+    </symbol></defs></svg>`);
+}
+// гирлянда вдоль верхнего края карты
+function nyBuildGarland(){
+  const outer = document.getElementById('mapOuter');
+  if(!outer) return;
+  outer.querySelectorAll('.nyGarland').forEach(e => e.remove());
+  const W = outer.clientWidth || 360;
+  const spans = Math.max(3, Math.round(W / 95)), sw = W / spans;
+  let d = 'M-4 3';
+  for(let i = 0; i < spans; i++){ const x0 = i * sw, x1 = (i + 1) * sw; d += ` Q ${(x0 + x1) / 2} ${i % 2 ? 22 : 19} ${x1 + (i === spans - 1 ? 4 : 0)} 3`; }
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('class', 'nyGarland'); svg.setAttribute('width', W); svg.setAttribute('height', 34);
+  svg.innerHTML = `<path d="${d}" stroke="#1e3a2c" stroke-width="1.4" fill="none"/>`;
+  outer.appendChild(svg);
+  const path = svg.querySelector('path'); const L = path.getTotalLength();
+  const n = Math.max(8, Math.round(W / 24));
+  let h = '';
+  for(let i = 0; i < n; i++){
+    const p = path.getPointAtLength(L * (i + 0.5) / n), c = i % 5;
+    h += `<g transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})">
+      <circle class="nyBulbGlow" cx="0" cy="7" r="8" fill="url(#nyGlow${c})" style="animation-delay:${((i * 0.37) % 2.6).toFixed(2)}s"/>
+      <rect x="-1.7" y="-0.6" width="3.4" height="3" rx=".8" fill="#3a4148"/>
+      <ellipse cx="0" cy="6.6" rx="2.9" ry="4.1" fill="url(#nyBulb${c})"/></g>`;
+  }
+  svg.insertAdjacentHTML('beforeend', h);
+}
+// снегопад: лёгкий canvas, 30 кадров в секунду, на паузе когда приложение свёрнуто
+let nySnowRaf = null, nySnowFlakes = [], nySnowLast = 0;
+function nyStartSnow(){
+  const outer = document.getElementById('mapOuter');
+  if(!outer || outer.querySelector('.nySnow')) return;
+  const cv = document.createElement('canvas'); cv.className = 'nySnow'; outer.appendChild(cv);
+  const ctx = cv.getContext('2d'); const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const size = () => { cv.width = outer.clientWidth * dpr; cv.height = outer.clientHeight * dpr; };
+  size(); cv._resize = size;
+  const W = () => cv.width / dpr, H = () => cv.height / dpr;
+  const count = Math.min(70, Math.round(W() * H() / 7000));
+  const mk = (top) => ({ x: Math.random() * W(), y: top ? -6 : Math.random() * H(), r: 0.8 + Math.random() * Math.random() * 2.6,
+    vy: 0, ph: Math.random() * 6.28, a: 0.5 + Math.random() * 0.45 });
+  nySnowFlakes = Array.from({ length: count }, () => mk(false));
+  nySnowFlakes.forEach(f => f.vy = 12 + f.r * 9);
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const draw = (dt) => {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W(), H());
+    for(const f of nySnowFlakes){
+      f.y += f.vy * dt; f.ph += dt * 0.9; f.x += Math.sin(f.ph) * 0.25;
+      if(f.y > H() + 6){ Object.assign(f, mk(true)); f.vy = 12 + f.r * 9; }
+      ctx.globalAlpha = f.a; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fillStyle = '#ffffff'; ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  };
+  if(reduced){ draw(0); return; }
+  const loop = (ts) => {
+    nySnowRaf = requestAnimationFrame(loop);
+    if(document.hidden) { nySnowLast = ts; return; }
+    if(ts - nySnowLast < 33) return;
+    const dt = Math.min(0.1, (ts - (nySnowLast || ts)) / 1000); nySnowLast = ts;
+    draw(dt);
+  };
+  nySnowRaf = requestAnimationFrame(loop);
+}
+function nyStopSnow(){
+  if(nySnowRaf) cancelAnimationFrame(nySnowRaf); nySnowRaf = null;
+  document.querySelectorAll('.nySnow').forEach(e => e.remove());
+}
+function applyNY(){
+  const on = nyOn();
+  const was = document.body.classList.contains('ny');
+  document.body.classList.toggle('ny', on);
+  const wrap = document.getElementById('nySettingWrap');
+  if(wrap) wrap.style.display = nyAvailable() ? '' : 'none';
+  document.querySelectorAll('#nyOptions .themeOption').forEach(el => el.classList.toggle('active', el.dataset.ny === (on ? 'on' : 'off')));
+  if(on){ nyEnsureDefs(); nyBuildGarland(); nyStartSnow(); }
+  else { nyStopSnow(); document.querySelectorAll('.nyGarland').forEach(e => e.remove()); }
+  if(on !== was){ try{ renderAll(); }catch(e){} try{ renderDrawerProfile(); }catch(e){} }
+}
+function chooseNY(v){
+  try{ if(v === 'off') localStorage.setItem(NY_KEY, 'off'); else localStorage.removeItem(NY_KEY); }catch(e){}
+  applyNY();
+}
+function nyInit(){
+  try{
+    const q = new URLSearchParams(location.search).get('ny');
+    if(q === '1'){ localStorage.setItem(NY_FORCE_KEY, '1'); localStorage.removeItem(NY_KEY); }
+    if(q === '0') localStorage.removeItem(NY_FORCE_KEY);
+  }catch(e){}
+  applyNY();
+  let tm = null;
+  const rebuild = () => { clearTimeout(tm); tm = setTimeout(() => {
+    if(!document.body.classList.contains('ny')) return;
+    nyBuildGarland(); const cv = document.querySelector('.nySnow'); if(cv && cv._resize) cv._resize();
+  }, 150); };
+  window.addEventListener('resize', rebuild);
+  try{ new ResizeObserver(rebuild).observe(document.getElementById('mapOuter')); }catch(e){}
+  setInterval(() => { if(nyOn() !== document.body.classList.contains('ny')) applyNY(); }, 3600000); // смена сезона без перезапуска
+}
+setTimeout(nyInit, 0);
 
 let myLocationMarker = null;
 
