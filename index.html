@@ -719,7 +719,7 @@
   .teamGoalDone{font-size:13px; color:var(--signal); font-weight:700; margin-top:6px;}
   .teamKickBtn{width:26px; height:26px; border-radius:50%; border:1px solid var(--line); background:transparent; color:var(--text-dim); font-size:13px; cursor:pointer; padding:0; flex-shrink:0;}
 
-  /* ---------- новогоднее оформление (body.ny): 1 декабря - 7 января ---------- */
+  /* ---------- новогоднее оформление (body.ny): 24 ноября - 7 января ---------- */
   body.ny .pinDiv, body.ny .bagBody{position:relative;}
   .nyPinHat{position:absolute; pointer-events:none; overflow:visible; transform:rotate(18deg); transform-origin:30% 85%;
     filter:drop-shadow(0 1px 1.2px rgba(0,0,0,.45));}
@@ -5283,7 +5283,7 @@ async function cloudPasswordLogin(pre){
 }
 // «Написать разработчику»: открываем почтовое приложение с готовой темой и техническими данными внизу
 const DEVELOPER_EMAIL = 'support@pickupmap.app';
-const APP_VERSION = '1.0.2';
+const APP_VERSION = '1.0.3';
 // коротко об устройстве вместо длинной строки браузера: «iPhone · iOS 18.7», «Android 14 · SM-A525F»
 function shortDeviceInfo(){
   const ua = navigator.userAgent || '';
@@ -6108,10 +6108,10 @@ document.getElementById('amountInput')?.addEventListener('keydown', (e) => {
 });
 
 // ---------- новогоднее оформление: снег, гирлянда, шапки на точках, зимняя шапка профиля ----------
-// включается само с 1 декабря по 7 января; в настройках можно выключить. ?ny=1 в адресе - посмотреть заранее
+// включается само с 24 ноября по 7 января; в настройках можно выключить. ?ny=1 в адресе - посмотреть заранее
 const NY_KEY = 'pickup-ny';            // 'off' - выключено пользователем
 const NY_FORCE_KEY = 'pickup-ny-force'; // '1' - показать вне сезона (для проверки)
-function nySeason(d){ d = d || new Date(); const m = d.getMonth(); return m === 11 || (m === 0 && d.getDate() <= 7); }
+function nySeason(d){ d = d || new Date(); const m = d.getMonth(), day = d.getDate(); return (m === 10 && day >= 24) || m === 11 || (m === 0 && day <= 7); }
 function nyAvailable(){ let f = null; try{ f = localStorage.getItem(NY_FORCE_KEY); }catch(e){} return nySeason() || f === '1'; }
 function nyOn(){ let off = null; try{ off = localStorage.getItem(NY_KEY); }catch(e){} return nyAvailable() && off !== 'off'; }
 function nyHatSvg(cls, style){ return `<svg class="${cls}" viewBox="0 0 64 60" style="${style || ''}" aria-hidden="true"><use href="#nyHatSym"/></svg>`; }
