@@ -3742,7 +3742,7 @@ function renderHistory(){
   body.innerHTML = html;
 }
 
-// ---------- график заборов по периодам: дни (текущая неделя) / месяцы / годы ----------
+// ---------- график заборов по периодам: дни (недели листаются) / месяцы / годы ----------
 let statsChartMode = 'day';   // что означает один столбик
 let statsChartOffset = 0;     // 0 - текущий период, -1 - предыдущий и т.д.
 const STATS_YEARS_PER_PAGE = 6;
@@ -3809,9 +3809,8 @@ function buildStatsPeriod(mode, offset){
 function renderStatsPeriodChart(){
   const box = document.getElementById('statsPeriodBox');
   if(!box) return;
-  // «Дни» - всегда только текущая неделя, без листания; месяцы и годы листаются
-  if(statsChartMode === 'day') statsChartOffset = 0;
-  const navOn = statsChartMode !== 'day';
+  // все вкладки листаются; при открытии статистики всегда показывается текущая неделя
+  const navOn = true;
   const p = buildStatsPeriod(statsChartMode, statsChartOffset);
   const max = Math.max(1, ...p.bars.map(b => b.count));
   const tabs = ['day', 'month', 'year'].map(m =>
@@ -3852,7 +3851,6 @@ function setStatsChartMode(mode){
   renderStatsPeriodChart();
 }
 function shiftStatsPeriod(dir){
-  if(statsChartMode === 'day') return;
   if(dir > 0 && statsChartOffset >= 0) return;
   if(dir < 0 && !buildStatsPeriod(statsChartMode, statsChartOffset).canPrev) return;
   statsChartOffset += dir;
